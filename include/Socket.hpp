@@ -4,22 +4,31 @@
 namespace ft {
 
 class SocketBase {
-   private:
-    int fd;     // socket fd
-    char *buf;  // buf of socket_fd received_buf
-   public:
-    SocketBase(/* args*/);
-    virtual ~SocketBase();
-    SocketBase &operator=(const SocketBase &ref);
+   protected:
+    int _fd;           // socket fd
+    std::string _buf;  // buf of socket_fd received_buf
+                       // std::string _hostname;
+                       // in_port_t _port
 
-    virtual void createSocket() = 0;
+   public:
+    SocketBase();
+    virtual ~SocketBase();
+
+    virtual void createSocket(int info) = 0;
+
+   protected:
+    void setNonBlock();
 };
 
-class ListeningSocket : public SocketBase {};
+class ListenSocket : public SocketBase {
+   public:
+    void createSocket(int port);
+};
 
-class ConnectSocket : public SocketBase {};
-
-#endif
+class ConnectSocket : public SocketBase {
+   public:
+    void createSocket(int listen_fd);
+};
 
 }  // namespace ft
 

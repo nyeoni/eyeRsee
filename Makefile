@@ -1,7 +1,7 @@
 NAME = ft_irc
 
 CC := c++
-FLAGS := -Wall -Werror -Wextra -std=c++98 #-g -fsanitize=address
+FLAGS := #-Wall -Werror -Wextra -std=c++98 #-g -fsanitize=address
 
 INC := -Iinclude
 

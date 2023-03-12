@@ -7,6 +7,7 @@
 #include <unistd.h>  // cunistd
 
 #include <stdexcept>
+#include <iostream>
 
 namespace ft {
 SocketBase::SocketBase() : _fd(-1) {}
@@ -35,6 +36,7 @@ void ListenSocket::createSocket(const int port) {
     if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
         throw std::logic_error("bind error");                         // CHECK
     if (listen(_fd, 42) < 0) throw std::logic_error("listen error");  // CHECK
+    std::cout << "ListenSocket::createSocket " << _fd << " " << port << std::endl;
     setNonBlock();
 }
 
@@ -49,6 +51,8 @@ void ConnectSocket::createSocket(const int listen_fd) {
     //   << ':' << ntohs(csin.sin_port) << std::endl;
     setNonBlock();
     // recv(connect_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)
+    std::cout << "ConnectSocket::createSocket " << _fd << " "
+              << std::endl;
 }
 
 }  // namespace ft

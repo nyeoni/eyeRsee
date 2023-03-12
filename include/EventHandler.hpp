@@ -15,13 +15,11 @@ enum e_event {
     WRITE_MORE,
     EXCUTE,
     DEL_READ,
-    DEL_WRITE,
-    PING,
-    PONG
+    DEL_WRITE
 };
 
 class EventHandler {
-   private:
+   protected:
     typedef struct kevent Event;
     typedef std::vector<Event> EventList;
 
@@ -45,19 +43,18 @@ class EventHandler {
     int monitorEvent();
 
     // handle functions
-    void handle(int event_idx);
+    void handleEvent(int event_idx);
     virtual void handleAccept(int event_idx) = 0;
     virtual void handleRead(int event_idx) = 0;
-    // virtual void handleExcute(int event_idx) = 0;
-    // virtual void handleWrite(int event_idx) = 0;
+    virtual void handleExcute(int event_idx) = 0;
+    virtual void handleWrite(int event_idx) = 0;
 
     // void handleAccept(Udata<sockets> &udata);
     // void handleRead(Udata<sockets> &udata);
     // void handleWrite(Udata<sockets> &udata);
-    //  void updateChangeList(int fd);
     //, int filt, int flags, int action;
 
-    void registEvent(int fd, int action);
+    void registerEvent(int fd, int action);
     // void
 };
 }  // namespace ft

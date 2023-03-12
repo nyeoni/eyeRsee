@@ -1,6 +1,8 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
+#include <string>
+
 namespace ft {
 
 class SocketBase {

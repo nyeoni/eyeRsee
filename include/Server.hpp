@@ -46,6 +46,8 @@ class Server : public EventHandler {
     // handler methods
     void handleAccept(int event_idx);
     void handleRead(int event_idx);
+    void handleExcute(int event_idx);
+    void handleWrite(int event_idx);
 };
 
 }  // namespace ft

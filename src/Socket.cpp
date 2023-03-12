@@ -1,15 +1,17 @@
 #include "Socket.hpp"
 
+#include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>  // sockaddr_in
 #include <sys/socket.h>
 #include <unistd.h>  // cunistd
 
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
 
 namespace ft {
+
 SocketBase::SocketBase() : _fd(-1) {}
 
 SocketBase::~SocketBase() {
@@ -30,13 +32,15 @@ void ListenSocket::createSocket(const int port) {
 
     _fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (_fd < 0) throw std::logic_error("create listen fd error");
+
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port = htons(port);
+
     if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
         throw std::logic_error("bind error");                         // CHECK
     if (listen(_fd, 42) < 0) throw std::logic_error("listen error");  // CHECK
-    std::cout << "ListenSocket::createSocket " << _fd << " " << port << std::endl;
+
     setNonBlock();
 }
 
@@ -51,8 +55,8 @@ void ConnectSocket::createSocket(const int listen_fd) {
     //   << ':' << ntohs(csin.sin_port) << std::endl;
     setNonBlock();
     // recv(connect_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)
-    std::cout << "ConnectSocket::createSocket " << _fd << " "
-              << std::endl;
+    std::cout << "New client # " << _fd << " from " << inet_ntoa(csin.sin_addr)
+              << ':' << ntohs(csin.sin_port) << std::endl;
 }
 
 }  // namespace ft

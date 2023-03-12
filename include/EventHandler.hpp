@@ -39,7 +39,6 @@ class EventHandler {
     EventHandler(const EventHandler &copy);
     virtual ~EventHandler();
 
-    Event *changeList();
     int monitorEvent();
 
     // handle functions

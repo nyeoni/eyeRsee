@@ -45,12 +45,10 @@ void Server::init(int argc, char **argv) { _env.parse(argc, argv); }
 void Server::run() {
     // 1. server socket
     _listen_socket.createSocket(_env.port);  // env.port
-    std::cout << "port : " << _env.port << std::endl;
+    std::cout << "🚀 Server running listening on port " << _env.port
+              << std::endl;
     // TODO : [naming] 실제로 register 되는 시점은 여기가 아님.
-    //registerEvent(_listen_socket.getFd(), ACCEPT);
-    Event ev;
-    EV_SET(&ev, EVFILT_READ, EV_ADD|EV_ENABLE, 0,0,0, 0);
-    kevent(_kq_fd, &ev, 1, 0, 0, 0);
+    registerEvent(_listen_socket.getFd(), ACCEPT);
     //_change_list.clear();
     //_change_cnt = 0;
 
@@ -74,21 +72,23 @@ void Server::run() {
 // } Server::EventHandler::~EventHandler() {}
 
 void Server::handleAccept(int event_idx) {
+    // ConnectSocket *tmp = new ConnectSocket;
     ConnectSocket tmp;
 
-    tmp.createSocket(_listen_socket.getFd());
-    std::cout << "Hanndle accept " << tmp.getFd() << std::endl;
     _socket_list.push_back(tmp);
-    registerEvent(tmp.getFd(), READ);
+    ConnectSocket &ref = _socket_list.back();
+    ref.createSocket(_listen_socket.getFd());
+
+    std::cout << "Hanndle accept " << ref.getFd() << std::endl;
+    registerEvent(ref.getFd(), READ);
 }
 
 void Server::handleRead(int event_idx) {
-    std::vector<char> buf;  // TODO
-    buf.reserve(BUFSIZ);    // TODO : buf max size
+    char buf[BUFSIZ];
     int n = 0;
 
     // buf -> udata
-    n = recv(_ev_list[event_idx].ident, &buf[0], BUFSIZ, 0);
+    n = recv(_ev_list[event_idx].ident, buf, BUFSIZ, 0);
     // if (n < 0)
     //    std::err << "client #" << fd << " wrong read" << std::endl;
     if (n > 0) {

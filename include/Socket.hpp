@@ -14,7 +14,10 @@ class SocketBase {
     SocketBase();
     virtual ~SocketBase();
 
-    virtual void createSocket(int info) = 0;
+    virtual void createSocket(const int info) = 0;
+
+    const int &getFd() const;
+    const std::string &getBuf() const;
 
    protected:
     void setNonBlock();
@@ -22,12 +25,12 @@ class SocketBase {
 
 class ListenSocket : public SocketBase {
    public:
-    void createSocket(int port);
+    void createSocket(const int port);
 };
 
 class ConnectSocket : public SocketBase {
    public:
-    void createSocket(int listen_fd);
+    void createSocket(const int listen_fd);
 };
 
 }  // namespace ft

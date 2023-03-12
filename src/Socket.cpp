@@ -16,12 +16,15 @@ SocketBase::~SocketBase() {
     if (_fd != -1) close(_fd);
 }
 
+const int &SocketBase::getFd() const { return _fd; }
+const std::string &SocketBase::getBuf() const { return _buf; }
+
 void SocketBase::setNonBlock() {
     if (fcntl(_fd, F_SETFL, O_NONBLOCK) < 0)
         throw std::logic_error("NonBlock Set Error");
 }
 
-void ListenSocket::createSocket(int port) {
+void ListenSocket::createSocket(const int port) {
     struct sockaddr_in sin;
 
     _fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -35,17 +38,17 @@ void ListenSocket::createSocket(int port) {
     setNonBlock();
 }
 
-void ConnectSocket::createSocket(int listen_fd) {
-    char buf[1];
+void ConnectSocket::createSocket(const int listen_fd) {
+    // char buf[1];
     struct sockaddr_in csin;
     socklen_t csin_len = sizeof(csin);
-    int cfd = accept(listen_fd, (struct sockaddr *)&csin, &csin_len);
+    _fd = accept(listen_fd, (struct sockaddr *)&csin, &csin_len);
     // TODO : password
-    // std::cout << "New client # " << cfd << " from " <<
+    // std::cout << "New client # " << _fd << " from " <<
     // inet_ntoa(csin.sin_addr)
     //   << ':' << ntohs(csin.sin_port) << std::endl;
     setNonBlock();
-    // recv(client_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)
+    // recv(connect_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)
 }
 
 }  // namespace ft

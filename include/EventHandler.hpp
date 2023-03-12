@@ -15,6 +15,7 @@ enum e_event {
     WRITE_MORE,
     EXCUTE,
     DEL_READ,
+    DEL_EXCUTE,
     DEL_WRITE
 };
 

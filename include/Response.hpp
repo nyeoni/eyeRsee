@@ -2,6 +2,7 @@
 #define RESPONSE_HPP
 
 #include <string>
+#include <vector>
 
 namespace ft {
 
@@ -29,19 +30,19 @@ enum e_cmd {
 };
 
 struct Response {
-    std::string buf;
-    size_t len;
-    size_t current;
+    int status;
+    e_cmd cmd;
+    std::string msg;
 };
 
-template <typename Tp>
-struct HandlerInfo {
-    int action;
-    int listen_fd;
-    Tp connect_sockets;
+struct Buffer {
+    char *buf;
+    size_t len;
+    size_t current;
 
-    void init(int fd, Tp sockets) {
-        action(0), listen_fd(fd), connect_sockets(sockets);
+    Buffer() : buf(NULL), len(0), current(0) {}
+    ~Buffer() {
+        if (buf) delete buf;
     }
 };
 
@@ -50,28 +51,13 @@ struct Udata_base {
 };
 
 struct UdataRead : public Udata_base {
-    std::string buf;
+    std::vector<char> pre_buf;
+    std::vector<std::string> params;
 };
 
 struct UdataWrite : public Udata_base {
-    std::string buf;
+    Response res;
 };
-
-template <typename Tp>
-struct UdataAccept : public Udata_base {
-    int listen_fd;
-    Tp _socket_list;
-
-    void init(int fd, Tp sockets) {
-        action(0), listen_fd(fd), _socket_list(sockets);
-    }
-    void set(int act) { action = act; }
-};
-
-// struct Udata {
-//  Client
-//  channel
-//};
 
 }  // namespace ft
 

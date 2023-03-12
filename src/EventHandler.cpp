@@ -13,6 +13,7 @@ EventHandler::~EventHandler() {}
 
 /**
  * @brief monitor events
+ * @return number of monitored events
  */
 
 int EventHandler::monitorEvent() {
@@ -25,6 +26,8 @@ int EventHandler::monitorEvent() {
 
 /**
  * @brief handle events
+ *
+ * Handle events of detected by monitorEvent
  */
 void EventHandler::handleEvent(int event_idx) {
     if (_ev_list[event_idx].flags == EV_ERROR) {
@@ -44,7 +47,7 @@ void EventHandler::handleEvent(int event_idx) {
             // \n -> parsing -> registerList(EXCUTE)
             break;
         case EXCUTE:
-            // handleExcute(_ev_list[event_idx].ident);  // TODO
+            handleExcute(_ev_list[event_idx].ident);  // TODO
 
             //  excute -> registerList(WRITE)
             //  PREV_MSG #channel -> channel->client_list
@@ -52,7 +55,7 @@ void EventHandler::handleEvent(int event_idx) {
             //  (X) for (5) send(fd); ->Sync
             break;
         case WRITE:
-            // handleWrite(*(UdataWrite *)_ev_list[event_idx].udata);  // TODO
+            handleWrite(_ev_list[event_idx].ident);  // TODO
 
             // send(fd); -> ASync
             break;
@@ -64,6 +67,7 @@ void EventHandler::handleEvent(int event_idx) {
     }
 }
 
+
 void EventHandler::registerEvent(int fd, int action) {
     struct kevent ev;
 
@@ -72,6 +76,9 @@ void EventHandler::registerEvent(int fd, int action) {
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
                    (void *)(intptr_t)action);
             break;
+        case EXCUTE:
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
+                   (void *)(intptr_t)action);
         case WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
                    (void *)(intptr_t)action);
@@ -81,6 +88,10 @@ void EventHandler::registerEvent(int fd, int action) {
                    (void *)(intptr_t)action);
             break;
         case DEL_WRITE:
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
+                   (void *)(intptr_t)action);
+            break;
+        case DEL_EXCUTE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
                    (void *)(intptr_t)action);
             break;

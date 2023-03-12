@@ -9,7 +9,7 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "EventHandler.hpp"
-#include "Response.hpp"  // udata
+#include "Response.hpp"
 #include "Socket.hpp"
 
 namespace ft {

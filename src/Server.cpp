@@ -107,7 +107,8 @@ void Server::handleExcute(int event_idx) {
     // ex.PRIVMSG
 
     std::cout << "excute " << event_idx << std::endl;
-    // registerEvent(, DEL_WRITE)
+    //registerEvent(_ev_list[event_idx].ident, DEL_WRITE);
+    registerEvent(_ev_list[event_idx].ident, DEL_EXCUTE);
     registerEvent(_ev_list[event_idx].ident, WRITE);
     // TODO : findClient(fd).channel.client_list;
     // Command

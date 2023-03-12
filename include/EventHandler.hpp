@@ -32,30 +32,22 @@ class EventHandler {
     Event _ev_list[_max_event];
     EventList _change_list;
 
-    // HandlerInfo<sockets> _info;
-    // Udata<sockets> _udata;
-
    public:
     EventHandler();
     EventHandler(const EventHandler &copy);
     virtual ~EventHandler();
 
+    void registerEvent(int fd, int action);
+
     int monitorEvent();
 
     // handle functions
     void handleEvent(int event_idx);
-    virtual void handleAccept(int event_idx) = 0;
+    virtual void handleAccept() = 0;
     virtual void handleRead(int event_idx) = 0;
     virtual void handleExcute(int event_idx) = 0;
     virtual void handleWrite(int event_idx) = 0;
 
-    // void handleAccept(Udata<sockets> &udata);
-    // void handleRead(Udata<sockets> &udata);
-    // void handleWrite(Udata<sockets> &udata);
-    //, int filt, int flags, int action;
-
-    void registerEvent(int fd, int action);
-    // void
 };
 }  // namespace ft
 

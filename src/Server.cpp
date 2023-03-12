@@ -71,15 +71,13 @@ void Server::run() {
 // Server::EventHandler::EventHandler() : _kq_fd(-1) { _change_list.reserve(32);
 // } Server::EventHandler::~EventHandler() {}
 
-void Server::handleAccept(int event_idx) {
-    // ConnectSocket *tmp = new ConnectSocket;
+void Server::handleAccept() {
     ConnectSocket tmp;
 
     _socket_list.push_back(tmp);
     ConnectSocket &ref = _socket_list.back();
     ref.createSocket(_listen_socket.getFd());
 
-    std::cout << "Hanndle accept " << ref.getFd() << std::endl;
     registerEvent(ref.getFd(), READ);
 }
 
@@ -93,7 +91,6 @@ void Server::handleRead(int event_idx) {
     //    std::err << "client #" << fd << " wrong read" << std::endl;
     if (n > 0) {
         // std::cout << "read " << n << " bytes" << std::endl;
-        std::cout << "read " << event_idx << " " << n << " bytes" << std::endl;
         //  TODO : parsing
         registerEvent(_ev_list[event_idx].ident, EXCUTE);
     }
@@ -107,10 +104,9 @@ void Server::handleExcute(int event_idx) {
     // ex.PRIVMSG
 
     std::cout << "excute " << event_idx << std::endl;
-    //registerEvent(_ev_list[event_idx].ident, DEL_WRITE);
     registerEvent(_ev_list[event_idx].ident, DEL_EXCUTE);
     registerEvent(_ev_list[event_idx].ident, WRITE);
-    // TODO : findClient(fd).channel.client_list;
+    // TODO : findClie`nt(fd).channel.client_list;
     // Command
     // vector<Client> client_list;
     // for (iterator it = client_list.begin(); it != client_list.end(); ++it)
@@ -124,7 +120,7 @@ void Server::handleWrite(int event_idx) {
     // (X) TODO : findSocket(fd).response.buf || findResponse(fd).buf;
     // TODO : udata.buf
     std::cout << "write " << event_idx << std::endl;
-    registerEvent(_ev_list[event_idx].ident, DEL_WRITE);
+    registerEvent(_ev_list[event_idx].ident, DEL_WRITE);\
     // every client in client_list has their own buf...
     // message must be send in once....
     // (if particial send occures, message can be mixed with others)

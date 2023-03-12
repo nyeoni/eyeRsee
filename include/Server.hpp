@@ -44,7 +44,7 @@ class Server : public EventHandler {
     void run();
 
     // handler methods
-    void handleAccept(int event_idx);
+    void handleAccept();
     void handleRead(int event_idx);
     void handleExcute(int event_idx);
     void handleWrite(int event_idx);

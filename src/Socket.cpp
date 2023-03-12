@@ -50,9 +50,6 @@ void ConnectSocket::createSocket(const int listen_fd) {
     socklen_t csin_len = sizeof(csin);
     _fd = accept(listen_fd, (struct sockaddr *)&csin, &csin_len);
     // TODO : password
-    // std::cout << "New client # " << _fd << " from " <<
-    // inet_ntoa(csin.sin_addr)
-    //   << ':' << ntohs(csin.sin_port) << std::endl;
     setNonBlock();
     // recv(connect_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)
     std::cout << "New client # " << _fd << " from " << inet_ntoa(csin.sin_addr)

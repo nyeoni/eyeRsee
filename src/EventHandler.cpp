@@ -19,6 +19,7 @@ EventHandler::~EventHandler() {}
 int EventHandler::monitorEvent() {
     int n = kevent(_kq_fd, &_change_list[0], _change_cnt, _ev_list, _max_event,
                    NULL);
+
     _change_list.clear();
     _change_cnt = 0;
     return n;
@@ -35,19 +36,18 @@ void EventHandler::handleEvent(int event_idx) {
         return;
     }
     int action = (int)(intptr_t)_ev_list[event_idx].udata;
-    std::cout << "==== handleEvent ====  " << action << std::endl;
     switch (action) {
         case ACCEPT:
-            handleAccept(_ev_list[event_idx].ident);
+            handleAccept();
             // after accept -> _socket_list
             break;
         case READ:
-            handleRead(_ev_list[event_idx].ident);  // TODO
+            handleRead(event_idx);  // TODO
             // /exit -> _socket_list
             // \n -> parsing -> registerList(EXCUTE)
             break;
         case EXCUTE:
-            handleExcute(_ev_list[event_idx].ident);  // TODO
+            handleExcute(event_idx);  // TODO
 
             //  excute -> registerList(WRITE)
             //  PREV_MSG #channel -> channel->client_list
@@ -55,7 +55,7 @@ void EventHandler::handleEvent(int event_idx) {
             //  (X) for (5) send(fd); ->Sync
             break;
         case WRITE:
-            handleWrite(_ev_list[event_idx].ident);  // TODO
+            handleWrite(event_idx);  // TODO
 
             // send(fd); -> ASync
             break;
@@ -85,15 +85,15 @@ void EventHandler::registerEvent(int fd, int action) {
             break;
         case DEL_READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0,
-                   (void *)(intptr_t)action);
+                   (void *)(intptr_t)READ);
             break;
         case DEL_WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
-                   (void *)(intptr_t)action);
+                   (void *)(intptr_t)WRITE);
             break;
         case DEL_EXCUTE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
-                   (void *)(intptr_t)action);
+                   (void *)(intptr_t)EXCUTE);
             break;
         case ACCEPT:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,

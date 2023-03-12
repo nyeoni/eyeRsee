@@ -8,6 +8,7 @@
 
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "EventHandler.hpp"
 #include "Response.hpp"  // udata
 #include "Socket.hpp"
 
@@ -23,16 +24,16 @@ struct Env {
     void parse(int argc, char **argv);
 };
 
-class Server {
+class Server : public EventHandler {
    private:
-    typedef std::vector<ConnectSocket> sockets;
+    typedef std::vector<ConnectSocket> SocketList;
 
     Env _env;
     ListenSocket _listen_socket;
     // ConnectSocket *_connect_socket;  // new ft::max_num::
     // new [10]
     // TODO :
-    sockets _connect_sockets;
+    SocketList _socket_list;
 
    public:
     Server();
@@ -42,48 +43,9 @@ class Server {
     void init(int argc, char **argv);
     void run();
 
-    // command control method
-   private:
-    class EventHandler {
-       private:
-        typedef struct kevent Event;
-        typedef std::vector<Event> EventList;
-
-        // TODO max_event 생성자에서 처리해줄지
-        static const int _max_event = 20;
-        int _kq_fd;
-        int _change_cnt;
-
-        Event _ev_list[_max_event];
-        EventList _change_list;
-
-        HandlerInfo<sockets> _info;
-        // Udata<sockets> _udata;
-
-        EventHandler();
-
-       public:
-        EventHandler(Server &server_info);
-        ~EventHandler();
-
-        // int init(int fd);
-        Event *changeList();
-        int monitorEvent();
-        void handle(int event_idx);
-        void handleAccept(int listen_fd);
-        void handleRead(int fd);
-        void handleExcute(int fd);
-        void handleWrite(UdataWrite &udata);
-        // void handleAccept(Udata<sockets> &udata);
-        // void handleRead(Udata<sockets> &udata);
-        // void handleWrite(Udata<sockets> &udata);
-        //  void updateChangeList(int fd);
-        //, int filt, int flags, int action;
-        void registerEvent(int fd, int action);
-        //void
-    };
-    // EventHandler event_handler;
-    // friend class EventHandler;
+    // handler methods
+    void handleAccept(int event_idx);
+    void handleRead(int event_idx);
 };
 
 }  // namespace ft

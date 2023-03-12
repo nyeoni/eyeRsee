@@ -10,19 +10,6 @@ static const int ReadEvent = 1;
 static const int WriteEvent = 2;
 }  // namespace filt
 
-enum e_event {
-    ACCEPT,
-    READ,
-    READ_MORE,
-    WRITE,
-    WRITE_MORE,
-    EXCUTE,
-    DEL_READ,
-    DEL_WRITE,
-    PING,
-    PONG
-};
-
 enum e_cmd {
     PASS,
     USER,
@@ -73,10 +60,10 @@ struct UdataWrite : public Udata_base {
 template <typename Tp>
 struct UdataAccept : public Udata_base {
     int listen_fd;
-    Tp _connect_sockets;
+    Tp _socket_list;
 
     void init(int fd, Tp sockets) {
-        action(0), listen_fd(fd), _connect_sockets(sockets);
+        action(0), listen_fd(fd), _socket_list(sockets);
     }
     void set(int act) { action = act; }
 };

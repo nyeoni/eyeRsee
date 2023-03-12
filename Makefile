@@ -1,14 +1,16 @@
 NAME = ft_irc
 
 CC := c++
-FLAGS := -Wall -Werror -Wextra #-g -fsanitize=address
+FLAGS := -Wall -Werror -Wextra -std=c++98 #-g -fsanitize=address
 
-INC := -I include
+INC := -Iinclude
 
-MAIN_SRC := main.cpp
+MAIN_SRC := #main.cpp
 _SRC := $(addprefix src/, \
 		 Server.cpp \
-		 Socket.cpp
+		 Socket.cpp \
+		 EventHandler.cpp \
+		 main.cpp \
 		 )
 # # 		 Channel.cpp
 SRC := $(MAIN_SRC) $(_SRC)

@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "Channel.hpp"
-#include "Client.hpp"
-#include "EventHandler.hpp"
-#include "Response.hpp"
-#include "Socket.hpp"
+#include "controller/EventHandler.hpp"
+#include "core/Response.hpp"
+#include "core/Socket.hpp"
+#include "entity/Channel.hpp"
+#include "entity/Client.hpp"
 
 namespace ft {
 

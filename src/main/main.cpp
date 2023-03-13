@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "Server.hpp"
+#include "core/Server.hpp"
 
 int main(int argc, char **argv) {
     // <exec> <port> <password>

@@ -4,23 +4,12 @@
 #include <sys/event.h>
 
 #include <vector>
+#include "Udata.hpp"
 
 namespace ft {
 
-enum e_event {
-    ACCEPT,
-    READ,
-    READ_MORE,
-    WRITE,
-    WRITE_MORE,
-    EXCUTE,
-    DEL_READ,
-    DEL_EXCUTE,
-    DEL_WRITE
-};
-
 class EventHandler {
-   protected:
+ protected:
     typedef struct kevent Event;
     typedef std::vector<Event> EventList;
 
@@ -32,20 +21,21 @@ class EventHandler {
     Event _ev_list[_max_event];
     EventList _change_list;
 
-   public:
+ public:
     EventHandler();
     EventHandler(const EventHandler &copy);
     virtual ~EventHandler();
 
-    void registerEvent(int fd, int action);
+    void registerEvent(int fd, e_event action, Udata *udata);
 
     int monitorEvent();
 
     // handle functions
     void handleEvent(int event_idx);
     virtual void handleAccept() = 0;
+    virtual void handleConnect(int event_idx) = 0;
     virtual void handleRead(int event_idx) = 0;
-    virtual void handleExcute(int event_idx) = 0;
+    virtual void handleExecute(int event_idx) = 0;
     virtual void handleWrite(int event_idx) = 0;
 
 };

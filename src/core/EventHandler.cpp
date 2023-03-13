@@ -1,5 +1,6 @@
 #include "core/EventHandler.hpp"
-#include "core/Response.hpp"
+#include "core/Udata.hpp"
+#include "core/Type.hpp"
 #include <iostream>
 
 namespace ft {
@@ -31,57 +32,65 @@ int EventHandler::monitorEvent() {
  * Handle events of detected by monitorEvent
  */
 void EventHandler::handleEvent(int event_idx) {
-    if (_ev_list[event_idx].flags == EV_ERROR) {
+    Event event = _ev_list[event_idx];
+
+    std::cout << "event fd: " << event.ident << std::endl;
+    if (event.flags == EV_ERROR) {
         std::cerr << "EV_ERROR OCCURED" << std::endl;
         return;
     }
-    int action = (int) (intptr_t) _ev_list[event_idx].udata;
+    int action = ((Udata *) event.udata)->action;
+
+    std::cout << "action: " << action << std::endl;
     switch (action) {
         case ACCEPT:
             handleAccept();
-            // after accept -> _socket_list
+            break;
+        case CONNECT:
+            handleConnect(event_idx);
             break;
         case READ:
             handleRead(event_idx);  // TODO
-            // /exit -> _socket_list
-            // \n -> parsing -> registerList(EXCUTE)
             break;
         case EXCUTE:
-            handleExcute(event_idx);  // TODO
-
-            //  excute -> registerList(WRITE)
-            //  PREV_MSG #channel -> channel->client_list
-            //  PREV_MSG nickname -> nickname
-            //  (X) for (5) send(fd); ->Sync
+            handleExecute(event_idx);  // TODO
             break;
         case WRITE:
             handleWrite(event_idx);  // TODO
-
-            // send(fd); -> ASync
             break;
-            // case WRITE:
-            //     break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
                       << " (unknown event occured)" << std::endl;
+            break;
     }
 }
 
-void EventHandler::registerEvent(int fd, int action) {
-//    UdataBase udata = {};
-    struct kevent ev = {};
+void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
+    Event ev = {};
 
+    // TODO udata 어디서 new 해줄지 생각하기
+    if (!udata) udata = new Udata();
+    // TODO 이것도 모든 경우에 다 맞는지 생각해 주어야 함
+    udata->action = action;
     switch (action) {
+        case ACCEPT:
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
+                   (void *) udata);
+            break;
+        case CONNECT:
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
+                   (void *) udata);
+            break;
         case READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) (intptr_t) action);
+                   (void *) udata);
             break;
         case EXCUTE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) (intptr_t) action);
+                   (void *) udata);
         case WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) (intptr_t) action);
+                   (void *) udata);
             break;
         case DEL_READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0,
@@ -94,10 +103,6 @@ void EventHandler::registerEvent(int fd, int action) {
         case DEL_EXCUTE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
                    (void *) (intptr_t) EXCUTE);
-            break;
-        case ACCEPT:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) (intptr_t) action);
             break;
         default:
             return;

@@ -16,6 +16,8 @@ Channel &Channel::operator=(const Channel &ref) {
     _regulars = ref._regulars;
     _operators = ref._operators;
     _mode = ref._mode;
+
+    return (*this);
 }
 
 std::string Channel::getName() const { return _name; }
@@ -26,9 +28,9 @@ int Channel::getMode() const { return _mode; }
 
 void Channel::setName(const std::string &name) { _name = name; }
 void Channel::setTopic(const std::string &topic) { _topic = topic; }
-void Channel::setMode(int mode) {
+void Channel::setMode(int add_mode , int del_mode) {
     // TODO : flag bit operate
-    _mode = mode;
+    _mode = add_mode;
 }
 
 bool Channel::operator==(const Channel &other) const {

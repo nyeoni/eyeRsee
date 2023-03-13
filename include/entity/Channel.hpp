@@ -14,7 +14,8 @@ enum e_mode {
     SECRET = 1,
     PRIVATE = 1 < 1,
     PUBLIC = 1 < 2,
-    INVITE_ONLY = 1 < 3
+    INVITE_ONLY = 1 < 3,
+    T = 1 < 4
 };
 
 class Channel {
@@ -47,7 +48,6 @@ class Channel {
     // void setOperators(const Client *client);
     void setMode(int add_mode, int del_mode);
 
-    Channel &operator=(const Channel &ref);
     bool operator==(const Channel &other) const;
     bool operator!=(const Channel &other) const;
     bool operator<(const Channel &other) const;

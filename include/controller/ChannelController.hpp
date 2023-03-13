@@ -7,13 +7,11 @@ namespace ft {
 
 class Channel;
 
-enum e_mode { T, DT };
-
 class ChannelController {
    public:
     typedef std::set<Channel> Channels;
     // typedef std::set<Channel *> ChannelList;
-    typedef typename Channels::iterator channel_iterator;
+    typedef Channels::iterator channel_iterator;
 
    private:
     Channels _channels;

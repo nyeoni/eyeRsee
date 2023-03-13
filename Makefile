@@ -20,7 +20,6 @@ SRC_MAIN 		= $(addprefix $(SRC_MAIN_DIR), main.cpp)
 
 SRC_CONTROLLER_DIR	= controller/
 SRC_CONTROLLER		= $(addprefix $(SRC_CONTROLLER_DIR), \
-										Executer.cpp \
 										ChannelController.cpp \
 										ClientController.cpp)
 

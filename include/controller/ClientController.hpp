@@ -22,7 +22,7 @@ class ClientController {
    public:
     typedef std::set<Client> Clients;
     // TODO Consider client_iterator || Client *
-    typedef typename std::set<Client>::iterator client_iterator;
+    typedef std::set<Client>::iterator client_iterator;
 
    private:
     Clients _clients;

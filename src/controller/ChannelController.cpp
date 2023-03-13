@@ -17,11 +17,13 @@ ChannelController &ChannelController::operator=(const ChannelController &ref) {
     return (*this);
 }
 
-ChannelController::channel_iterator find(const Channel *channel) const {
+ChannelController::channel_iterator ChannelController::find(
+    const Channel *channel) const {
     return (_channels.find(*channel));
 }
 
-ChannelController::channel_iterator find(const std::string &name) const {
+ChannelController::channel_iterator ChannelController::find(
+    const std::string &name) const {
     Channel tmp(name);
     return (_channels.find(tmp));
 }
@@ -61,9 +63,9 @@ void ChannelController::mod(int mode, Channel *channel) {
         case T:
             channel->setMode(mode, 0);
             break;
-        case DT:
-            channel->setMode(0, mode);
-            break;
+        //case DT:
+        //    channel->setMode(0, mode);
+        //    break;
         default:
             break;
     }

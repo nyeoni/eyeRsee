@@ -1,4 +1,4 @@
-#include "EventHandler.hpp"
+#include "controller/EventHandler.hpp"
 
 #include <iostream>
 
@@ -66,7 +66,6 @@ void EventHandler::handleEvent(int event_idx) {
                       << " (unknown event occured)" << std::endl;
     }
 }
-
 
 void EventHandler::registerEvent(int fd, int action) {
     struct kevent ev;

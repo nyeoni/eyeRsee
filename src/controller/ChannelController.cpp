@@ -1,22 +1,18 @@
-#include "ChannelController.hpp"
+#include "controller/ChannelController.hpp"
 
-namespace ft{
-ChannelController::ChannelController()
-{
+namespace ft {
+ChannelController::ChannelController() {}
+
+ChannelController::ChannelController(const ChannelController &copy) {
+    *this = copy;
 }
 
-ChannelController::ChannelController(const ChannelController &copy)
-{
-	*this = copy;
+ChannelController::~ChannelController() {}
+
+ChannelController &ChannelController::operator=(const ChannelController &ref) {
+    // if (*this != ref) {
+    // }
+    return (*this);
 }
 
-ChannelController::~ChannelController()
-{
-}
-
-ChannelController& ChannelController::operator=(const ChannelController &ref)
-{
-	return (*this);
-}
-
-}
+}  // namespace ft

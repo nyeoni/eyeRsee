@@ -1,10 +1,10 @@
-#include "Server.hpp"
+#include "core/Server.hpp"
 
 #include <sys/socket.h>
 
 #include <iostream>
 
-#include "Response.hpp"
+#include "core/Response.hpp"
 
 namespace ft {
 void Env::parse(int argc, char **argv) {
@@ -120,13 +120,13 @@ void Server::handleWrite(int event_idx) {
     // (X) TODO : findSocket(fd).response.buf || findResponse(fd).buf;
     // TODO : udata.buf
     std::cout << "write " << event_idx << std::endl;
-    registerEvent(_ev_list[event_idx].ident, DEL_WRITE);\
-    // every client in client_list has their own buf...
-    // message must be send in once....
-    // (if particial send occures, message can be mixed with others)
-    // n = send(fd, buf.c_str(), buf.length(), 0);
-    // if (n != -1)
-    //    register(DEL_WRITE);
+    registerEvent(_ev_list[event_idx].ident,
+                  DEL_WRITE);  // every client in client_list has their own
+                               // buf... message must be send in once.... (if
+                               // particial send occures, message can be mixed
+                               // with others) n = send(fd, buf.c_str(),
+                               // buf.length(), 0); if (n != -1)
+                               //    register(DEL_WRITE);
 }
 
 }  // namespace ft

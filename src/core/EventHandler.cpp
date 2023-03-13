@@ -1,4 +1,5 @@
 #include "core/EventHandler.hpp"
+#include "core/Response.hpp"
 #include <iostream>
 
 namespace ft {
@@ -34,7 +35,7 @@ void EventHandler::handleEvent(int event_idx) {
         std::cerr << "EV_ERROR OCCURED" << std::endl;
         return;
     }
-    int action = (int)(intptr_t)_ev_list[event_idx].udata;
+    int action = (int) (intptr_t) _ev_list[event_idx].udata;
     switch (action) {
         case ACCEPT:
             handleAccept();
@@ -58,8 +59,8 @@ void EventHandler::handleEvent(int event_idx) {
 
             // send(fd); -> ASync
             break;
-        // case WRITE:
-        //     break;
+            // case WRITE:
+            //     break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
                       << " (unknown event occured)" << std::endl;
@@ -67,35 +68,36 @@ void EventHandler::handleEvent(int event_idx) {
 }
 
 void EventHandler::registerEvent(int fd, int action) {
-    struct kevent ev;
+//    UdataBase udata = {};
+    struct kevent ev = {};
 
     switch (action) {
         case READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *)(intptr_t)action);
+                   (void *) (intptr_t) action);
             break;
         case EXCUTE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *)(intptr_t)action);
+                   (void *) (intptr_t) action);
         case WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *)(intptr_t)action);
+                   (void *) (intptr_t) action);
             break;
         case DEL_READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0,
-                   (void *)(intptr_t)READ);
+                   (void *) (intptr_t) READ);
             break;
         case DEL_WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
-                   (void *)(intptr_t)WRITE);
+                   (void *) (intptr_t) WRITE);
             break;
         case DEL_EXCUTE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
-                   (void *)(intptr_t)EXCUTE);
+                   (void *) (intptr_t) EXCUTE);
             break;
         case ACCEPT:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *)(intptr_t)action);
+                   (void *) (intptr_t) action);
             break;
         default:
             return;

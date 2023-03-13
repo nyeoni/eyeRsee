@@ -46,16 +46,20 @@ struct Buffer {
     }
 };
 
-struct Udata_base {
+struct Udata {
+    
+};
+
+struct UdataBase {
     int action;
 };
 
-struct UdataRead : public Udata_base {
-    std::vector<char> pre_buf;
+struct UdataRead : public UdataBase {
+    std::string pre_buf;
     std::vector<std::string> params;
 };
 
-struct UdataWrite : public Udata_base {
+struct UdataWrite : public UdataBase {
     Response res;
 };
 

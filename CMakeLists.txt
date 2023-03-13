@@ -13,10 +13,18 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # 실행 파일은 빌드 디렉토리 안에 bin 폴더에 출력.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# Add ft_irc exec file
-add_executable(ft_irc src/main/main.cpp src/entity/Channel.cpp src/entity/Client.cpp src/core/EventHandler.cpp src/core/Response.cpp src/core/Server.cpp src/core/Socket.cpp src/controller/ChannelController.cpp src/controller/ClientController.cpp)
+# Create ft_irc_lib interface
+add_library(ft_irc_lib STATIC src/entity/Channel.cpp src/entity/Client.cpp src/core/EventHandler.cpp src/core/Response.cpp src/core/Server.cpp src/core/Socket.cpp src/controller/ChannelController.cpp src/controller/ClientController.cpp)
+# Include ft_irc hpp files
+target_include_directories(ft_irc_lib PUBLIC include)
+# Set ft_irc_lib compile option
+set_target_properties(ft_irc_lib PROPERTIES INTERFACE_LINK_LIBRARIES -Wall -Wextra -Werror -std=c++98 -g3)
 
+# Add ft_irc exec
+add_executable(ft_irc src/main/main.cpp)
 # Include containers hpp files
-target_include_directories(ft_irc PUBLIC include)
+target_link_libraries(ft_irc PUBLIC ft_irc_lib)
 # Set ft_containers_lib compile option
 set_target_properties(ft_irc PROPERTIES INTERFACE_LINK_LIBRARIES -Wall -Wextra -Werror -std=c++98 -g3)
+
+add_subdirectory(test)

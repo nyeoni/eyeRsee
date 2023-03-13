@@ -2,17 +2,16 @@
 #define SOCKET_HPP
 
 #include <string>
+#include <netinet/in.h>
 
 namespace ft {
 
 class SocketBase {
-   protected:
-    int _fd;           // socket fd
-    std::string _buf;  // buf of socket_fd received_buf
-                       // std::string _hostname;
-                       // in_port_t _port
+ protected:
+    int _fd;
+    struct in_addr sin_addr;
 
-   public:
+ public:
     SocketBase();
     virtual ~SocketBase();
 
@@ -21,17 +20,17 @@ class SocketBase {
     const int &getFd() const;
     const std::string &getBuf() const;
 
-   protected:
+ protected:
     void setNonBlock();
 };
 
 class ListenSocket : public SocketBase {
-   public:
+ public:
     void createSocket(const int port);
 };
 
 class ConnectSocket : public SocketBase {
-   public:
+ public:
     void createSocket(const int listen_fd);
 };
 

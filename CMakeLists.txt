@@ -14,11 +14,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Create ft_irc_lib interface
-add_library(ft_irc_lib STATIC src/entity/Channel.cpp src/entity/Client.cpp src/core/EventHandler.cpp src/core/Response.cpp src/core/Server.cpp src/core/Socket.cpp src/controller/ChannelController.cpp src/controller/ClientController.cpp)
+add_library(ft_irc_lib STATIC src/entity/Channel.cpp src/entity/Client.cpp src/core/EventHandler.cpp src/core/Server.cpp src/core/Socket.cpp src/controller/ChannelController.cpp src/controller/ClientController.cpp include/controller/Executer.hpp src/controller/Executer.cpp src/core/Udata.cpp src/core/Parser.cpp)
 # Include ft_irc hpp files
 target_include_directories(ft_irc_lib PUBLIC include)
 # Set ft_irc_lib compile option
 set_target_properties(ft_irc_lib PROPERTIES INTERFACE_LINK_LIBRARIES -Wall -Wextra -Werror -std=c++98 -g3)
+#set_target_properties(ft_irc_lib PROPERTIES INTERFACE_LINK_LIBRARIES -std=c++98)
 
 # Add ft_irc exec
 add_executable(ft_irc src/main/main.cpp)
@@ -26,5 +27,6 @@ add_executable(ft_irc src/main/main.cpp)
 target_link_libraries(ft_irc PUBLIC ft_irc_lib)
 # Set ft_containers_lib compile option
 set_target_properties(ft_irc PROPERTIES INTERFACE_LINK_LIBRARIES -Wall -Wextra -Werror -std=c++98 -g3)
+#set_target_properties(ft_irc PROPERTIES INTERFACE_LINK_LIBRARIES -std=c++98)
 
 add_subdirectory(test)

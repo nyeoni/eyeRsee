@@ -1,5 +1,4 @@
-#include "controller/EventHandler.hpp"
-
+#include "core/EventHandler.hpp"
 #include <iostream>
 
 namespace ft {

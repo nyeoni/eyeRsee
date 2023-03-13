@@ -3,16 +3,17 @@
 
 #include <set>
 #include <string>
+#include "core/Socket.hpp"
 
 namespace ft {
 
 class Channel;
 
-class Client {
-   public:
+class Client : public ConnectSocket {
+ public:
     typedef std::set<Channel *> ChannelList;
 
-   private:
+ private:
     // typedef typename std::set<Channel *>::iterator channel_iterator;
     //    int fd;				// CHECK
     std::string _nickname;  // identifier
@@ -20,7 +21,7 @@ class Client {
     std::string _realname;
     ChannelList _channels;  // channel list
 
-   public:
+ public:
     Client(/* args*/);
     Client(const std::string &nickname);
     Client(const Client &copy);

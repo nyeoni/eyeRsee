@@ -12,14 +12,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      # Cache output files in dist directory
-      - name: Setup cache
-        uses: actions/cache@v2
-        with:
-          path: test/dist
-          key: ${{ runner.os }}-makefile-${{ github.sha }}-${{ hashFiles('**/makefile') }}
-          restore-keys: |
-            ${{ runner.os }}-makefile-
-
+      # Make Project
       - name: Build
         run: make

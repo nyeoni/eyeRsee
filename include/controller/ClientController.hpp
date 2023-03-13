@@ -11,7 +11,7 @@
 #ifndef CLIENTCONTROLLER_HPP
 #define CLIENTCONTROLLER_HPP
 
-#include <map>
+#include <set>
 #include <string>
 
 namespace ft {
@@ -20,9 +20,9 @@ class Client;
 
 class ClientController {
    public:
-    typedef std::map<std::string, Client> Clients;
+    typedef std::set<Client> Clients;
     // TODO Consider client_iterator || Client *
-    typedef typename std::map<std::string, Client>::iterator client_iterator;
+    typedef typename std::set<Client>::iterator client_iterator;
 
    private:
     Clients _clients;

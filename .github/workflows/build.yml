@@ -14,4 +14,4 @@ jobs:
           fetch-depth: 0
       # Make Project
       - name: Build
-        run: make
+        run: make debug

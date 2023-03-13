@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "controller/EventHandler.hpp"
+#include "core/EventHandler.hpp"
 #include "core/Response.hpp"
 #include "core/Socket.hpp"
 #include "entity/Channel.hpp"

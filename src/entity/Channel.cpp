@@ -38,24 +38,33 @@ void Channel::setMode(int mode) {
 }
 
 // update
-void Channel::updateClientList(Client *client, bool is_operator,
-                               bool is_insert) {
-    if (is_operator) {
-        if (is_insert)
-            _operators.insert(client);
-        else
-            _operators.erase(client);
+void Channel::updateInsertClientList(Client *client) {
+    if (isOperator(client)) {
+        _operators.insert(client);
     } else {
-        if (is_insert)
-            _regulars.insert(client);
-        else
-            _regulars.erase(client);
+        _regulars.insert(client);
     }
 }
 
-bool Channel::is_invite_mode() { return (_mode & (INVITE_ONLY_T - 1)); }
-bool Channel::is_topic_mode() { return (_mode & (TOPIC_PRIV_T - 1)); }
-bool Channel::is_ban_mode() { return (_mode & (BAN_T - 1)); }
+void Channel::updateEraseClientList(Client *client) {
+    if (isOperator(client)) {
+        _operators.erase(client);
+    } else {
+        _regulars.erase(client);
+    }
+}
+
+bool Channel::isInviteMode() { return (_mode & (INVITE_ONLY_T - 1)); }
+bool Channel::isTopicMode() { return (_mode & (TOPIC_PRIV_T - 1)); }
+bool Channel::isBanMode() { return (_mode & (BAN_T - 1)); }
+bool Channel::isOperator(Client *client) {
+    client_list_iterator iter = _operators.find(client);
+
+    if (*iter)
+        return true;
+    else
+        return false;
+}
 
 bool Channel::operator==(const Channel &other) const {
     return (_name == other._name);

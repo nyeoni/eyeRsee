@@ -26,8 +26,7 @@ class Executor {
     Executor &operator=(const Executor &ref);
 
     // method
-    // TODO : findClient(int fd);  // kevent - fd, udata  -> recv -> JOIN #abc
-    // void deleteClient(std::string nickname);
+    void part(int fd, CmdLine channels);
     // void joinClient(std::string nickname, std::string channel_name);
 
     void join(int fd, CmdLine cmd_line);

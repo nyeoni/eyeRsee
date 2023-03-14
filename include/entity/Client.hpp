@@ -41,7 +41,8 @@ class Client : public ConnectSocket {
     void setRealname(const std::string &realname);
 
     // update
-    void updateChannelList(Channel *channel, bool is_insert);
+    void updateInsertChannelList(Channel *channel);
+    void updateEraseChannelList(Channel *channel);
 
     // compare operators
     bool operator==(const Client &other) const;

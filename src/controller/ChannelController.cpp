@@ -52,9 +52,15 @@ void ChannelController::updateTopic(Channel *channel,
     channel->setTopic(topic);
 }
 
-void ChannelController::updateChannel(Channel *channel, Client *client,
-                                      bool is_operator, bool is_insert) {
-    channel->updateClientList(client, is_operator, is_insert);
+void ChannelController::updateInsertChannel(Channel *channel, Client *client) {
+    channel->updateInsertClientList(client);
+}
+
+void ChannelController::updateEraseChannel(Channel *channel, Client *client) {
+    channel->updateEraseClientList(client);
+    if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
+        del(channel);
+    }
 }
 
 }  // namespace ft

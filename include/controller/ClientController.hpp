@@ -39,7 +39,8 @@ class ClientController {
     void update(Client* client, const std::string& nickname);
 
     // ClinetController -> updateChannel
-    void updateClient(Client* client, Channel* channel, bool is_insert);
+    void updateInsertClient(Client* client, Channel* channel);
+    void updateEraseClient(Client* client, Channel* channel);
 };
 
 }  // namespace ft

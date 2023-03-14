@@ -1,5 +1,7 @@
 #include "controller/Executor.hpp"
 
+#include "entity/Channel.hpp"
+
 namespace ft {
 Executor::Executor() {}
 
@@ -9,27 +11,28 @@ Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
-//// /quit -> 모든 채널에서 해당 client 삭제
-// void Executor::deleteClient(std::string nickname) {
-//     // find -> Client -> channels
+/**
+ * @brief part channels
+ *
+ * @param fd
+ * @param channels 여러 개의 channel
+ */
+void Executor::part(int fd, CmdLine channels) {
+    Client *target = client_controller.find(fd);
+    Channel *channel;
+    cmd_iterator iter = channels.begin();
 
-//    Client *client = client_controller.find(nickname);
-//    ChannelList channels;
-
-//    if (client != NULL) {
-//        client_controller.del(nickname);
-//        channels = client.getChannels();  // channel list
-//        // int channel_cnt = client.getChannels().size();
-
-//        for (channel_iterator i = channels.begin(); i != channels.end(); ++i)
-//        {
-//            // 해당 client가 가입된 channel에서 client 삭제
-//            channel_controller.delete();
-//        }
-//    }
-//    // client_controller channel list -> delete
-//    // channel_controller.delete();
-//}
+    for (; iter != channels.end(); ++iter) {  // 여러 개의 channel
+        // 하나의 channel에서 part
+        channel = channel_controller.find(*iter);
+        if (channel) {
+            client_controller.updateEraseClient(target, channel);
+            channel_controller.updateEraseChannel(channel, target);
+        } else {
+            // CHECK there are no channel name -> break?
+        }
+    }
+}
 
 // kenvent.ident -> fd, kevent.udata
 // client,channel,
@@ -51,13 +54,9 @@ void Executor::join(int fd, CmdLine cmd_line) {
             Channel *channel = channel_controller.find(*iter);
             if (channel == NULL) {
                 channel_controller.create(*iter);
-                channel_controller.updateChannel(channel, client, true,
-                                                 true);  // oeprator
-            } else {
-                channel_controller.updateChannel(channel, client, false,
-                                                 true);  // regular
             }
-            client_controller.updateClient(client, channel, true);
+            channel_controller.updateInsertChannel(channel, client);
+            client_controller.updateInsertClient(client, channel);
         }
     }
 }
@@ -65,5 +64,13 @@ void Executor::join(int fd, CmdLine cmd_line) {
 void Executor::mode(int fd, std::string channel, e_mode mode) {
     channel_controller.update(mode, channel);
 }
+// void Executor::part(int fd, CmdLine channels) {
+//     //
+//     Client *target = client_controller.find(fd);
+//     cmd_iterator iter = channels.begin();
+
+//         for
+//             client_controller.updateClient(target, );
+// }
 
 }  // namespace ft

@@ -2,6 +2,7 @@
 
 #include <utility>  // std::make_pair
 
+#include "entity/Channel.hpp"
 #include "entity/Client.hpp"
 
 namespace ft {
@@ -99,7 +100,7 @@ void ClientController::update(int fd, const std::string &nickname) {
 
     if (client) {  // valid
         if (find(nickname)) {
-            // no change
+            // no change (already exist)
         } else {
             // change nickname
             client->setNickname(nickname);
@@ -110,15 +111,18 @@ void ClientController::update(int fd, const std::string &nickname) {
 
 void ClientController::update(Client *client, const std::string &nickname) {
     if (find(nickname)) {
-        // no change
+        // no change (already exist)
     } else {
         client->setNickname(nickname);
     }
 }
 
-void ClientController::updateClient(Client *client, Channel *channel,
-                                    bool is_insert) {
-    client->updateChannelList(channel, is_insert);
+void ClientController::updateInsertClient(Client *client, Channel *channel) {
+    client->updateInsertChannelList(channel);
+}
+
+void ClientController::updateEraseClient(Client *client, Channel *channel) {
+    client->updateEraseChannelList(channel);
 }
 
 }  // namespace ft

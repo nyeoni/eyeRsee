@@ -1,6 +1,6 @@
 #include "controller/ClientController.hpp"
 
-#include <utiltiy>  // std::make_pair
+#include <utility>  // std::make_pair
 
 #include "entity/Client.hpp"
 
@@ -114,6 +114,11 @@ void ClientController::update(Client *client, const std::string &nickname) {
     } else {
         client->setNickname(nickname);
     }
+}
+
+void ClientController::updateClient(Client *client, Channel *channel,
+                                    bool is_insert) {
+    client->updateChannelList(channel, is_insert);
 }
 
 }  // namespace ft

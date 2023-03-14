@@ -6,14 +6,15 @@
 namespace ft {
 
 class Channel;
+class Client;
 
 class ChannelController {
    public:
-    typedef std::string &Key;
-    typedef Channel Val;
-    typedef std::map<Key, Val> Channels;
+    // std::string & 되나
+    typedef std::map<std::string, Channel> Channels;
     // TODO Consider client_iterator || Client *
     typedef Channels::iterator client_iterator;
+    // typedef std::pair<client_iterator, bool>;
 
    private:
     Channels _channels;
@@ -24,8 +25,8 @@ class ChannelController {
     ~ChannelController();
     ChannelController &operator=(const ChannelController &ref);
 
-    Channel *find(const Channel *channel) const;
-    Channel *find(const std::string &name) const;
+    Channel *find(const Channel *channel);
+    Channel *find(const std::string &name);
 
     void create(const Channel *channel);
     void create(const std::string &name);
@@ -33,9 +34,13 @@ class ChannelController {
     void del(const Channel *channel);
     void del(const std::string &name);
 
-    void mod(int mode, Channel *channel);
-    void mod(int mode, const std::string &name);
-    void modTopic(Channel *channel, const std::string &name);
+    void update(int mode, Channel *channel);
+    void update(int mode, const std::string &name);
+    void updateTopic(Channel *channel, const std::string &name);
+
+    // update
+    void updateChannel(Channel *channel, Client *client, bool is_operator,
+                       bool is_insert);
 };
 
 }  // namespace ft

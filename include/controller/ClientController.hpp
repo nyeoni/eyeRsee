@@ -8,6 +8,7 @@
 namespace ft {
 
 class Client;
+class Channel;
 
 class ClientController {
    public:
@@ -37,12 +38,8 @@ class ClientController {
     void update(int fd, const std::string& nickname);
     void update(Client* client, const std::string& nickname);
 
-    // find duplicated nickname
-
     // ClinetController -> updateChannel
-    //
-
-    // ChannelController -> updateClient
+    void updateClient(Client* client, Channel* channel, bool is_insert);
 };
 
 }  // namespace ft

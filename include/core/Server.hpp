@@ -4,10 +4,10 @@
 #include <string>
 #include <vector>
 
+#include "Parser.hpp"
+#include "controller/Executor.hpp"
 #include "core/EventHandler.hpp"
 #include "core/Socket.hpp"
-#include "Parser.hpp"
-#include "controller/Executer.hpp"
 
 namespace ft {
 
@@ -22,14 +22,14 @@ struct Env {
 };
 
 class Server : public EventHandler {
- private:
+   private:
     ListenSocket _listen_socket;
 
     Env _env;
     Parser _parser;
-    Executer _executer;
+    Executor _executor;
 
- public:
+   public:
     Server();
     ~Server();
 

@@ -30,6 +30,8 @@ class Executor {
     // void joinClient(std::string nickname, std::string channel_name);
 
     void join(int fd, CmdLine cmd_line);
+
+    void pass(Client *client);
 };
 
 // Executor -> Server data update

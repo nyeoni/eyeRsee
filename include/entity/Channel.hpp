@@ -19,17 +19,17 @@ enum e_type {
 };
 
 class Channel {
- public:
+   public:
     typedef std::set<Client *> ClientList;
 
- private:
+   private:
     std::string _name;
     std::string _topic;
     ClientList _regulars;
     ClientList _operators;
     int _mode;
 
- public:
+   public:
     Channel();
     Channel(const std::string &name);
     Channel(const Channel &copy);
@@ -46,7 +46,10 @@ class Channel {
     void setTopic(const std::string &topic);
     // void setRegulars(const Client *client);
     // void setOperators(const Client *client);
-    void setMode(int add_mode, int del_mode);
+    void setMode(int mode);
+
+    // update
+    void updateClientList(Client *client, bool is_operator, bool is_insert);
 
     bool operator==(const Channel &other) const;
     bool operator!=(const Channel &other) const;

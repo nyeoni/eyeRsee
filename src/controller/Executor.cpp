@@ -48,32 +48,18 @@ void Executor::join(int fd, CmdLine cmd_line) {
     cmd_iterator iter = cmd_line.begin();
     for (; iter != cmd_line.end(); iter++) {
         if (iter->front() == '#') {
-            Channel *channel;
-            channel = channel_controller.find(*iter);
-            if (channel)
-                // conroller    *(set<Client>.begin())
-                // Client.channels
-                // conroller    set<Client>
-                client_controller.updateChannel(client_pk, Channel);
-            client->channels;
-            else c;
+            Channel *channel = channel_controller.find(*iter);
+            if (channel == NULL) {
+                channel_controller.create(*iter);
+                channel_controller.updateChannel(channel, client, true,
+                                                 true);  // oeprator
+            } else {
+                channel_controller.updateChannel(channel, client, false,
+                                                 true);  // regular
+            }
+            client_controller.updateClient(client, channel, true);
         }
     }
-
-    // SECTION
-    channel_controller.create();  //_channels.insert()
-
-    // Channel *tmp = channel_controller.find();
-    // if (tmp != NULL) {      // 없다면
-    //     //channel 생성
-    //     channel_controller.create();
-    //     // channel 에 client 등록
-    //     // client_controller.create();
-    // } else {
-    //     // 있다면
-    //     // tmp->ClientList.insert();
-
-    // }
 }
 
 }  // namespace ft

@@ -28,9 +28,28 @@ int Channel::getMode() const { return _mode; }
 
 void Channel::setName(const std::string &name) { _name = name; }
 void Channel::setTopic(const std::string &topic) { _topic = topic; }
-void Channel::setMode(int add_mode , int del_mode) {
-    // TODO : flag bit operate
-    _mode = add_mode;
+void Channel::setMode(int mode) {
+    if (mode % 2)  // FALSE flag
+        _mode |= 1 < mode;
+    else  // TRUE flag
+        // TODO : flag bit operate
+        _mode &= 1 < mode;  // 여기 고치기
+}
+
+// update
+void Channel::updateClientList(Client *client, bool is_operator,
+                               bool is_insert) {
+    if (is_operator) {
+        if (is_insert)
+            _operators.insert(client);
+        else
+            _operators.erase(client);
+    } else {
+        if (is_insert)
+            _regulars.insert(client);
+        else
+            _regulars.erase(client);
+    }
 }
 
 bool Channel::operator==(const Channel &other) const {

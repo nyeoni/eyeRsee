@@ -12,16 +12,26 @@ Client::~Client() {}
 Client &Client::operator=(const Client &ref) { return (*this); }
 
 // getter
-std::set<Channel *> Client::getChannels() const { return _channels; }
+Client::ChannelList Client::getChannels() const { return _channel_list; }
 std::string Client::getNickname() const { return _nickname; }
 std::string Client::getHostname() const { return _hostname; }
 std::string Client::getRealname() const { return _realname; }
 
 // setter
-void Client::setChannels(Channel *channel) {}
 void Client::setNickname(const std::string &nickname) { _nickname = nickname; }
 void Client::setHostname(const std::string &hostname) { _hostname = hostname; }
 void Client::setRealname(const std::string &realname) { _realname = realname; }
+
+// update
+void Client::updateChannelList(Channel *channel, bool is_insert) {
+    if (is_insert) {
+        // insert
+        _channel_list.insert(channel);
+    } else {
+        // erase
+        _channel_list.erase(channel);
+    }
+}
 
 // compare operators
 bool Client::operator==(const Client &other) const {

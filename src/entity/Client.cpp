@@ -19,7 +19,9 @@ std::string Client::getRealname() const { return _realname; }
 
 // setter
 void Client::setNickname(const std::string &nickname) { _nickname = nickname; }
+void Client::setUsername(const std::string &username) { _username = username; }
 void Client::setHostname(const std::string &hostname) { _hostname = hostname; }
+void Client::setServer(const std::string &server) { _server = server; }
 void Client::setRealname(const std::string &realname) { _realname = realname; }
 
 // update

@@ -131,4 +131,6 @@ void ClientController::eraseChannel(Client *client, Channel *channel) {
     client->eraseChannel(channel);
 }
 
+void ClientController::clearChannel(Client *client) { client->clearChannel(); }
+
 }  // namespace ft

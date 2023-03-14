@@ -12,7 +12,7 @@ Client::~Client() {}
 Client &Client::operator=(const Client &ref) { return (*this); }
 
 // getter
-Client::ChannelList Client::getChannels() const { return _channel_list; }
+Client::ChannelList Client::getChannelList() const { return _channel_list; }
 std::string Client::getNickname() const { return _nickname; }
 std::string Client::getHostname() const { return _hostname; }
 std::string Client::getRealname() const { return _realname; }
@@ -29,6 +29,8 @@ void Client::insertInviteChannel(Channel *channel) {
 }
 
 void Client::eraseChannel(Channel *channel) { _channel_list.erase(channel); }
+
+void Client::clearChannel() { _channel_list.clear(); }
 
 // compare operators
 bool Client::operator==(const Client &other) const {

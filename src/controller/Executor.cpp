@@ -96,4 +96,13 @@ void Executor::invite(int fd, std::string nickname, std::string channel){
     }
 }
 
+void Executor::quit(int fd, std::string msg) {
+    // 모든 채널에서 quit && send message
+    Client *client = client_controller.find(fd);
+
+    client_controller.clearChannel(client);
+
+    // TODO send messages (PRIVMSG)
+    // channel_controller.
+}
 }  // namespace ft

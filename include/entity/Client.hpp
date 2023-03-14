@@ -31,7 +31,7 @@ class Client : public ConnectSocket {
     Client &operator=(const Client &ref);
 
     // getter
-    ChannelList getChannels() const;
+    ChannelList getChannelList() const;
     std::string getNickname() const;
     std::string getHostname() const;
     std::string getRealname() const;
@@ -46,6 +46,7 @@ class Client : public ConnectSocket {
     void insertInviteChannel(Channel *channel);
 
     void eraseChannel(Channel *channel);
+    void clearChannel();
 
     // compare operators
     bool operator==(const Client &other) const;

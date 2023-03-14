@@ -57,13 +57,13 @@ void ListenSocket::createSocket(const int &port) {
 /*                  ConnectSocket                   */
 /****************************************************/
 
-ConnectSocket::ConnectSocket() : SocketBase(-1) {
-//    recv_buf = new char[BUF_SIZE];
+ConnectSocket::ConnectSocket() : SocketBase(-1), _is_release(false) {
+    //    recv_buf = new char[BUF_SIZE];
 }
 ConnectSocket::ConnectSocket(const ConnectSocket &copy)
     : SocketBase(copy.getFd()) {}
 ConnectSocket::~ConnectSocket() {
-//    free(recv_buf);
+    if (_is_release) _fd = -1;
 }
 ConnectSocket &ConnectSocket::operator=(const ConnectSocket &ref) { return (*this); }
 
@@ -78,5 +78,7 @@ void ConnectSocket::createSocket(const int &listen_fd) {
     std::cout << "New client # " << _fd << " from " << inet_ntoa(in.sin_addr)
               << ':' << ntohs(in.sin_port) << std::endl;
 }
+
+void ConnectSocket::releaseSocket() { _is_release = true; }
 
 }  // namespace ft

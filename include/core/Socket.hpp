@@ -12,10 +12,10 @@
 namespace ft {
 
 class SocketBase {
- protected:
+   protected:
     int _fd;
 
- public:
+   public:
     SocketBase();
     explicit SocketBase(int fd);
     SocketBase(const SocketBase &copy);
@@ -28,23 +28,26 @@ class SocketBase {
 };
 
 class ListenSocket : public SocketBase {
- public:
+   public:
     void createSocket(const int &port);
 };
 
 class ConnectSocket : public SocketBase {
- public:
+   public:
     char recv_buf[BUF_SIZE];
     // char *recv_buf[512]
- protected:
-//    std::queue<Response> send_queue;
- public:
+   protected:
+    //    std::queue<Response> send_queue;
+    bool _is_release;
+
+   public:
     ConnectSocket();
     ConnectSocket(const ConnectSocket &copy);
     virtual ~ConnectSocket();
     ConnectSocket &operator=(const ConnectSocket &ref);
 
     void createSocket(const int &listen_fd);
+    void releaseSocket();
 };
 
 }  // namespace ft

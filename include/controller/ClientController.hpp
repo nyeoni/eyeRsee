@@ -35,8 +35,8 @@ class ClientController {
     void del(const std::string& nickname);
     void del(int fd);
 
-    void update(int fd, const std::string& nickname);
-    void update(Client* client, const std::string& nickname);
+    void updateNickname(int fd, const std::string& nickname);
+    void updateNickname(Client* client, const std::string& nickname);
 
     /**
      * @brief insert Channel to Client's _channelList

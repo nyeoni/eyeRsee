@@ -97,7 +97,7 @@ void ClientController::del(int fd) {
  * @param fd
  * @param nickname
  */
-void ClientController::update(int fd, const std::string &nickname) {
+void ClientController::updateNickname(int fd, const std::string &nickname) {
     Client *client = find(fd);
 
     if (client) {  // valid
@@ -111,7 +111,7 @@ void ClientController::update(int fd, const std::string &nickname) {
     // TODO error handling (잘못된 fd일 경우)
 }
 
-void ClientController::update(Client *client, const std::string &nickname) {
+void ClientController::updateNickname(Client *client, const std::string &nickname) {
     if (find(nickname)) {
         // no change (already exist)
     } else {

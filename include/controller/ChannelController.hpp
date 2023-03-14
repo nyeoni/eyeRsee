@@ -34,9 +34,9 @@ class ChannelController {
     void del(const Channel *channel);
     void del(const std::string &name);
 
-    void update(int mode, Channel *channel);
-    void update(int mode, const std::string &name);
-    void updateTopic(Channel *channel, const std::string &name);
+    void updateMode(int mode, Channel *channel);
+    void updateMode(int mode, const std::string &name);
+    void updateTopic(Client *client, Channel *channel, const std::string &topic);
 
     /**
      * @brief insert Client to Channel's _clientList

@@ -61,8 +61,14 @@ bool Channel::isInviteMode() { return (_mode & (INVITE_ONLY_T - 1)); }
 bool Channel::isTopicMode() { return (_mode & (TOPIC_PRIV_T - 1)); }
 bool Channel::isBanMode() { return (_mode & (BAN_T - 1)); }
 
-bool Channel::isOperator(Client *client) {
+bool Channel::isOnChannel(Client *client){
+    return (isOperator(client) || isRegular(client));
+}
+bool Channel::isOperator(Client *client){
     return _operators.find(client) != _operators.end() ? true : false;
+}
+bool Channel::isRegular(Client *client){
+    return _regulars.find(client) != _regulars.end() ? true : false;
 }
 
 bool Channel::operator==(const Channel &other) const {

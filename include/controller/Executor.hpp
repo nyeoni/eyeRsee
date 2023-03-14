@@ -31,7 +31,7 @@ class Executor {
 
     void join(int fd, CmdLine cmd_line);
     void mode(int fd, std::string channel, e_mode mode); // std::string info
-
+    void topic(int fd, std::string channel, std::string topic); // fd -> client ...
     void pass(Client *client);
 };
 

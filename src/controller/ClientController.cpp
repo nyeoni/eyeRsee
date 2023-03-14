@@ -1,5 +1,7 @@
 #include "controller/ClientController.hpp"
 
+#include <utiltiy>  // std::make_pair
+
 #include "entity/Client.hpp"
 
 namespace ft {
@@ -15,26 +17,46 @@ ClientController &ClientController::operator=(const ClientController &ref) {
     return (*this);
 }
 
-// map<std::string, Client>
-// nickname,
 /**
  * @brief find client in _clients
  *
  * @param client
  * @return ClientController::client_iterator
  */
-ClientController::client_iterator ClientController::findClient(Client *client) {
-    // Client *ClientController::findClient(Client *client) {
-    // return &(*(_clients.find(tmp)));
-    client_iterator iter = _clients.find(*client);
-    return iter;
+Client *ClientController::find(const int fd) {
+    client_iterator iter = _clients.find(fd);
+    return &(iter->second);
 }
 
-ClientController::client_iterator ClientController::findClient(
-    const std::string &nickname) {
-    Client tmp(nickname);
-    client_iterator iter = _clients.find(tmp);
-    return iter;
+Client *ClientController::find(const Client *client) {
+    client_iterator iter = _clients.find(client->getFd());
+    return &(iter->second);
+}
+
+// check duplicated nickname
+Client *ClientController::find(const std::string &nickname) {
+    client_iterator iter = _clients.begin();
+
+    for (; iter != _clients.end(); ++iter) {
+        if (iter->second.getNickname() == nickname) {
+            return &(iter->second);
+        }
+    }
+
+    return NULL;
+}
+
+/**
+ * @brief create client to _clients
+ *
+ * @param client
+ */
+void ClientController::create(const Client *client) {
+    _clients.insert(std::make_pair(client->getFd(), *client));
+}
+
+void ClientController::create(int fd, const Client *client) {
+    _clients.insert(std::make_pair(fd, *client));
 }
 
 /**
@@ -42,21 +64,56 @@ ClientController::client_iterator ClientController::findClient(
  *
  * @param client
  */
-void ClientController::deleteClient(Client *client) { _clients.erase(*client); }
-void ClientController::deleteClient(const std::string &nickname) {
-    Client tmp(nickname);
-    _clients.erase(tmp);
+void ClientController::del(const Client *client) {
+    _clients.erase(client->getFd());
+}
+
+void ClientController::del(const std::string &nickname) {
+    Client *target = find(nickname);
+
+    if (target) {
+        _clients.erase(target->getFd());
+    } else {
+        // TODO there are no `nickname`
+    }
+}
+
+void ClientController::del(int fd) {
+    Client *target = find(fd);
+
+    if (target) {
+        _clients.erase(target->getFd());
+    } else {
+        // TODO there are no `nickname`
+    }
 }
 
 /**
- * @brief add client to _clients
+ * @brief update nickname
  *
- * @param client
+ * @param fd
+ * @param nickname
  */
-void ClientController::addClient(Client *client) { _clients.insert(*client); }
-void ClientController::addClient(const std::string &nickname) {
-    Client tmp(nickname);
-    _clients.insert(tmp);
+void ClientController::update(int fd, const std::string &nickname) {
+    Client *client = find(fd);
+
+    if (client) {  // valid
+        if (find(nickname)) {
+            // no change
+        } else {
+            // change nickname
+            client->setNickname(nickname);
+        }
+    }
+    // TODO error handling (잘못된 fd일 경우)
+}
+
+void ClientController::update(Client *client, const std::string &nickname) {
+    if (find(nickname)) {
+        // no change
+    } else {
+        client->setNickname(nickname);
+    }
 }
 
 }  // namespace ft

@@ -1,36 +1,37 @@
 #ifndef CHANNELCONTROLLER_HPP
 #define CHANNELCONTROLLER_HPP
 
-#include <set>
+#include <map>
 
 namespace ft {
 
 class Channel;
 
 class ChannelController {
- private:
-    typedef std::set<Channel> Channels;
-    // typedef std::set<Channel *> ChannelList;
-    typedef Channels::iterator channel_iterator;
+   public:
+    typedef std::string &Key;
+    typedef Channel Val;
+    typedef std::map<Key, Val> Channels;
+    // TODO Consider client_iterator || Client *
+    typedef Channels::iterator client_iterator;
 
-    ChannelController(/* args*/);
- public:
+   private:
     Channels _channels;
 
+   public:
+    ChannelController(/* args*/);
     ChannelController(const ChannelController &copy);
     ~ChannelController();
     ChannelController &operator=(const ChannelController &ref);
 
-    channel_iterator find(const Channel *channel) const;
-    channel_iterator find(const std::string &name) const;
-    //Channel *find(const Channel *channel) const;
-    //Channel *find(const std::string &name) const;
+    Channel *find(const Channel *channel) const;
+    Channel *find(const std::string &name) const;
 
-    void add(const Channel *channel);
-    void add(const std::string &name);
+    void create(const Channel *channel);
+    void create(const std::string &name);
 
-    void del(Channel *channel);         // const
-    void del(const std::string &name);  // const
+    void del(const Channel *channel);
+    void del(const std::string &name);
 
     void mod(int mode, Channel *channel);
     void mod(int mode, const std::string &name);

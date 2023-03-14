@@ -17,37 +17,24 @@ ChannelController &ChannelController::operator=(const ChannelController &ref) {
     return (*this);
 }
 
-ChannelController::channel_iterator ChannelController::find(
-    const Channel *channel) const {
-    return (_channels.find(*channel));
+Channel *ChannelController::find(const Channel *channel) const {
+    return const_cast<Channel *>(&(*(_channels.find(*channel))));
 }
 
-ChannelController::channel_iterator ChannelController::find(
-    const std::string &name) const {
+Channel *ChannelController::find(const std::string &name) const {
     Channel tmp(name);
-    return (_channels.find(tmp));
+    return const_cast<Channel *>(&(*(_channels.find(tmp))));
 }
 
-// Channel *ChannelController::find(const Channel *x) const {
-//     // channel_iterator iter = _channels.find(*channel);
-//     // return static_cast<Channel *>(&(*(iter)));
-//     return (Channel *)&(*(_channels.find(*x)));
-// }
-
-// Channel *ChannelController::find(const std::string &name) const {
-//     Channel tmp(name);
-//     return (Channel *)&(*(_channels.find(tmp)));
-// }
-
-void ChannelController::add(const Channel *channel) {
+void ChannelController::create(const Channel *channel) {
     _channels.insert(*channel);
 }
-void ChannelController::add(const std::string &name) {
+void ChannelController::create(const std::string &name) {
     Channel tmp(name);
     _channels.insert(tmp);
 }
 
-void ChannelController::del(Channel *channel) {  // const
+void ChannelController::del(const Channel *channel) {  // const
     _channels.erase(*channel);
 }
 void ChannelController::del(const std::string &name) {
@@ -63,9 +50,9 @@ void ChannelController::mod(int mode, Channel *channel) {
         case T:
             channel->setMode(mode, 0);
             break;
-        //case DT:
-        //    channel->setMode(0, mode);
-        //    break;
+        // case DT:
+        //     channel->setMode(0, mode);
+        //     break;
         default:
             break;
     }

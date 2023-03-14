@@ -1,41 +1,44 @@
-#ifndef EXECUTER_HPP
-#define EXECUTER_HPP
+#ifndef EXECUTOR_HPP
+#define EXECUTOR_HPP
 
 #include <string>
+#include <vector>
 
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
 
 namespace ft {
 
-// class ChannelController;
-// class ClientController;
-class Executer {
- private:
-//    ChannelController channel_controller;
+class Executor {
+   public:
+    typedef std::vector<std::string> CmdLine;
+    typedef std::vector<std::string>::iterator cmd_iterator;
+
+   private:
+    ChannelController channel_controller;
     ClientController client_controller;
 
- public:
-    Executer();
-    Executer(const Executer &copy);
-    ~Executer();
-    Executer &operator=(const Executer &ref);
-
-    void connect(Client *client);
+   public:
+    Executor(/* args*/);
+    Executor(const Executor &copy);
+    ~Executor();
+    Executor &operator=(const Executor &ref);
 
     // method
     // TODO : findClient(int fd);  // kevent - fd, udata  -> recv -> JOIN #abc
-//    void deleteClient(std::string nickname);
-//    void joinClient(std::string nickname, std::string channel_name);
+    // void deleteClient(std::string nickname);
+    // void joinClient(std::string nickname, std::string channel_name);
+
+    void join(int fd, CmdLine cmd_line);
 };
 
-// Executer -> Server data update
+// Executor -> Server data update
 // recv command 수행 PART/QUIT
 
 // join, part, mode, ... cmds
 // switch(cmd)
 // case: join
-// Executer.joinClient()
+// Executor.joinClient()
 
 }  // namespace ft
 

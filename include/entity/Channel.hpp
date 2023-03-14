@@ -10,7 +10,7 @@ namespace ft {
 
 class Client;
 
-enum e_mode {
+enum e_type {
     SECRET = 1,
     PRIVATE = 1 < 1,
     PUBLIC = 1 < 2,
@@ -19,17 +19,17 @@ enum e_mode {
 };
 
 class Channel {
-   public:
+ public:
     typedef std::set<Client *> ClientList;
 
-   private:
+ private:
     std::string _name;
     std::string _topic;
     ClientList _regulars;
     ClientList _operators;
     int _mode;
 
-   public:
+ public:
     Channel();
     Channel(const std::string &name);
     Channel(const Channel &copy);

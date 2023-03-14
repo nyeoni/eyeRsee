@@ -8,15 +8,15 @@ namespace ft {
 class Channel;
 
 class ChannelController {
-   public:
+ private:
     typedef std::set<Channel> Channels;
     // typedef std::set<Channel *> ChannelList;
     typedef Channels::iterator channel_iterator;
 
-   private:
+    ChannelController(/* args*/);
+ public:
     Channels _channels;
 
-    ChannelController(/* args*/);
     ChannelController(const ChannelController &copy);
     ~ChannelController();
     ChannelController &operator=(const ChannelController &ref);

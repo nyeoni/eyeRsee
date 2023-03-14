@@ -1,16 +1,13 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <sys/event.h>
-
 #include <string>
 #include <vector>
 
 #include "core/EventHandler.hpp"
-#include "core/Response.hpp"
 #include "core/Socket.hpp"
-#include "entity/Channel.hpp"
-#include "entity/Client.hpp"
+#include "Parser.hpp"
+#include "controller/Executer.hpp"
 
 namespace ft {
 
@@ -25,17 +22,14 @@ struct Env {
 };
 
 class Server : public EventHandler {
-   private:
-    typedef std::vector<ConnectSocket> SocketList;
+ private:
+    ListenSocket _listen_socket;
 
     Env _env;
-    ListenSocket _listen_socket;
-    // ConnectSocket *_connect_socket;  // new ft::max_num::
-    // new [10]
-    // TODO :
-    SocketList _socket_list;
+    Parser _parser;
+    Executer _executer;
 
-   public:
+ public:
     Server();
     ~Server();
 
@@ -45,8 +39,9 @@ class Server : public EventHandler {
 
     // handler methods
     void handleAccept();
+    void handleConnect(int event_idx);
     void handleRead(int event_idx);
-    void handleExcute(int event_idx);
+    void handleExecute(int event_idx);
     void handleWrite(int event_idx);
 };
 

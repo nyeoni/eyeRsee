@@ -30,8 +30,10 @@ class Executor {
     // void joinClient(std::string nickname, std::string channel_name);
 
     void join(int fd, CmdLine cmd_line);
-    void mode(int fd, std::string channel, e_mode mode); // std::string info
-    void topic(int fd, std::string channel, std::string topic); // fd -> client ...
+    void mode(int fd, std::string channel, e_mode mode);  // std::string info
+    void topic(int fd, std::string channel,
+               std::string topic);  // fd -> client ...
+    void invite(int fd, std::string nickname, std::string channel);
     void pass(Client *client);
 };
 

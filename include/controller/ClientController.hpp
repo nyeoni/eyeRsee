@@ -42,6 +42,7 @@ class ClientController {
      * @brief insert Channel to Client's _channelList
      */
     void insertChannel(Client* client, Channel* channel);
+    void insertInviteChannel(Client* client, Channel* channel);
 
     /**
      * @brief erase Channel to Client's _channelList

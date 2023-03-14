@@ -20,7 +20,8 @@ class Client : public ConnectSocket {
     std::string _nickname;  // identifier
     std::string _hostname;
     std::string _realname;
-    ChannelList _channel_list;  // channel list
+    ChannelList _channel_list;    // channel list
+    ChannelList _i_channel_list;  // invite channel list
 
    public:
     Client(/* args*/);
@@ -42,6 +43,8 @@ class Client : public ConnectSocket {
 
     // update
     void insertChannel(Channel *channel);
+    void insertInviteChannel(Channel *channel);
+
     void eraseChannel(Channel *channel);
 
     // compare operators

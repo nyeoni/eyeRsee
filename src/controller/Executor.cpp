@@ -1,6 +1,6 @@
 #include "controller/Executor.hpp"
 
-#include "entity/Channel.hpp"
+//#include "entity/Channel.hpp"
 
 namespace ft {
 Executor::Executor() {}
@@ -106,4 +106,26 @@ void Executor::quit(int fd, std::string msg) {
     client_controller.del(fd);
     channel_controller.eraseClient(client);
 }
+void Executor::kick(int fd, std::string channel, std::string nickname, std::string comment) {
+    Client *kicker = client_controller.find(fd);
+    Client *client = client_controller.find(nickname);
+    Channel *target = channel_controller.find(channel);
+    if (target == NULL) {
+        // No such channel
+        return;
+    }
+    if (client == NULL) {
+        // No such user
+        return;
+    }
+    if (channel_controller.hasPermission(target, kicker)){
+        channel_controller.eraseClient(target, client);
+        client_controller.eraseChannel(client, target);
+        // privmsg();
+    }
+    else {
+        // error - hasPermission can generate error message code
+    }
+}
+
 }  // namespace ft

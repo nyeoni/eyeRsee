@@ -35,6 +35,8 @@ class Executor {
                std::string topic);  // fd -> client ...
     void invite(int fd, std::string nickname, std::string channel);
 
+    void kick(int fd, std::string channel, std::string nickname,
+              std::string comment);
     void pass(Client *client);
 
     void quit(int fd, std::string msg);

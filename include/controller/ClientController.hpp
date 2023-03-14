@@ -48,11 +48,6 @@ class ClientController {
      * @brief erase Channel to Client's _channelList
      */
     void eraseChannel(Client* client, Channel* channel);
-
-    /**
-     * @brief erase all of the Channel to Client's _channelList
-     */
-    void clearChannel(Client* client);
 };
 
 }  // namespace ft

@@ -111,7 +111,8 @@ void ClientController::updateNickname(int fd, const std::string &nickname) {
     // TODO error handling (잘못된 fd일 경우)
 }
 
-void ClientController::updateNickname(Client *client, const std::string &nickname) {
+void ClientController::updateNickname(Client *client,
+                                      const std::string &nickname) {
     if (find(nickname)) {
         // no change (already exist)
     } else {
@@ -130,7 +131,5 @@ void ClientController::insertInviteChannel(Client *client, Channel *channel) {
 void ClientController::eraseChannel(Client *client, Channel *channel) {
     client->eraseChannel(channel);
 }
-
-void ClientController::clearChannel(Client *client) { client->clearChannel(); }
 
 }  // namespace ft

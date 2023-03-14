@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "entity/Channel.hpp"
+#include "entity/Client.hpp"
 
 namespace ft {
 ChannelController::ChannelController() {}
@@ -73,14 +74,12 @@ void ChannelController::updateTopic(Client *client, Channel *channel,
 }
 
 bool ChannelController::hasPermission(Channel *channel, Client *client) {
-    if (channel->isOperator(client)){
+    if (channel->isOperator(client)) {
         // client->insertIChannel();
         return true;
-    }
-    else if (channel->isRegular(client)){
+    } else if (channel->isRegular(client)) {
         // #name You must be a channel op or higher to send an invite.
-    }
-    else{
+    } else {
         // you are not on channel
     }
     // channel->insertClient(client, true);
@@ -96,6 +95,15 @@ void ChannelController::eraseClient(Channel *channel, Client *client) {
     channel->eraseClient(client);
     if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
         del(channel);
+    }
+}
+
+void ChannelController::eraseClient(Client *client) {
+    Client::ChannelList channel_list = client->getChannelList();
+    Client::channel_list_ieterator iter = channel_list.begin();
+
+    for (; iter != channel_list.end(); ++iter) {
+        eraseClient(*iter, client);
     }
 }
 

@@ -77,15 +77,15 @@ void Executor::topic(int fd, std::string channel, std::string topic) {
     }
 }
 
-void Executor::invite(int fd, std::string nickname, std::string channel){
+void Executor::invite(int fd, std::string nickname, std::string channel) {
     Client *invitor = client_controller.find(fd);
     Client *client = client_controller.find(nickname);
     Channel *target = channel_controller.find(channel);
-    if (target == NULL){
+    if (target == NULL) {
         // No such channel
-        return ;
+        return;
     }
-    if (client == NULL){
+    if (client == NULL) {
         // No such user
         return;
     }
@@ -100,9 +100,10 @@ void Executor::quit(int fd, std::string msg) {
     // 모든 채널에서 quit && send message
     Client *client = client_controller.find(fd);
 
-    client_controller.clearChannel(client);
-
     // TODO send messages (PRIVMSG)
     // channel_controller.
+
+    client_controller.del(fd);
+    channel_controller.eraseClient(client);
 }
 }  // namespace ft

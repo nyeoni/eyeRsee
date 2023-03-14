@@ -13,6 +13,7 @@ class Channel;
 class Client : public ConnectSocket {
    public:
     typedef std::set<Channel *> ChannelList;
+    typedef std::set<Channel *>::iterator channel_list_ieterator;
 
    private:
     // typedef typename std::set<Channel *>::iterator channel_iterator;
@@ -46,7 +47,6 @@ class Client : public ConnectSocket {
     void insertInviteChannel(Channel *channel);
 
     void eraseChannel(Channel *channel);
-    void clearChannel();
 
     // compare operators
     bool operator==(const Client &other) const;

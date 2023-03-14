@@ -30,8 +30,6 @@ void Client::insertInviteChannel(Channel *channel) {
 
 void Client::eraseChannel(Channel *channel) { _channel_list.erase(channel); }
 
-void Client::clearChannel() { _channel_list.clear(); }
-
 // compare operators
 bool Client::operator==(const Client &other) const {
     return _nickname == other._nickname;

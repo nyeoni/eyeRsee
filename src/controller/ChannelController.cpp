@@ -52,8 +52,9 @@ void ChannelController::updateTopic(Channel *channel,
     channel->setTopic(topic);
 }
 
-void ChannelController::updateInsertChannel(Channel *channel, Client *client) {
-    channel->updateInsertClientList(client);
+void ChannelController::updateInsertChannel(Channel *channel, Client *client,
+                                            bool is_operator) {
+    channel->updateInsertClientList(client, is_operator);
 }
 
 void ChannelController::updateEraseChannel(Channel *channel, Client *client) {

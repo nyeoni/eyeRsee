@@ -54,8 +54,10 @@ void Executor::join(int fd, CmdLine cmd_line) {
             Channel *channel = channel_controller.find(*iter);
             if (channel == NULL) {
                 channel_controller.create(*iter);
+                channel_controller.updateInsertChannel(channel, client, true);
+            } else {
+                channel_controller.updateInsertChannel(channel, client, false);
             }
-            channel_controller.updateInsertChannel(channel, client);
             client_controller.updateInsertClient(client, channel);
         }
     }

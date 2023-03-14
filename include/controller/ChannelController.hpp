@@ -39,7 +39,8 @@ class ChannelController {
     void updateTopic(Channel *channel, const std::string &name);
 
     // update
-    void updateInsertChannel(Channel *channel, Client *client);
+    void updateInsertChannel(Channel *channel, Client *client,
+                             bool is_operator);
     void updateEraseChannel(Channel *channel, Client *client);
 
     // void updateChannel(Channel *channel, Client *client, bool is_insert);

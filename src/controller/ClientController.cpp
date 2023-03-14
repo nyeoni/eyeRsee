@@ -61,6 +61,12 @@ void ClientController::create(int fd, const Client *client) {
     _clients.insert(std::make_pair(fd, *client));
 }
 
+Client *ClientController::create(int fd) {
+    Client client;
+    pair p = _clients.insert(std::make_pair(fd, client));
+    return &(p.first->second);
+}
+
 /**
  * @brief delete client from _clients
  *

@@ -7,6 +7,7 @@
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
 #include "core/Type.hpp"  // ChannelController.hpp 로 이사
+#include "core/Udata.hpp"
 
 namespace ft {
 
@@ -26,6 +27,7 @@ class Executor {
     Executor &operator=(const Executor &ref);
 
     // method
+    Client *newClient(int listen_fd);
     void part(int fd, CmdLine channels);
     // void joinClient(std::string nickname, std::string channel_name);
 

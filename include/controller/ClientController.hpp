@@ -14,6 +14,7 @@ class ClientController {
    public:
     typedef std::map<int, Client> Clients;
     typedef Clients::iterator client_iterator;
+    typedef std::pair<client_iterator, bool> pair;
 
    private:
     Clients _clients;
@@ -30,6 +31,7 @@ class ClientController {
 
     void create(const Client* client);
     void create(int fd, const Client* client);
+    Client* create(int fd);
 
     void del(const Client* client);
     void del(const std::string& nickname);

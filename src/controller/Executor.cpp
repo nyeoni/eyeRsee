@@ -1,6 +1,7 @@
 #include "controller/Executor.hpp"
 
-//#include "entity/Channel.hpp"
+#include "entity/Channel.hpp"
+#include "entity/Client.hpp"
 
 namespace ft {
 Executor::Executor() {}
@@ -10,6 +11,10 @@ Executor::Executor(const Executor &copy) { *this = copy; }
 Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
+
+Client *Executor::newClient(int listen_fd) {
+    return client_controller.create(listen_fd);
+}
 
 /**
  * @brief part channels

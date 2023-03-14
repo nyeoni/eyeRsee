@@ -77,4 +77,23 @@ void Executor::topic(int fd, std::string channel, std::string topic) {
     }
 }
 
+void Executor::invite(int fd, std::string nickname, std::string channel){
+    Client *invitor = client_controller.find(fd);
+    Client *client = client_controller.find(nickname);
+    Channel *target = channel_controller.find(channel);
+    if (target == NULL){
+        // No such channel
+        return ;
+    }
+    if (client == NULL){
+        // No such user
+        return;
+    }
+    if (channel_controller.hasPermission(target, invitor))
+        client_controller.insertInviteChannel(client, target);
+    else {
+        // error - hasPermission can generate error message code
+    }
+}
+
 }  // namespace ft

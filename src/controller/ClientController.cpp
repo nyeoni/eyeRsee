@@ -123,6 +123,10 @@ void ClientController::insertChannel(Client *client, Channel *channel) {
     client->insertChannel(channel);
 }
 
+void ClientController::insertInviteChannel(Client *client, Channel *channel) {
+    client->insertInviteChannel(channel);
+}
+
 void ClientController::eraseChannel(Client *client, Channel *channel) {
     client->eraseChannel(channel);
 }

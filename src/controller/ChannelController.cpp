@@ -72,6 +72,21 @@ void ChannelController::updateTopic(Client *client, Channel *channel,
     }
 }
 
+bool ChannelController::hasPermission(Channel *channel, Client *client) {
+    if (channel->isOperator(client)){
+        // client->insertIChannel();
+        return true;
+    }
+    else if (channel->isRegular(client)){
+        // #name You must be a channel op or higher to send an invite.
+    }
+    else{
+        // you are not on channel
+    }
+    // channel->insertClient(client, true);
+    return false;
+}
+
 void ChannelController::insertClient(Channel *channel, Client *client,
                                      bool is_operator) {
     channel->insertClient(client, is_operator);

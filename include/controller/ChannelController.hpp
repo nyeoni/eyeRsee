@@ -47,6 +47,8 @@ class ChannelController {
      * @brief erase Client to Channel's _clientList
      */
     void eraseClient(Channel *channel, Client *client);
+
+    bool hasPermission(Channel *channel, Client *client);
 };
 
 }  // namespace ft

@@ -45,16 +45,31 @@ void ChannelController::del(const Channel *channel) {  // const
 
 void ChannelController::del(const std::string &name) { _channels.erase(name); }
 
-void ChannelController::update(int mode, Channel *channel) {
+void ChannelController::updateMode(int mode, Channel *channel) {
     channel->setMode(mode);
 }
-void ChannelController::update(int mode, const std::string &name) {
+void ChannelController::updateMode(int mode, const std::string &name) {
     Channel *target = find(name);
     if (target) return target->setMode(mode);
 }
-void ChannelController::updateTopic(Channel *channel,
+
+void ChannelController::updateTopic(Client *client, Channel *channel,
                                     const std::string &topic) {
-    channel->setTopic(topic);
+    // permission denid - not on channel, not an operator
+    // success
+    if (!channel->isOnChannel(client)) {
+        // error not on channel
+        return;
+    }
+    if (channel->isTopicMode()) {
+        if (channel->isOperator(client))
+            channel->setTopic(topic);
+        else {
+            // not an operator
+        }
+    } else {
+        channel->setTopic(topic);
+    }
 }
 
 void ChannelController::insertClient(Channel *channel, Client *client,

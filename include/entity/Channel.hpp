@@ -54,7 +54,9 @@ class Channel {
     void eraseClient(Client *client);
     // void updateClientList(Client *client, bool is_insert);
 
+    bool isOnChannel(Client *client);
     bool isOperator(Client *client);
+    bool isRegular(Client *client);
 
     bool isInviteMode();
     bool isTopicMode();

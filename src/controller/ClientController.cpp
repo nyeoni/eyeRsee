@@ -2,6 +2,7 @@
 
 #include <utility>  // std::make_pair
 
+#include "entity/Channel.hpp"
 #include "entity/Client.hpp"
 
 namespace ft {
@@ -25,11 +26,13 @@ ClientController &ClientController::operator=(const ClientController &ref) {
  */
 Client *ClientController::find(const int fd) {
     client_iterator iter = _clients.find(fd);
+    if (iter == _clients.end()) return NULL;
     return &(iter->second);
 }
 
 Client *ClientController::find(const Client *client) {
     client_iterator iter = _clients.find(client->getFd());
+    if (iter == _clients.end()) return NULL;
     return &(iter->second);
 }
 
@@ -99,7 +102,7 @@ void ClientController::update(int fd, const std::string &nickname) {
 
     if (client) {  // valid
         if (find(nickname)) {
-            // no change
+            // no change (already exist)
         } else {
             // change nickname
             client->setNickname(nickname);
@@ -110,15 +113,18 @@ void ClientController::update(int fd, const std::string &nickname) {
 
 void ClientController::update(Client *client, const std::string &nickname) {
     if (find(nickname)) {
-        // no change
+        // no change (already exist)
     } else {
         client->setNickname(nickname);
     }
 }
 
-void ClientController::updateClient(Client *client, Channel *channel,
-                                    bool is_insert) {
-    client->updateChannelList(channel, is_insert);
+void ClientController::insertChannel(Client *client, Channel *channel) {
+    client->insertChannel(channel);
+}
+
+void ClientController::eraseChannel(Client *client, Channel *channel) {
+    client->eraseChannel(channel);
 }
 
 }  // namespace ft

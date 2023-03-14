@@ -13,7 +13,7 @@ class ChannelController {
     // std::string & 되나
     typedef std::map<std::string, Channel> Channels;
     // TODO Consider client_iterator || Client *
-    typedef Channels::iterator client_iterator;
+    typedef Channels::iterator channel_iterator;
     // typedef std::pair<client_iterator, bool>;
 
    private:
@@ -38,9 +38,15 @@ class ChannelController {
     void update(int mode, const std::string &name);
     void updateTopic(Channel *channel, const std::string &name);
 
-    // update
-    void updateChannel(Channel *channel, Client *client, bool is_operator,
-                       bool is_insert);
+    /**
+     * @brief insert Client to Channel's _clientList
+     */
+    void insertClient(Channel *channel, Client *client, bool is_operator);
+
+    /**
+     * @brief erase Client to Channel's _clientList
+     */
+    void eraseClient(Channel *channel, Client *client);
 };
 
 }  // namespace ft

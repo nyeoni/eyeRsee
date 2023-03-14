@@ -21,6 +21,7 @@ enum e_type {
 class Channel {
    public:
     typedef std::set<Client *> ClientList;
+    typedef std::set<Client *>::iterator client_list_iterator;
 
    private:
     std::string _name;
@@ -49,11 +50,15 @@ class Channel {
     void setMode(int mode);
 
     // update
-    void updateClientList(Client *client, bool is_operator, bool is_insert);
+    void insertClient(Client *client, bool is_operator);
+    void eraseClient(Client *client);
+    // void updateClientList(Client *client, bool is_insert);
 
-    bool is_invite_mode();
-    bool is_topic_mode();
-    bool is_ban_mode();
+    bool isOperator(Client *client);
+
+    bool isInviteMode();
+    bool isTopicMode();
+    bool isBanMode();
 
     bool operator==(const Channel &other) const;
     bool operator!=(const Channel &other) const;

@@ -20,11 +20,15 @@ ChannelController &ChannelController::operator=(const ChannelController &ref) {
 }
 
 Channel *ChannelController::find(const Channel *channel) {
-    return &(_channels.find(channel->getName())->second);
+    channel_iterator iter = _channels.find(channel->getName());
+    if (iter == _channels.end()) return NULL;
+    return &(iter->second);
 }
 
 Channel *ChannelController::find(const std::string &name) {
-    return &(_channels.find(name)->second);
+    channel_iterator iter = _channels.find(name);
+    if (iter == _channels.end()) return NULL;
+    return &(iter->second);
 }
 
 void ChannelController::create(const Channel *channel) {
@@ -45,7 +49,8 @@ void ChannelController::update(int mode, Channel *channel) {
     channel->setMode(mode);
 }
 void ChannelController::update(int mode, const std::string &name) {
-    find(name)->setMode(mode);
+    Channel *target = find(name);
+    if (target) return target->setMode(mode);
 }
 void ChannelController::updateTopic(Channel *channel,
                                     const std::string &topic) {

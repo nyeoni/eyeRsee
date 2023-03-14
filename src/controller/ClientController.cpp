@@ -26,11 +26,13 @@ ClientController &ClientController::operator=(const ClientController &ref) {
  */
 Client *ClientController::find(const int fd) {
     client_iterator iter = _clients.find(fd);
+    if (iter == _clients.end()) return NULL;
     return &(iter->second);
 }
 
 Client *ClientController::find(const Client *client) {
     client_iterator iter = _clients.find(client->getFd());
+    if (iter == _clients.end()) return NULL;
     return &(iter->second);
 }
 

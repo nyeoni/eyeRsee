@@ -13,7 +13,7 @@ class ChannelController {
     // std::string & 되나
     typedef std::map<std::string, Channel> Channels;
     // TODO Consider client_iterator || Client *
-    typedef Channels::iterator client_iterator;
+    typedef Channels::iterator channel_iterator;
     // typedef std::pair<client_iterator, bool>;
 
    private:

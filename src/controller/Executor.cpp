@@ -66,13 +66,5 @@ void Executor::join(int fd, CmdLine cmd_line) {
 void Executor::mode(int fd, std::string channel, e_mode mode) {
     channel_controller.update(mode, channel);
 }
-// void Executor::part(int fd, CmdLine channels) {
-//     //
-//     Client *target = client_controller.find(fd);
-//     cmd_iterator iter = channels.begin();
-
-//         for
-//             client_controller.updateClient(target, );
-// }
 
 }  // namespace ft

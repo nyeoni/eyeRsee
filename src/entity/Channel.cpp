@@ -60,13 +60,9 @@ void Channel::updateEraseClientList(Client *client) {
 bool Channel::isInviteMode() { return (_mode & (INVITE_ONLY_T - 1)); }
 bool Channel::isTopicMode() { return (_mode & (TOPIC_PRIV_T - 1)); }
 bool Channel::isBanMode() { return (_mode & (BAN_T - 1)); }
-bool Channel::isOperator(Client *client) {
-    client_list_iterator iter = _operators.find(client);
 
-    if (*iter)
-        return true;
-    else
-        return false;
+bool Channel::isOperator(Client *client) {
+    return _operators.find(client) != _operators.end() ? true : false;
 }
 
 bool Channel::operator==(const Channel &other) const {

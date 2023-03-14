@@ -36,7 +36,8 @@ class ChannelController {
 
     void updateMode(int mode, Channel *channel);
     void updateMode(int mode, const std::string &name);
-    void updateTopic(Client *client, Channel *channel, const std::string &topic);
+    void updateTopic(Client *client, Channel *channel,
+                     const std::string &topic);
 
     /**
      * @brief insert Client to Channel's _clientList
@@ -47,6 +48,11 @@ class ChannelController {
      * @brief erase Client to Channel's _clientList
      */
     void eraseClient(Channel *channel, Client *client);
+
+    /**
+     * @brief Clear Client to _clientList on all channels
+     */
+    void eraseClient(Client *client);
 
     bool hasPermission(Channel *channel, Client *client);
 };

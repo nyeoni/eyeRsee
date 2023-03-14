@@ -6,7 +6,7 @@
 
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
-#include "core/Type.hpp" // ChannelController.hpp 로 이사
+#include "core/Type.hpp"  // ChannelController.hpp 로 이사
 
 namespace ft {
 
@@ -34,7 +34,10 @@ class Executor {
     void topic(int fd, std::string channel,
                std::string topic);  // fd -> client ...
     void invite(int fd, std::string nickname, std::string channel);
+
     void pass(Client *client);
+
+    void quit(int fd, std::string msg);
 };
 
 // Executor -> Server data update

@@ -13,6 +13,7 @@ class Channel;
 class Client : public ConnectSocket {
    public:
     typedef std::set<Channel *> ChannelList;
+    typedef std::set<Channel *>::iterator channel_list_ieterator;
 
    private:
     // typedef typename std::set<Channel *>::iterator channel_iterator;
@@ -31,7 +32,7 @@ class Client : public ConnectSocket {
     Client &operator=(const Client &ref);
 
     // getter
-    ChannelList getChannels() const;
+    ChannelList getChannelList() const;
     std::string getNickname() const;
     std::string getHostname() const;
     std::string getRealname() const;

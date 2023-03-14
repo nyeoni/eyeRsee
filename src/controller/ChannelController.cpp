@@ -57,12 +57,12 @@ void ChannelController::updateTopic(Channel *channel,
     channel->setTopic(topic);
 }
 
-void ChannelController::updateInsertChannel(Channel *channel, Client *client,
-                                            bool is_operator) {
+void ChannelController::insertClient(Channel *channel, Client *client,
+                                     bool is_operator) {
     channel->updateInsertClientList(client, is_operator);
 }
 
-void ChannelController::updateEraseChannel(Channel *channel, Client *client) {
+void ChannelController::eraseClient(Channel *channel, Client *client) {
     channel->updateEraseClientList(client);
     if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
         del(channel);

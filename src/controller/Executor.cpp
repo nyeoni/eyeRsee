@@ -26,8 +26,8 @@ void Executor::part(int fd, CmdLine channels) {
         // 하나의 channel에서 part
         channel = channel_controller.find(*iter);
         if (channel) {
-            client_controller.updateEraseClient(target, channel);
-            channel_controller.updateEraseChannel(channel, target);
+            client_controller.eraseChannel(target, channel);
+            channel_controller.eraseClient(channel, target);
         } else {
             // CHECK there are no channel name -> break?
         }
@@ -54,11 +54,11 @@ void Executor::join(int fd, CmdLine cmd_line) {
             Channel *channel = channel_controller.find(*iter);
             if (channel == NULL) {
                 channel_controller.create(*iter);
-                channel_controller.updateInsertChannel(channel, client, true);
+                channel_controller.insertClient(channel, client, true);
             } else {
-                channel_controller.updateInsertChannel(channel, client, false);
+                channel_controller.insertClient(channel, client, false);
             }
-            client_controller.updateInsertClient(client, channel);
+            client_controller.insertChannel(client, channel);
         }
     }
 }

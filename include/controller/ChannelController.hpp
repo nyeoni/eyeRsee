@@ -38,12 +38,15 @@ class ChannelController {
     void update(int mode, const std::string &name);
     void updateTopic(Channel *channel, const std::string &name);
 
-    // update
-    void updateInsertChannel(Channel *channel, Client *client,
-                             bool is_operator);
-    void updateEraseChannel(Channel *channel, Client *client);
+    /**
+     * @brief insert Client to Channel's _clientList
+     */
+    void insertClient(Channel *channel, Client *client, bool is_operator);
 
-    // void updateChannel(Channel *channel, Client *client, bool is_insert);
+    /**
+     * @brief erase Client to Channel's _clientList
+     */
+    void eraseClient(Channel *channel, Client *client);
 };
 
 }  // namespace ft

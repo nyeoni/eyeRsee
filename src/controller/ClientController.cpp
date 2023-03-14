@@ -119,12 +119,12 @@ void ClientController::update(Client *client, const std::string &nickname) {
     }
 }
 
-void ClientController::updateInsertClient(Client *client, Channel *channel) {
-    client->updateInsertChannelList(channel);
+void ClientController::insertChannel(Client *client, Channel *channel) {
+    client->insertChannel(channel);
 }
 
-void ClientController::updateEraseClient(Client *client, Channel *channel) {
-    client->updateEraseChannelList(channel);
+void ClientController::eraseChannel(Client *client, Channel *channel) {
+    client->eraseChannel(channel);
 }
 
 }  // namespace ft

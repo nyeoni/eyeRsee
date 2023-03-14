@@ -1,5 +1,7 @@
 #include "entity/Channel.hpp"
 
+#include "core/Type.hpp"
+
 namespace ft {
 
 Channel::Channel() : _mode(0) {}
@@ -29,11 +31,10 @@ int Channel::getMode() const { return _mode; }
 void Channel::setName(const std::string &name) { _name = name; }
 void Channel::setTopic(const std::string &topic) { _topic = topic; }
 void Channel::setMode(int mode) {
-    if (mode % 2)  // FALSE flag
-        _mode |= 1 < mode;
-    else  // TRUE flag
-        // TODO : flag bit operate
-        _mode &= 1 < mode;  // 여기 고치기
+    if (mode % 2)
+        _mode |= (1 << (mode - 1));  // +flag
+    else
+        _mode &= ~(1 << (mode));  // -flag
 }
 
 // update
@@ -51,6 +52,10 @@ void Channel::updateClientList(Client *client, bool is_operator,
             _regulars.erase(client);
     }
 }
+
+bool Channel::is_invite_mode() { return (_mode & (INVITE_ONLY_T - 1)); }
+bool Channel::is_topic_mode() { return (_mode & (TOPIC_PRIV_T - 1)); }
+bool Channel::is_ban_mode() { return (_mode & (BAN_T - 1)); }
 
 bool Channel::operator==(const Channel &other) const {
     return (_name == other._name);

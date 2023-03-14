@@ -62,4 +62,8 @@ void Executor::join(int fd, CmdLine cmd_line) {
     }
 }
 
+void Executor::mode(int fd, std::string channel, e_mode mode) {
+    channel_controller.update(mode, channel);
+}
+
 }  // namespace ft

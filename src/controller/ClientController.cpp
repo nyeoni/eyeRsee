@@ -2,7 +2,6 @@
 
 #include <utility>  // std::make_pair
 
-#include "entity/Channel.hpp"
 #include "entity/Client.hpp"
 
 namespace ft {

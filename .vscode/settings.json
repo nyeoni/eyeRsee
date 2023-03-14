@@ -76,6 +76,10 @@
 		"iomanip": "cpp",
 		"map": "cpp",
 		"queue": "cpp",
-		"stack": "cpp"
+		"stack": "cpp",
+		"__functional_base": "cpp",
+		"bit": "cpp",
+		"functional": "cpp",
+		"utility": "cpp"
 	}
 }

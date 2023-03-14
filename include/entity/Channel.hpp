@@ -51,6 +51,10 @@ class Channel {
     // update
     void updateClientList(Client *client, bool is_operator, bool is_insert);
 
+    bool is_invite_mode();
+    bool is_topic_mode();
+    bool is_ban_mode();
+
     bool operator==(const Channel &other) const;
     bool operator!=(const Channel &other) const;
     bool operator<(const Channel &other) const;

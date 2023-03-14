@@ -6,6 +6,7 @@
 
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
+#include "core/Type.hpp" // ChannelController.hpp 로 이사
 
 namespace ft {
 
@@ -30,6 +31,7 @@ class Executor {
     // void joinClient(std::string nickname, std::string channel_name);
 
     void join(int fd, CmdLine cmd_line);
+    void mode(int fd, std::string channel, e_mode mode); // std::string info
 
     void pass(Client *client);
 };

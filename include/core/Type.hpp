@@ -33,17 +33,15 @@ enum e_cmd {
     PONG
 };
 
-// 0000
-// 0001
 enum e_mode {
-    OPER_F,         // 1110  : 0
-    OPER_T,         // 0001 :  0b00011,  1
-    INVITE_ONLY_F,  // =
-    INVITE_ONLY_T,  // = 10 : 2
-    TOPIC_PRIV_F,   // = 1 < 5,
-    TOPIC_PRIV_T,   // = 1 < 4,
-    BAN_F,          // = 1 < 7
-    BAN_T           // = 1 < 6,
+    OPER_F = 0,     // 11111100
+    OPER_T,         // 00000010 -> 1 << 1
+    INVITE_ONLY_F,  // 11110110
+    INVITE_ONLY_T,  // 00001000 -> 1 << 3
+    TOPIC_PRIV_F,   // 11011110
+    TOPIC_PRIV_T,   // 00100000 -> 1 << 5
+    BAN_F,          // 01111110
+    BAN_T           // 10000000 -> 1 << 7
 };
 }  // namespace ft
 

@@ -50,8 +50,8 @@ class Channel {
     void setMode(int mode);
 
     // update
-    void updateInsertClientList(Client *client, bool is_operator);
-    void updateEraseClientList(Client *client);
+    void insertClient(Client *client, bool is_operator);
+    void eraseClient(Client *client);
     // void updateClientList(Client *client, bool is_insert);
 
     bool isOperator(Client *client);

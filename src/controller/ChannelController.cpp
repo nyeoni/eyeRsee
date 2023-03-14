@@ -59,11 +59,11 @@ void ChannelController::updateTopic(Channel *channel,
 
 void ChannelController::insertClient(Channel *channel, Client *client,
                                      bool is_operator) {
-    channel->updateInsertClientList(client, is_operator);
+    channel->insertClient(client, is_operator);
 }
 
 void ChannelController::eraseClient(Channel *channel, Client *client) {
-    channel->updateEraseClientList(client);
+    channel->eraseClient(client);
     if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
         del(channel);
     }

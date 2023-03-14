@@ -38,7 +38,7 @@ void Channel::setMode(int mode) {
 }
 
 // update
-void Channel::updateInsertClientList(Client *client, bool is_operator) {
+void Channel::insertClient(Client *client, bool is_operator) {
     // if (isOperator(client)) {
     //     _operators.insert(client);
     // } else {
@@ -49,7 +49,7 @@ void Channel::updateInsertClientList(Client *client, bool is_operator) {
         _regulars.insert(client);
 }
 
-void Channel::updateEraseClientList(Client *client) {
+void Channel::eraseClient(Client *client) {
     if (isOperator(client)) {
         _operators.erase(client);
     } else {

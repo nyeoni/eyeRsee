@@ -28,8 +28,7 @@ class Executor {
 
     // method
     Client *creatClient(int fd);
-    void connect(int fd, Udata *udata, CmdLine cmd_line);
-    void connect(int fd, Udata *udata);
+
     void part(int fd, CmdLine channels);
     // void joinClient(std::string nickname, std::string channel_name);
 

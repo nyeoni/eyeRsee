@@ -101,6 +101,7 @@ void Server::handleConnect(int event_idx) {
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
     Client *new_client = ((Udata *)event.udata)->src;
+    Udata *udata = static_cast<Udata *>(event.udata);
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
 
@@ -122,22 +123,30 @@ void Server::handleConnect(int event_idx) {
         std::cout << "\tcommand_line: " << command_line << std::endl;
         std::cout << "\trecv_buf: " << new_client->recv_buf << std::endl;
     }
-    // 임시로 쓰겠습니다
-    //_executor.connect(event.ident, static_cast<Udata *>(event.udata));
-    std::vector<std::string> cmd_line = split(command_line, ' ');
-
-    _executor.connect(event.ident, static_cast<Udata *>(event.udata), cmd_line);
-
-    // cmd / params parser.parsing(cmd_line) -> udata
-    // switch NICK executer.nick(parms)  PASS USER
-    // if (new_client->isAuth) register(READ)
-    // nick //// (user pass -> connect 할 때 밖에 안쓰인다!)
-
+    switch (udata->command) {
+        case PASS:
+            _executor.pass(new_client,
+                           dynamic_cast<pass_params *>(udata->params)->password,
+                           _env.password);
+            break;
+        case USER:
+            _executor.user(
+                new_client,
+                dynamic_cast<user_params *>(udata->params)->username,
+                dynamic_cast<user_params *>(udata->params)->hostname,
+                dynamic_cast<user_params *>(udata->params)->servername,
+                dynamic_cast<user_params *>(udata->params)->realname);
+            break;
+        case NICK:
+            _executor.nick(
+                new_client,
+                dynamic_cast<nick_params *>(udata->params)->nickname);
+            break;
+        default:
+            break;
+    }
     if (new_client->isAuthenticate()) {
-        registerEvent(
-            event.ident, READ,
-            (Udata *)
-                event.udata);  // <ident, FILT> [UDATE] // <ident, WRITE, UDATA>
+        registerEvent(event.ident, READ, (Udata *)event.udata);
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }

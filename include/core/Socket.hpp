@@ -37,12 +37,12 @@ class ListenSocket : public SocketBase {
 class ConnectSocket : public SocketBase {
    public:
     std::string recv_buf;
+
     // char recv_buf[BUF_SIZE];
     bool auth[3];
 
    protected:
     //    std::queue<Response> send_queue;
-    bool _is_release;
 
    public:
     ConnectSocket();

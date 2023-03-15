@@ -48,13 +48,21 @@ void ListenSocket::createSocket(const int &port) {
 
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
-    sin.sin_port = htons(port);
 
-    if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
-        throw std::logic_error("bind error");                         // CHECK
+    sin.sin_port = htons(port);
+    int i = 0;
+    // 임시
+    while (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+        sin.sin_port = htons(port + ++i);
+    }
+    std::cout << "listening port : " << port + i << std::endl;
+
+    // if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+    //     throw std::logic_error("bind error");                         //
+    //     CHECK
     if (listen(_fd, 42) < 0) throw std::logic_error("listen error");  // CHECK
 
-    setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
+    // setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
     setNonBlock();
 }
 
@@ -62,14 +70,12 @@ void ListenSocket::createSocket(const int &port) {
 /*                  ConnectSocket                   */
 /****************************************************/
 
-ConnectSocket::ConnectSocket() : SocketBase(-1), _is_release(false) {
+ConnectSocket::ConnectSocket() : SocketBase(-1) {
     //    recv_buf = new char[BUF_SIZE];
 }
 ConnectSocket::ConnectSocket(const ConnectSocket &copy)
     : SocketBase(copy.getFd()) {}
-ConnectSocket::~ConnectSocket() {
-    if (_is_release) _fd = -1;
-}
+ConnectSocket::~ConnectSocket() {}
 ConnectSocket &ConnectSocket::operator=(const ConnectSocket &ref) {
     return (*this);
 }
@@ -86,6 +92,7 @@ void ConnectSocket::createSocket(const int &listen_fd) {
               << ':' << ntohs(in.sin_port) << std::endl;
 }
 
-bool ConnectSocket::isAuthenticate() { return auth[0] & auth[1] & auth[2]; }
+bool ConnectSocket::isAuthenticate() { return auth[0] && auth[1] && auth[2]; }
+
 
 }  // namespace ft

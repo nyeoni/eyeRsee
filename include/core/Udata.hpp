@@ -10,7 +10,9 @@ namespace ft {
 
 class Client;  // TODO 이걸로 모든 컴파일 에러가 해결되는 이유 다같이 생각해보기
 
-struct params {};
+struct params {
+    virtual ~params(){}
+};
 struct pass_params : public params {
     std::string password;
 };

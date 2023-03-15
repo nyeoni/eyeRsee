@@ -14,32 +14,6 @@ Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
 Client *Executor::creatClient(int fd) { return client_controller.create(fd); }
 
-void Executor::connect(int fd, Udata *udata) {}
-void Executor::connect(int fd, Udata *udata, CmdLine cmd_line) {
-    Client *new_client = udata->src;
-    std::string cmd[3] = {"PASS", "USER", "NICK"};
-    int i = 0;
-    for (; i < 3; i++) {
-        if (cmd[i] == cmd_line[0]) {
-            break;
-        }
-    }
-    switch (i) {
-        case PASS:
-            pass(new_client, cmd_line[1], "aaaaaa");
-            break;
-        case USER:
-            user(new_client, cmd_line[1], cmd_line[2], cmd_line[3],
-                 cmd_line[4]);
-            break;
-        case NICK:
-            nick(new_client, cmd_line[1]);
-            break;
-        default:
-            break;
-    }
-}
-
 /**
  * @brief part channels
  *
@@ -156,6 +130,14 @@ void Executor::nick(Client *new_client, std::string nickname) {
     } else {
         new_client->setNickname(nickname);
         new_client->auth[NICK] = true;
+    }
+}
+
+void Executor::nick(int fd, std::string nickname) {
+    if (client_controller.find(nickname)) {
+        // already exist
+    } else {
+        client_controller.find(fd)->setNickname(nickname);
     }
 }
 

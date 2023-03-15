@@ -28,8 +28,7 @@ class Executor {
 
     // method
     Client *creatClient(int fd);
-    void connect(int fd, Udata *udata, CmdLine cmd_line);
-    void connect(int fd, Udata *udata);
+
     void part(int fd, CmdLine channels);
     // void joinClient(std::string nickname, std::string channel_name);
 
@@ -44,8 +43,8 @@ class Executor {
     void pass(Client *new_client, std::string password, std::string server_password);
     void user(Client *new_client, std::string username, std::string hostname,
               std::string server, std::string realname);
-    void nick(Client *new_client,
-              std::string nickname);  // int fd, std::string nickname
+    void nick(Client *new_client, std::string nickname);
+    void nick(int fd, std::string nickname);
 
     void quit(int fd, std::string msg);
 };

@@ -43,8 +43,8 @@ class Executor {
     void pass(Client *new_client, std::string password, std::string server_password);
     void user(Client *new_client, std::string username, std::string hostname,
               std::string server, std::string realname);
-    void nick(Client *new_client,
-              std::string nickname);  // int fd, std::string nickname
+    void nick(Client *new_client, std::string nickname);
+    void nick(int fd, std::string nickname);
 
     void quit(int fd, std::string msg);
 };

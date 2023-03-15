@@ -133,6 +133,14 @@ void Executor::nick(Client *new_client, std::string nickname) {
     }
 }
 
+void Executor::nick(int fd, std::string nickname) {
+    if (client_controller.find(nickname)) {
+        // already exist
+    } else {
+        client_controller.find(fd)->setNickname(nickname);
+    }
+}
+
 void Executor::quit(int fd, std::string msg) {
     // 모든 채널에서 quit && send message
     Client *client = client_controller.find(fd);

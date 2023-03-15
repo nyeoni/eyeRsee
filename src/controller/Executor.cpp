@@ -173,4 +173,15 @@ void Executor::kick(int fd, std::string channel, std::string nickname,
     }
 }
 
+void Executor::privmsg(CmdLine receivers, std::string msg) {
+    //
+    cmd_iterator iter = receivers.begin();
+    for (; iter != receivers.end(); ++iter) {
+        // make response?
+        // write event 등록 -> server::run에서 다음 loop 돌 때
+        // monitorEvent()에서 감지
+        // EventHandler::registerEvent()
+    }
+}
+
 }  // namespace ft

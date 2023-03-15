@@ -31,6 +31,9 @@ class Executor {
 
     void part(int fd, CmdLine channels);
     // void joinClient(std::string nickname, std::string channel_name);
+    void connect(int fd, Udata *udata, CmdLine cmd_line);
+    void connect(int fd, Udata *udata);
+    // int joinClient(std::string nickname, std::string channel_name);
 
     void join(int fd, CmdLine cmd_line);
     void mode(int fd, std::string channel, e_mode mode);  // std::string info
@@ -40,13 +43,16 @@ class Executor {
 
     void kick(int fd, std::string channel, std::string nickname,
               std::string comment);
-    void pass(Client *new_client, std::string password, std::string server_password);
+    void pass(Client *new_client, std::string password,
+              std::string server_password);
     void user(Client *new_client, std::string username, std::string hostname,
               std::string server, std::string realname);
     void nick(Client *new_client, std::string nickname);
     void nick(int fd, std::string nickname);
 
     void quit(int fd, std::string msg);
+
+    void privmsg(CmdLine receivers, std::string msg);
 };
 
 // Executor -> Server data update

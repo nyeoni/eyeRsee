@@ -24,6 +24,8 @@ class SocketBase {
 
     const int getFd() const;
     virtual void createSocket(const int &info) = 0;
+    void deleteSocket();
+    void setFd(int fd);
     void setNonBlock();
 };
 
@@ -34,8 +36,10 @@ class ListenSocket : public SocketBase {
 
 class ConnectSocket : public SocketBase {
    public:
-    char recv_buf[BUF_SIZE];
-    // char *recv_buf[512]
+    std::string recv_buf;
+    // char recv_buf[BUF_SIZE];
+    bool auth[3];
+
    protected:
     //    std::queue<Response> send_queue;
     bool _is_release;
@@ -47,7 +51,7 @@ class ConnectSocket : public SocketBase {
     ConnectSocket &operator=(const ConnectSocket &ref);
 
     void createSocket(const int &listen_fd);
-    void releaseSocket();
+    bool isAuthenticate();
 };
 
 }  // namespace ft

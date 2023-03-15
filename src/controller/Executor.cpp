@@ -12,8 +12,33 @@ Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
-Client *Executor::newClient(int listen_fd) {
-    return client_controller.create(listen_fd);
+Client *Executor::newClient(int fd) { return client_controller.create(fd); }
+
+void Executor::connect(int fd, Udata *udata) {}
+void Executor::connect(int fd, Udata *udata, CmdLine cmd_line) {
+    Client *new_client = udata->src;
+    std::string cmd[3] = {"PASS", "USER", "NICK"};
+    int i = 0;
+    for (; i < 3; i++) {
+        if (cmd[i] == cmd_line[0]) {
+            break;
+        }
+    }
+    switch (i) {
+        case PASS:
+            pass(new_client, true);  // Parsing 에서 확인하고 pass(bool)
+                                     // 값으로
+            break;
+        case USER:
+            user(new_client, cmd_line[1], cmd_line[2], cmd_line[3],
+                 cmd_line[4]);
+            break;
+        case NICK:
+            nick(new_client, cmd_line[1]);
+            break;
+        default:
+            break;
+    }
 }
 
 /**
@@ -98,6 +123,39 @@ void Executor::invite(int fd, std::string nickname, std::string channel) {
         client_controller.insertInviteChannel(client, target);
     else {
         // error - hasPermission can generate error message code
+    }
+}
+
+void Executor::pass(Client *new_client, bool is_auth) {
+    if (new_client->auth[PASS]) {
+        // already auth
+        return;
+    }
+    if (is_auth)
+        new_client->auth[PASS] = true;
+    else
+        new_client->auth[PASS] = false;
+}
+void Executor::user(Client *new_client, std::string username,
+                    std::string hostname, std::string server,
+                    std::string realname) {
+    if (new_client->auth[USER]) {
+        // 462 abc :You may not reregister.
+        return;
+    }
+    new_client->setUsername(username);
+    new_client->setHostname(hostname);
+    new_client->setServer(server);
+    new_client->setRealname(realname);
+    new_client->auth[USER] = true;
+    // 461 abc USER :Not enough parameters. -> parser
+}
+void Executor::nick(Client *new_client, std::string nickname) {
+    if (client_controller.find(nickname)) {
+        // already exist
+    } else {
+        new_client->setNickname(nickname);
+        new_client->auth[NICK] = true;
     }
 }
 

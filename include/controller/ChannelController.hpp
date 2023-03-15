@@ -1,40 +1,60 @@
 #ifndef CHANNELCONTROLLER_HPP
 #define CHANNELCONTROLLER_HPP
 
-#include <set>
+#include <map>
 
 namespace ft {
 
 class Channel;
+class Client;
 
 class ChannelController {
- private:
-    typedef std::set<Channel> Channels;
-    // typedef std::set<Channel *> ChannelList;
+   public:
+    // std::string & 되나
+    typedef std::map<std::string, Channel> Channels;
+    // TODO Consider client_iterator || Client *
     typedef Channels::iterator channel_iterator;
+    // typedef std::pair<client_iterator, bool>;
 
-    ChannelController(/* args*/);
- public:
+   private:
     Channels _channels;
 
+   public:
+    ChannelController(/* args*/);
     ChannelController(const ChannelController &copy);
     ~ChannelController();
     ChannelController &operator=(const ChannelController &ref);
 
-    channel_iterator find(const Channel *channel) const;
-    channel_iterator find(const std::string &name) const;
-    //Channel *find(const Channel *channel) const;
-    //Channel *find(const std::string &name) const;
+    Channel *find(const Channel *channel);
+    Channel *find(const std::string &name);
 
-    void add(const Channel *channel);
-    void add(const std::string &name);
+    void create(const Channel *channel);
+    void create(const std::string &name);
 
-    void del(Channel *channel);         // const
-    void del(const std::string &name);  // const
+    void del(const Channel *channel);
+    void del(const std::string &name);
 
-    void mod(int mode, Channel *channel);
-    void mod(int mode, const std::string &name);
-    void modTopic(Channel *channel, const std::string &name);
+    void updateMode(int mode, Channel *channel);
+    void updateMode(int mode, const std::string &name);
+    void updateTopic(Client *client, Channel *channel,
+                     const std::string &topic);
+
+    /**
+     * @brief insert Client to Channel's _clientList
+     */
+    void insertClient(Channel *channel, Client *client, bool is_operator);
+
+    /**
+     * @brief erase Client to Channel's _clientList
+     */
+    void eraseClient(Channel *channel, Client *client);
+
+    /**
+     * @brief Clear Client to _clientList on all channels
+     */
+    void eraseClient(Client *client);
+
+    bool hasPermission(Channel *channel, Client *client);
 };
 
 }  // namespace ft

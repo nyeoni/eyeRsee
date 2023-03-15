@@ -70,6 +70,16 @@
 		"ratio": "cpp",
 		"stdexcept": "cpp",
 		"type_traits": "cpp",
-		"algorithm": "cpp"
+		"algorithm": "cpp",
+		"deque": "cpp",
+		"fstream": "cpp",
+		"iomanip": "cpp",
+		"map": "cpp",
+		"queue": "cpp",
+		"stack": "cpp",
+		"__functional_base": "cpp",
+		"bit": "cpp",
+		"functional": "cpp",
+		"utility": "cpp"
 	}
 }

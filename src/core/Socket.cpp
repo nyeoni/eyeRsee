@@ -17,7 +17,7 @@ namespace ft {
 
 SocketBase::SocketBase() : _fd(-1) {}
 SocketBase::SocketBase(int fd) : _fd(fd) {}
-SocketBase::~SocketBase() { if (_fd != -1) close(_fd); }
+SocketBase::~SocketBase() {}
 SocketBase::SocketBase(const SocketBase &copy) : _fd(copy.getFd()) {}
 SocketBase &SocketBase::operator=(const SocketBase &ref) {
     _fd = ref.getFd();
@@ -25,6 +25,11 @@ SocketBase &SocketBase::operator=(const SocketBase &ref) {
 }
 
 const int SocketBase::getFd() const { return _fd; }
+
+void SocketBase::deleteSocket() {
+    if (_fd != -1) close(_fd);
+}
+void SocketBase::setFd(int fd) { _fd = fd; }
 
 void SocketBase::setNonBlock() {
     if (fcntl(_fd, F_SETFL, O_NONBLOCK) < 0)
@@ -43,13 +48,21 @@ void ListenSocket::createSocket(const int &port) {
 
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
-    sin.sin_port = htons(port);
 
-    if (bind(_fd, (struct sockaddr *) &sin, sizeof(sin)) < 0)
-        throw std::logic_error("bind error");                         // CHECK
+    sin.sin_port = htons(port);
+    int i = 0;
+    // 임시
+    while (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+        sin.sin_port = htons(port + ++i);
+    }
+    std::cout << "listening port : " << port + i << std::endl;
+
+    // if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+    //     throw std::logic_error("bind error");                         //
+    //     CHECK
     if (listen(_fd, 42) < 0) throw std::logic_error("listen error");  // CHECK
 
-    setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
+    // setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
     setNonBlock();
 }
 
@@ -58,25 +71,28 @@ void ListenSocket::createSocket(const int &port) {
 /****************************************************/
 
 ConnectSocket::ConnectSocket() : SocketBase(-1) {
-//    recv_buf = new char[BUF_SIZE];
+    //    recv_buf = new char[BUF_SIZE];
 }
 ConnectSocket::ConnectSocket(const ConnectSocket &copy)
     : SocketBase(copy.getFd()) {}
-ConnectSocket::~ConnectSocket() {
-//    free(recv_buf);
+ConnectSocket::~ConnectSocket() {}
+ConnectSocket &ConnectSocket::operator=(const ConnectSocket &ref) {
+    return (*this);
 }
-ConnectSocket &ConnectSocket::operator=(const ConnectSocket &ref) { return (*this); }
 
 void ConnectSocket::createSocket(const int &listen_fd) {
     struct sockaddr_in in = {};
     socklen_t in_len = sizeof(in);
 
-    _fd = accept(listen_fd, (struct sockaddr *) &in, &in_len);
+    _fd = accept(listen_fd, (struct sockaddr *)&in, &in_len);
     setNonBlock();
     // TODO : password
     // recv(connect_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)
     std::cout << "New client # " << _fd << " from " << inet_ntoa(in.sin_addr)
               << ':' << ntohs(in.sin_port) << std::endl;
 }
+
+bool ConnectSocket::isAuthenticate() { return auth[0] && auth[1] && auth[2]; }
+
 
 }  // namespace ft

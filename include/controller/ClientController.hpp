@@ -1,28 +1,20 @@
-/**
- * @file ClientController.cpp
- * @author hannkim (hannkim@student.42seoul.kr)
- * @brief controller of Client
- * @version 0.1
- * @date 2023-03-13
- *
- * @copyright Copyright (c) 2023
- * @note delete, find, add client to Client's channels
- */
 #ifndef CLIENTCONTROLLER_HPP
 #define CLIENTCONTROLLER_HPP
 
-#include <set>
+#include <map>
 #include <string>
+#include <utility>
 
 namespace ft {
 
 class Client;
+class Channel;
 
 class ClientController {
    public:
-    typedef std::set<Client> Clients;
-    // TODO Consider client_iterator || Client *
-    typedef std::set<Client>::iterator client_iterator;
+    typedef std::map<int, Client> Clients;
+    typedef Clients::iterator client_iterator;
+    typedef std::pair<client_iterator, bool> pair;
 
    private:
     Clients _clients;
@@ -33,19 +25,31 @@ class ClientController {
     ~ClientController();
     ClientController& operator=(const ClientController& ref);
 
-    // Client* findClient(std::string nickname);
-    // void deleteClient(std::string nickname);
-    // void addClient(Client client);
+    Client* find(const int fd);
+    Client* find(const Client* client);
+    Client* find(const std::string& nickname);
 
-    // Client* findClient(Client* client);
-    client_iterator findClient(Client* client);
-    void deleteClient(Client* client);
-    void addClient(Client* client);
+    void create(const Client* client);
+    void create(int fd, const Client* client);
+    Client* create(int fd);
 
-    // TODO
-    client_iterator findClient(const std::string& nickname);
-    void deleteClient(const std::string& nickname);
-    void addClient(const std::string& nickname);
+    void del(const Client* client);
+    void del(const std::string& nickname);
+    void del(int fd);
+
+    void updateNickname(int fd, const std::string& nickname);
+    void updateNickname(Client* client, const std::string& nickname);
+
+    /**
+     * @brief insert Channel to Client's _channelList
+     */
+    void insertChannel(Client* client, Channel* channel);
+    void insertInviteChannel(Client* client, Channel* channel);
+
+    /**
+     * @brief erase Channel to Client's _channelList
+     */
+    void eraseChannel(Client* client, Channel* channel);
 };
 
 }  // namespace ft

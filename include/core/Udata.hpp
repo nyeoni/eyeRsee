@@ -3,11 +3,12 @@
 
 #include <string>
 #include <vector>
+
 #include "Type.hpp"
 
 namespace ft {
 
-class Client; // TODO 이걸로 모든 컴파일 에러가 해결되는 이유 다같이 생각해보기
+class Client;  // TODO 이걸로 모든 컴파일 에러가 해결되는 이유 다같이 생각해보기
 
 struct params {};
 struct pass_params : public params {
@@ -21,7 +22,7 @@ struct user_params : public params {
 };
 struct nick_params : public params {
     std::string nickname;
-    int hopcount; // optional
+    int hopcount;  // optional
 };
 struct quit_params : public params {
     std::string msg;
@@ -52,18 +53,18 @@ struct Udata {
     Udata &operator=(const Udata &ref);
 };
 
-//struct UdataBase {
-//    int action;
-//};
+// struct UdataBase {
+//     int action;
+// };
 //
-//struct UdataRead : public UdataBase {
-//    std::string pre_buf;
-//    std::vector<std::string> params;
-//};
+// struct UdataRead : public UdataBase {
+//     std::string pre_buf;
+//     std::vector<std::string> params;
+// };
 //
-//struct UdataWrite : public UdataBase {
-//    Response res;
-//};
+// struct UdataWrite : public UdataBase {
+//     Response res;
+// };
 
 }  // namespace ft
 

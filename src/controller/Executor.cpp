@@ -1,6 +1,7 @@
 #include "controller/Executor.hpp"
 
-//#include "entity/Channel.hpp"
+#include "entity/Channel.hpp"
+#include "entity/Client.hpp"
 
 namespace ft {
 Executor::Executor() {}
@@ -10,6 +11,34 @@ Executor::Executor(const Executor &copy) { *this = copy; }
 Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
+
+Client *Executor::creatClient(int fd) { return client_controller.create(fd); }
+
+void Executor::connect(int fd, Udata *udata) {}
+void Executor::connect(int fd, Udata *udata, CmdLine cmd_line) {
+    Client *new_client = udata->src;
+    std::string cmd[3] = {"PASS", "USER", "NICK"};
+    int i = 0;
+    for (; i < 3; i++) {
+        if (cmd[i] == cmd_line[0]) {
+            break;
+        }
+    }
+    switch (i) {
+        case PASS:
+            pass(new_client, cmd_line[1], "aaaaaa");
+            break;
+        case USER:
+            user(new_client, cmd_line[1], cmd_line[2], cmd_line[3],
+                 cmd_line[4]);
+            break;
+        case NICK:
+            nick(new_client, cmd_line[1]);
+            break;
+        default:
+            break;
+    }
+}
 
 /**
  * @brief part channels
@@ -96,6 +125,40 @@ void Executor::invite(int fd, std::string nickname, std::string channel) {
     }
 }
 
+void Executor::pass(Client *new_client, std::string password,
+                    std::string server_password) {
+    if (new_client->auth[PASS]) {
+        // already auth
+        return;
+    }
+    if (password == server_password)
+        new_client->auth[PASS] = true;
+    else
+        new_client->auth[PASS] = false;
+}
+void Executor::user(Client *new_client, std::string username,
+                    std::string hostname, std::string server,
+                    std::string realname) {
+    if (new_client->auth[USER]) {
+        // 462 abc :You may not reregister.
+        return;
+    }
+    new_client->setUsername(username);
+    new_client->setHostname(hostname);
+    new_client->setServer(server);
+    new_client->setRealname(realname);
+    new_client->auth[USER] = true;
+    // 461 abc USER :Not enough parameters. -> parser
+}
+void Executor::nick(Client *new_client, std::string nickname) {
+    if (client_controller.find(nickname)) {
+        // already exist
+    } else {
+        new_client->setNickname(nickname);
+        new_client->auth[NICK] = true;
+    }
+}
+
 void Executor::quit(int fd, std::string msg) {
     // 모든 채널에서 quit && send message
     Client *client = client_controller.find(fd);
@@ -106,7 +169,8 @@ void Executor::quit(int fd, std::string msg) {
     client_controller.del(fd);
     channel_controller.eraseClient(client);
 }
-void Executor::kick(int fd, std::string channel, std::string nickname, std::string comment) {
+void Executor::kick(int fd, std::string channel, std::string nickname,
+                    std::string comment) {
     Client *kicker = client_controller.find(fd);
     Client *client = client_controller.find(nickname);
     Channel *target = channel_controller.find(channel);
@@ -118,12 +182,11 @@ void Executor::kick(int fd, std::string channel, std::string nickname, std::stri
         // No such user
         return;
     }
-    if (channel_controller.hasPermission(target, kicker)){
+    if (channel_controller.hasPermission(target, kicker)) {
         channel_controller.eraseClient(target, client);
         client_controller.eraseChannel(client, target);
         // privmsg();
-    }
-    else {
+    } else {
         // error - hasPermission can generate error message code
     }
 }

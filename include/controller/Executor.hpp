@@ -7,6 +7,7 @@
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
 #include "core/Type.hpp"  // ChannelController.hpp 로 이사
+#include "core/Udata.hpp"
 
 namespace ft {
 
@@ -26,6 +27,9 @@ class Executor {
     Executor &operator=(const Executor &ref);
 
     // method
+    Client *creatClient(int fd);
+    void connect(int fd, Udata *udata, CmdLine cmd_line);
+    void connect(int fd, Udata *udata);
     void part(int fd, CmdLine channels);
     // void joinClient(std::string nickname, std::string channel_name);
 
@@ -37,7 +41,11 @@ class Executor {
 
     void kick(int fd, std::string channel, std::string nickname,
               std::string comment);
-    void pass(Client *client);
+    void pass(Client *new_client, std::string password, std::string server_password);
+    void user(Client *new_client, std::string username, std::string hostname,
+              std::string server, std::string realname);
+    void nick(Client *new_client,
+              std::string nickname);  // int fd, std::string nickname
 
     void quit(int fd, std::string msg);
 };

@@ -34,6 +34,7 @@ SRC_CORE			= $(addprefix $(SRC_CORE_DIR), \
 										EventHandler.cpp \
 										Server.cpp \
 										Udata.cpp \
+										utility.cpp \
 										Socket.cpp)
 
 SRC					= $(SRC_MAIN) \

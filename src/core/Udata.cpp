@@ -12,6 +12,8 @@ Udata &Udata::operator=(const Udata &ref) {
     params = ref.params;
     msg = ref.msg;
     src = ref.src;
+
+    return (*this);
 }
 
-}
+}  // namespace ft

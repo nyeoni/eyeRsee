@@ -27,7 +27,7 @@ class Executor {
     Executor &operator=(const Executor &ref);
 
     // method
-    Client *newClient(int fd);
+    Client *creatClient(int fd);
     void connect(int fd, Udata *udata, CmdLine cmd_line);
     void connect(int fd, Udata *udata);
     void part(int fd, CmdLine channels);
@@ -41,8 +41,7 @@ class Executor {
 
     void kick(int fd, std::string channel, std::string nickname,
               std::string comment);
-    void pass(Client *client);
-    void pass(Client *new_client, bool is_auth);
+    void pass(Client *new_client, std::string password, std::string server_password);
     void user(Client *new_client, std::string username, std::string hostname,
               std::string server, std::string realname);
     void nick(Client *new_client,

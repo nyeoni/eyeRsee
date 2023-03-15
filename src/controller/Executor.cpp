@@ -12,7 +12,7 @@ Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
-Client *Executor::newClient(int fd) { return client_controller.create(fd); }
+Client *Executor::creatClient(int fd) { return client_controller.create(fd); }
 
 void Executor::connect(int fd, Udata *udata) {}
 void Executor::connect(int fd, Udata *udata, CmdLine cmd_line) {
@@ -26,8 +26,7 @@ void Executor::connect(int fd, Udata *udata, CmdLine cmd_line) {
     }
     switch (i) {
         case PASS:
-            pass(new_client, true);  // Parsing 에서 확인하고 pass(bool)
-                                     // 값으로
+            pass(new_client, cmd_line[1], "aaaaaa");
             break;
         case USER:
             user(new_client, cmd_line[1], cmd_line[2], cmd_line[3],
@@ -126,12 +125,13 @@ void Executor::invite(int fd, std::string nickname, std::string channel) {
     }
 }
 
-void Executor::pass(Client *new_client, bool is_auth) {
+void Executor::pass(Client *new_client, std::string password,
+                    std::string server_password) {
     if (new_client->auth[PASS]) {
         // already auth
         return;
     }
-    if (is_auth)
+    if (password == server_password)
         new_client->auth[PASS] = true;
     else
         new_client->auth[PASS] = false;
@@ -169,7 +169,8 @@ void Executor::quit(int fd, std::string msg) {
     client_controller.del(fd);
     channel_controller.eraseClient(client);
 }
-void Executor::kick(int fd, std::string channel, std::string nickname, std::string comment) {
+void Executor::kick(int fd, std::string channel, std::string nickname,
+                    std::string comment) {
     Client *kicker = client_controller.find(fd);
     Client *client = client_controller.find(nickname);
     Channel *target = channel_controller.find(channel);
@@ -181,12 +182,11 @@ void Executor::kick(int fd, std::string channel, std::string nickname, std::stri
         // No such user
         return;
     }
-    if (channel_controller.hasPermission(target, kicker)){
+    if (channel_controller.hasPermission(target, kicker)) {
         channel_controller.eraseClient(target, client);
         client_controller.eraseChannel(client, target);
         // privmsg();
-    }
-    else {
+    } else {
         // error - hasPermission can generate error message code
     }
 }

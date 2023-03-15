@@ -80,7 +80,7 @@ void Server::handleAccept() {
     Udata *data;
 
     new_socket.createSocket(_listen_socket.getFd());
-    new_client = _executor.newClient(new_socket.getFd());
+    new_client = _executor.creatClient(new_socket.getFd());
     new_client->setFd(new_socket.getFd());
 
     // :NAYEON.local 001 nickname :Welcome to the Omega IRC Network
@@ -90,8 +90,8 @@ void Server::handleAccept() {
 
     // TODO : timeout error. registerEvent(TIME_OUT) timer 설정해서 등록
     // -> handleTimeout 에서 delete, close
-    registerEvent(new_client->getFd(), CONNECT, data);
-    // registerEvent(new_client->getFd(), TIMEOUT, data);
+    registerEvent(new_client->getFd(), CONNECT, data);  // READ
+    // registerEvent(new_client->getFd(), TIMEOUT, data); // WRITE  EXCUTE/WRITE
 }
 
 void Server::handleConnect(int event_idx) {
@@ -125,9 +125,19 @@ void Server::handleConnect(int event_idx) {
     // 임시로 쓰겠습니다
     //_executor.connect(event.ident, static_cast<Udata *>(event.udata));
     std::vector<std::string> cmd_line = split(command_line, ' ');
+
     _executor.connect(event.ident, static_cast<Udata *>(event.udata), cmd_line);
+
+    // cmd / params parser.parsing(cmd_line) -> udata
+    // switch NICK executer.nick(parms)  PASS USER
+    // if (new_client->isAuth) register(READ)
+    // nick //// (user pass -> connect 할 때 밖에 안쓰인다!)
+
     if (new_client->isAuthenticate()) {
-        registerEvent(event.ident, READ, (Udata *)event.udata);
+        registerEvent(
+            event.ident, READ,
+            (Udata *)
+                event.udata);  // <ident, FILT> [UDATE] // <ident, WRITE, UDATA>
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }

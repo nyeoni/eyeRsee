@@ -28,11 +28,11 @@ class ChannelController {
     Channel *find(const Channel *channel);
     Channel *find(const std::string &channel_name);
 
-    void create(const Channel *channel);
-    void create(const std::string &channel_name);
+    void insert(const Channel *channel);
+    void insert(const std::string &channel_name);
 
-    void del(const Channel *channel);
-    void del(const std::string &channel_name);
+    void erase(const Channel *channel);
+    void erase(const std::string &channel_name);
 
     void updateMode(int mode, Channel *channel);
     void updateMode(int mode, const std::string &channel_name);

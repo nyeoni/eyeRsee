@@ -32,19 +32,19 @@ Channel *ChannelController::find(const std::string &channel_name) {
     return &(iter->second);
 }
 
-void ChannelController::create(const Channel *channel) {
+void ChannelController::insert(const Channel *channel) {
     _channels.insert(std::make_pair(channel->getName(), *channel));
 }
-void ChannelController::create(const std::string &channel_name) {
+void ChannelController::insert(const std::string &channel_name) {
     Channel new_channel(channel_name);  // TODO : init mode
     _channels.insert(std::make_pair(channel_name, new_channel));
 }
 
-void ChannelController::del(const Channel *channel) {  // const
+void ChannelController::erase(const Channel *channel) {  // const
     _channels.erase(channel->getName());
 }
 
-void ChannelController::del(const std::string &channel_name) {
+void ChannelController::erase(const std::string &channel_name) {
     _channels.erase(channel_name);
 }
 
@@ -96,7 +96,7 @@ void ChannelController::insertClient(Channel *channel, Client *client,
 void ChannelController::eraseClient(Channel *channel, Client *client) {
     channel->eraseClient(client);
     if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
-        del(channel);
+        erase(channel);
     }
 }
 

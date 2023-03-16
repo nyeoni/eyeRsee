@@ -49,19 +49,11 @@ Client *ClientController::find(const std::string &nickname) {
 }
 
 /**
- * @brief create client to _clients
+ * @brief insert client to _clients
  *
  * @param client
  */
-void ClientController::create(const Client *client) {
-    _clients.insert(std::make_pair(client->getFd(), *client));
-}
-
-void ClientController::create(int fd, const Client *client) {
-    _clients.insert(std::make_pair(fd, *client));
-}
-
-Client *ClientController::create(int fd) {
+Client *ClientController::insert(int fd) {
     Client client;
     pair p = _clients.insert(std::make_pair(fd, client));
     return &(p.first->second);
@@ -72,11 +64,11 @@ Client *ClientController::create(int fd) {
  *
  * @param client
  */
-void ClientController::del(const Client *client) {
+void ClientController::erase(const Client *client) {
     _clients.erase(client->getFd());
 }
 
-void ClientController::del(const std::string &nickname) {
+void ClientController::erase(const std::string &nickname) {
     Client *target = find(nickname);
 
     if (target) {
@@ -86,7 +78,7 @@ void ClientController::del(const std::string &nickname) {
     }
 }
 
-void ClientController::del(int fd) {
+void ClientController::erase(int fd) {
     Client *target = find(fd);
 
     if (target) {

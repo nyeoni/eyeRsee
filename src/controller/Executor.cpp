@@ -12,7 +12,7 @@ Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
-Client *Executor::creatClient(int fd) { return client_controller.create(fd); }
+Client *Executor::creatClient(int fd) { return client_controller.insert(fd); }
 
 /**
  * @brief part channels
@@ -56,7 +56,7 @@ void Executor::join(int fd, CmdLine cmd_line) {
         if (iter->front() == '#') {
             Channel *channel = channel_controller.find(*iter);
             if (channel == NULL) {
-                channel_controller.create(*iter);
+                channel_controller.insert(*iter);
                 channel_controller.insertClient(channel, client, true);
             } else {
                 channel_controller.insertClient(channel, client, false);
@@ -148,7 +148,7 @@ void Executor::quit(int fd, std::string msg) {
     // TODO send messages (PRIVMSG)
     // channel_controller.
 
-    client_controller.del(fd);
+    client_controller.erase(fd);
     channel_controller.eraseClient(client);
 }
 void Executor::kick(int fd, std::string channel, std::string nickname,
@@ -175,15 +175,14 @@ void Executor::kick(int fd, std::string channel, std::string nickname,
 
 void Executor::privmsg(Client *client, CmdLine receivers, std::string msg) {
     std::string name;
-
     cmd_iterator iter = receivers.begin();
+
     for (; iter != receivers.end(); ++iter) {
         if (iter->at(0) == '#') {  // channel
             name = (*iter).at(1);
             Channel *channel = channel_controller.find(name);
             if (channel) {
                 if (channel->isOnChannel(client)) {
-                    // send
                     // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
                     broadcast(channel, msg, client);
                 } else {

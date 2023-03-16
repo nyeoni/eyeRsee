@@ -46,7 +46,7 @@ struct invite_params : public params {
 struct kick_params : public params {
     std::string channel;
     std::string user;
-    std::string comment; // optional
+    std::string comment;  // optional
 };
 struct topic_params : public params {
     std::string channel;
@@ -70,7 +70,9 @@ struct Udata {
     e_cmd command;
     params *params;
     std::string msg;
-    Client *src;
+    Client *src;  // CHECK src??
+
+    // Client
 
     Udata();
     Udata(const Udata &copy);

@@ -13,7 +13,7 @@ class Channel;
 class Client : public ConnectSocket {
    public:
     typedef std::set<Channel *> ChannelList;
-    typedef std::set<Channel *>::iterator channel_list_ieterator;
+    typedef std::set<Channel *>::iterator channel_list_iterator;
 
    private:
     // typedef typename std::set<Channel *>::iterator channel_iterator;

@@ -28,15 +28,12 @@ class Executor {
 
     // method
     Client *creatClient(int fd);
-
     void part(int fd, CmdLine channels);
-    // void joinClient(std::string nickname, std::string channel_name);
-    void connect(int fd, Udata *udata, CmdLine cmd_line);
-    void connect(int fd, Udata *udata);
     // int joinClient(std::string nickname, std::string channel_name);
 
     void join(int fd, CmdLine cmd_line);
-    void mode(int fd, std::string channel, e_mode mode);  // std::string info
+    void mode(int fd, std::string channel,
+              e_mode mode);  // std::string info
     void topic(int fd, std::string channel,
                std::string topic);  // fd -> client ...
     void invite(int fd, std::string nickname, std::string channel);
@@ -52,7 +49,11 @@ class Executor {
 
     void quit(int fd, std::string msg);
 
-    void privmsg(CmdLine receivers, std::string msg);
+    void privmsg(Client *client, CmdLine receivers, std::string msg);
+
+   private:
+    // exclude client
+    void broadcast(Channel *channel, std::string msg, Client *client = NULL);
 };
 
 // Executor -> Server data update

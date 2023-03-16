@@ -173,14 +173,47 @@ void Executor::kick(int fd, std::string channel, std::string nickname,
     }
 }
 
-void Executor::privmsg(CmdLine receivers, std::string msg) {
-    //
+void Executor::privmsg(Client *client, CmdLine receivers, std::string msg) {
+    std::string name;
+
     cmd_iterator iter = receivers.begin();
     for (; iter != receivers.end(); ++iter) {
-        // make response?
-        // write event 등록 -> server::run에서 다음 loop 돌 때
-        // monitorEvent()에서 감지
-        // EventHandler::registerEvent()
+        if (iter->at(0) == '#') {  // channel
+            name = (*iter).at(1);
+            Channel *channel = channel_controller.find(name);
+            if (channel) {
+                if (channel->isOnChannel(client)) {
+                    // send
+                    // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
+                    broadcast(channel, msg, client);
+                } else {
+                    //  404 You cannot send external  messages to this channel
+                }
+            } else {
+                // 403 no such channel
+            }
+        } else {  // user
+            name = *iter;
+            send(client_controller.find(name)->getFd(), msg.c_str(),
+                 msg.length(), 0);
+        }
+    }
+}
+
+// exclude client
+void Executor::broadcast(Channel *channel, std::string msg, Client *client) {
+    Channel::ClientList operators = channel->getOperators();
+    Channel::ClientList regulars = channel->getRegulars();
+    Channel::client_list_iterator iter = operators.begin();
+
+    for (; iter != operators.end(); ++iter) {
+        if (client == NULL || client->getFd() != (*iter)->getFd())
+            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
+    }
+    iter = regulars.begin();
+    for (; iter != regulars.end(); ++iter) {
+        if (client == NULL || client->getFd() != (*iter)->getFd())
+            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
     }
 }
 

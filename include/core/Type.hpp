@@ -26,6 +26,7 @@ enum e_cmd {
     MODE,
     INVITE,
     KICK,
+    TOPIC,
     PRIVMSG,
     NOTICE,
     // KILL, server operator

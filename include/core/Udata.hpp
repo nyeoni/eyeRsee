@@ -11,7 +11,7 @@ namespace ft {
 class Client;  // TODO 이걸로 모든 컴파일 에러가 해결되는 이유 다같이 생각해보기
 
 struct params {
-    virtual ~params(){}
+    virtual ~params() {}
 };
 struct pass_params : public params {
     std::string password;
@@ -24,7 +24,6 @@ struct user_params : public params {
 };
 struct nick_params : public params {
     std::string nickname;
-    int hopcount;  // optional
 };
 struct quit_params : public params {
     std::string msg;
@@ -40,6 +39,30 @@ struct mode_params : public params {
     std::string channel;
     e_mode mode;
 };
+struct invite_params : public params {
+    std::string nickname;
+    std::string channel;
+};
+struct kick_params : public params {
+    std::string channel;
+    std::string user;
+    std::string comment; // optional
+};
+struct topic_params : public params {
+    std::string channel;
+    std::string topic;
+};
+struct privmsg_params : public params {
+    std::vector<std::string> receivers;
+    std::string msg;
+};
+struct notice_params : public params {
+    std::string nickname;
+    std::string msg;
+};
+struct ping_params : public params {
+    std::string servername;
+};
 
 struct Udata {
     e_event action;
@@ -54,19 +77,6 @@ struct Udata {
     ~Udata();
     Udata &operator=(const Udata &ref);
 };
-
-// struct UdataBase {
-//     int action;
-// };
-//
-// struct UdataRead : public UdataBase {
-//     std::string pre_buf;
-//     std::vector<std::string> params;
-// };
-//
-// struct UdataWrite : public UdataBase {
-//     Response res;
-// };
 
 }  // namespace ft
 

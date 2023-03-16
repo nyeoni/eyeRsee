@@ -27,21 +27,18 @@ int EventHandler::monitorEvent() {
 }
 
 /**
- * @brief handle events
+ * @brief handle event
  *
  * Handle events of detected by monitorEvent
  */
 void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
+    int action = ((Udata *) event.udata)->action;
 
-    std::cout << "event fd: " << event.ident << std::endl;
     if (event.flags == EV_ERROR) {
         std::cerr << "EV_ERROR OCCURED" << std::endl;
         return;
     }
-    int action = ((Udata *) event.udata)->action;
-
-    std::cout << "action: " << action << std::endl;
     switch (action) {
         case ACCEPT:
             handleAccept();

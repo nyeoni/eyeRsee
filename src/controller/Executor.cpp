@@ -12,7 +12,7 @@ Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
-Client *Executor::creatClient(int fd) { return client_controller.create(fd); }
+Client *Executor::creatClient(int fd) { return client_controller.insert(fd); }
 
 /**
  * @brief part channels
@@ -56,7 +56,7 @@ void Executor::join(int fd, CmdLine cmd_line) {
         if (iter->front() == '#') {
             Channel *channel = channel_controller.find(*iter);
             if (channel == NULL) {
-                channel_controller.create(*iter);
+                channel_controller.insert(*iter);
                 channel_controller.insertClient(channel, client, true);
             } else {
                 channel_controller.insertClient(channel, client, false);
@@ -148,7 +148,7 @@ void Executor::quit(int fd, std::string msg) {
     // TODO send messages (PRIVMSG)
     // channel_controller.
 
-    client_controller.del(fd);
+    client_controller.erase(fd);
     channel_controller.eraseClient(client);
 }
 void Executor::kick(int fd, std::string channel, std::string nickname,
@@ -170,6 +170,54 @@ void Executor::kick(int fd, std::string channel, std::string nickname,
         // privmsg();
     } else {
         // error - hasPermission can generate error message code
+    }
+}
+
+void Executor::privmsg(Client *client, CmdLine receivers, std::string msg) {
+    std::string name;
+    cmd_iterator iter = receivers.begin();
+
+    for (; iter != receivers.end(); ++iter) {
+        if (iter->at(0) == '#') {  // channel
+            name = (*iter).at(1);
+            Channel *channel = channel_controller.find(name);
+            if (channel) {
+                if (channel->isOnChannel(client)) {
+                    // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
+                    broadcast(channel, msg, client);
+                } else {
+                    //  404 You cannot send external  messages to this channel
+                }
+            } else {
+                // 403 no such channel
+            }
+        } else {  // user
+            name = *iter;
+            Client *receiver = client_controller.find(name);
+            if (receiver) {
+                send(client_controller.find(name)->getFd(), msg.c_str(),
+                     msg.length(), 0);
+            } else {
+                // 401 user3 wow :No such nick
+            }
+        }
+    }
+}
+
+// exclude client
+void Executor::broadcast(Channel *channel, std::string msg, Client *client) {
+    Channel::ClientList operators = channel->getOperators();
+    Channel::ClientList regulars = channel->getRegulars();
+    Channel::client_list_iterator iter = operators.begin();
+
+    for (; iter != operators.end(); ++iter) {
+        if (client == NULL || client->getFd() != (*iter)->getFd())
+            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
+    }
+    iter = regulars.begin();
+    for (; iter != regulars.end(); ++iter) {
+        if (client == NULL || client->getFd() != (*iter)->getFd())
+            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
     }
 }
 

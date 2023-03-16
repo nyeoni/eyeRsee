@@ -26,16 +26,16 @@ class ChannelController {
     ChannelController &operator=(const ChannelController &ref);
 
     Channel *find(const Channel *channel);
-    Channel *find(const std::string &name);
+    Channel *find(const std::string &channel_name);
 
-    void create(const Channel *channel);
-    void create(const std::string &name);
+    void insert(const Channel *channel);
+    void insert(const std::string &channel_name);
 
-    void del(const Channel *channel);
-    void del(const std::string &name);
+    void erase(const Channel *channel);
+    void erase(const std::string &channel_name);
 
     void updateMode(int mode, Channel *channel);
-    void updateMode(int mode, const std::string &name);
+    void updateMode(int mode, const std::string &channel_name);
     void updateTopic(Client *client, Channel *channel,
                      const std::string &topic);
 

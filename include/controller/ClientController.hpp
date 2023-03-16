@@ -29,13 +29,11 @@ class ClientController {
     Client* find(const Client* client);
     Client* find(const std::string& nickname);
 
-    void create(const Client* client);
-    void create(int fd, const Client* client);
-    Client* create(int fd);
+    Client* insert(int fd);
 
-    void del(const Client* client);
-    void del(const std::string& nickname);
-    void del(int fd);
+    void erase(const Client* client);
+    void erase(const std::string& nickname);
+    void erase(int fd);
 
     void updateNickname(int fd, const std::string& nickname);
     void updateNickname(Client* client, const std::string& nickname);

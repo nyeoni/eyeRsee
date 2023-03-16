@@ -33,6 +33,7 @@ SRC_CORE_DIR		= core/
 SRC_CORE			= $(addprefix $(SRC_CORE_DIR), \
 										EventHandler.cpp \
 										Server.cpp \
+										Parser.cpp \
 										Udata.cpp \
 										utility.cpp \
 										Socket.cpp)

@@ -83,8 +83,6 @@ void Server::handleAccept() {
     new_client = _executor.creatClient(new_socket.getFd());
     new_client->setFd(new_socket.getFd());
 
-    // :NAYEON.local 001 nickname :Welcome to the Omega IRC Network
-    // nickname!username@127.0.0.1
     data = new Udata;
     data->src = new_client;
 
@@ -96,7 +94,7 @@ void Server::handleAccept() {
 
 void Server::handleConnect(int event_idx) {
     std::cout << "Connect" << std::endl;
-    std::string command_line;  // command_line
+    std::string command_line;
     char buf[BUF_SIZE];
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
@@ -104,13 +102,14 @@ void Server::handleConnect(int event_idx) {
     Udata *udata = static_cast<Udata *>(event.udata);
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
+    buf[n] = 0;
 
     buf[n] = 0;
     new_client->recv_buf += buf;
     std::string::size_type pos;
+
     pos = new_client->recv_buf.find('\n');
     if (pos != std::string::npos) {
-        //_env.password;
         command_line = new_client->recv_buf.substr(0, pos);
         //_parser.parse(command_line);
         new_client->recv_buf =
@@ -153,34 +152,34 @@ void Server::handleConnect(int event_idx) {
 }
 
 void Server::handleRead(int event_idx) {
-    std::cout << "Read" << std::endl;
+    std::cout << "==== Read ====" << std::endl;
 
     char buf[BUF_SIZE];
-    Event event = _ev_list[event_idx];                  // event
-    ConnectSocket *sock = ((Udata *)event.udata)->src;  // conn_sock
-    std::string command_line;                           // command_line
-    ssize_t n = 0;                                      // recv_cnt
+    Event event = _ev_list[event_idx];
+    ssize_t n = 0;
+
+    ConnectSocket *sock = ((Udata *)event.udata)->src;
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
+    sock->recv_buf += buf;
 
-    std::cout << buf << std::endl;
-    //    std::string str_buf(sock->recv_buf[0], n);
+    std::cout << "rev_buf: " << sock->recv_buf << std::endl;
 
-    //    std::string::size_type pos = str_buf.find('\n');
-    //    if (pos != std::string::npos) {
-    //        command_line = str_buf.substr(0, pos);
-    //        _parser.parse(command_line);
-    //        std::string tmp = sock->recv_buf;
-    //        sock->recv_buf = str_buf.substr(pos, str_buf.length()).c_str();
-    //    }
-    //    if (n > 0) {
-    //        std::cout << "Receive msg: " << buf << " (fd: " << fd << ")"
-    //                  << std::endl;
-    //         if (
-    //          TODO : parsing
-    //        registerEvent(fd, EXCUTE);
-    //    }
+    // get command_line from buf
+    std::string str_buf(buf, n);
+    std::string command_line;
+    std::string::size_type pos = str_buf.find('\n');
+
+    if (pos != std::string::npos) {
+        command_line = str_buf.substr(0, pos);
+        _parser.parse(command_line, ((Udata *)event.udata)->command,
+                      ((Udata *)event.udata)->params);
+
+        sock->recv_buf = str_buf.substr(pos + 1, str_buf.length());
+    }
+
+    //    std::vector<std::string> tokens = split(buf, ' ');
 }
 
 void Server::handleExecute(int event_idx) {
@@ -212,4 +211,7 @@ void Server::handleWrite(int event_idx) {
     //    register(DEL_WRITE);
 }
 
+const char *Parser::SyntaxException::what() const throw() {
+    return exception::what();
+}
 }  // namespace ft

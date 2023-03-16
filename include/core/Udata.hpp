@@ -40,6 +40,30 @@ struct mode_params : public params {
     std::string channel;
     e_mode mode;
 };
+struct invite_params : public params {
+    std::string nickname;
+    std::string channel;
+};
+struct kick_params : public params {
+    std::string channel;
+    std::string user;
+    std::string comment; // optional
+};
+struct topic_params : public params {
+    std::string channel;
+    std::string topic;
+};
+struct privmsg_params : public params {
+    std::vector<std::string> receivers;
+    std::string msg;
+};
+struct notice_params : public params {
+    std::string nickname;
+    std::string msg;
+};
+struct ping_params : public params {
+    std::string servername;
+};
 
 struct Udata {
     e_event action;

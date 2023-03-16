@@ -53,3 +53,34 @@ TEST(string_test, string_substr_test) {
     SHOW(str);
     SHOW(str2);
 }
+
+TEST(string_test, string_getline_test) {
+    std::string str = "abcd efgh dfdf";
+    std::istringstream tokenStream(str);
+    std::string token;
+
+    std::getline(tokenStream, token, ' ');
+    std::cout << token << std::endl;
+    std::getline(tokenStream, token);
+    std::cout << token << std::endl;
+
+    std::string input = "   123 456 789   ";
+    std::istringstream iss(input);
+
+    std::string trimmed_input;
+    std::getline(iss >> std::ws, trimmed_input);
+    std::cout << "Input: " << input << std::endl;
+    std::cout << "Trimmed input: " << trimmed_input << std::endl;
+}
+
+TEST(string_test, istringstream_test) {
+    std::string token;
+
+    std::istringstream iss("old string");
+    std::getline(iss, token, ' ');
+
+    std::cout << "Before: " << iss.str() << "\n";
+
+    iss.str("new string");
+    std::cout << "After: " << iss.str() << "\n";
+}

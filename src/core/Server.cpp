@@ -25,7 +25,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port<1025 | d_port> 65535) {
+    if (*back || d_port < 1025 | d_port > 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -98,7 +98,7 @@ void Server::handleConnect(int event_idx) {
     char buf[BUF_SIZE];
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
-    Client *new_client = ((Udata *)event.udata)->src;
+    Client *new_client = ((Udata *) event.udata)->src;
     Udata *udata = static_cast<Udata *>(event.udata);
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
@@ -111,10 +111,9 @@ void Server::handleConnect(int event_idx) {
     pos = new_client->recv_buf.find('\n');
     if (pos != std::string::npos) {
         command_line = new_client->recv_buf.substr(0, pos);
-        //_parser.parse(command_line);
+        _parser.parse(command_line, ((Udata *) udata)->command, ((Udata *) udata)->params);
         new_client->recv_buf =
-            new_client->recv_buf.substr(pos + 1, new_client->recv_buf.length())
-                .c_str();
+            new_client->recv_buf.substr(pos + 1, new_client->recv_buf.length());
     }
     if (n > 0) {
         std::cout << "Connect msg: " << buf << " (fd: " << event.ident << ")"
@@ -142,10 +141,11 @@ void Server::handleConnect(int event_idx) {
                 dynamic_cast<nick_params *>(udata->params)->nickname);
             break;
         default:
+            // TODO :NAYEON.local 451 * JOIN :You have not registered.
             break;
     }
     if (new_client->isAuthenticate()) {
-        registerEvent(event.ident, READ, (Udata *)event.udata);
+        registerEvent(event.ident, READ, (Udata *) event.udata);
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }
@@ -158,7 +158,7 @@ void Server::handleRead(int event_idx) {
     Event event = _ev_list[event_idx];
     ssize_t n = 0;
 
-    ConnectSocket *sock = ((Udata *)event.udata)->src;
+    ConnectSocket *sock = ((Udata *) event.udata)->src;
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
@@ -173,8 +173,8 @@ void Server::handleRead(int event_idx) {
 
     if (pos != std::string::npos) {
         command_line = str_buf.substr(0, pos);
-        _parser.parse(command_line, ((Udata *)event.udata)->command,
-                      ((Udata *)event.udata)->params);
+        _parser.parse(command_line, ((Udata *) event.udata)->command,
+                      ((Udata *) event.udata)->params);
 
         sock->recv_buf = str_buf.substr(pos + 1, str_buf.length());
     }
@@ -185,9 +185,9 @@ void Server::handleRead(int event_idx) {
 void Server::handleExecute(int event_idx) {
     std::cout << "execute " << event_idx << std::endl;
     registerEvent(_ev_list[event_idx].ident, DEL_EXCUTE,
-                  (Udata *)_ev_list[event_idx].udata);
+                  (Udata *) _ev_list[event_idx].udata);
     registerEvent(_ev_list[event_idx].ident, WRITE,
-                  (Udata *)_ev_list[event_idx].udata);
+                  (Udata *) _ev_list[event_idx].udata);
     // TODO : findClie`nt(fd).channel.client_list;
     // Command
     // vector<Client> client_list;
@@ -202,7 +202,7 @@ void Server::handleWrite(int event_idx) {
     // TODO : udata.buf
     std::cout << "write " << event_idx << std::endl;
     registerEvent(_ev_list[event_idx].ident, DEL_WRITE,
-                  (Udata *)_ev_list[event_idx]
+                  (Udata *) _ev_list[event_idx]
                       .udata);  // every client in client_list has their own
     // buf... message must be send in once.... (if
     // particial send occures, message can be mixedF

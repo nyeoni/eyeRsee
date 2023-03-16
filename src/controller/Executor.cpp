@@ -193,8 +193,13 @@ void Executor::privmsg(Client *client, CmdLine receivers, std::string msg) {
             }
         } else {  // user
             name = *iter;
-            send(client_controller.find(name)->getFd(), msg.c_str(),
-                 msg.length(), 0);
+            Client *receiver = client_controller.find(name);
+            if (receiver) {
+                send(client_controller.find(name)->getFd(), msg.c_str(),
+                     msg.length(), 0);
+            } else {
+                // 401 user3 wow :No such nick
+            }
         }
     }
 }

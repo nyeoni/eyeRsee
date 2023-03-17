@@ -38,6 +38,7 @@ struct part_params : public params {
 struct mode_params : public params {
     std::string channel;
     e_mode mode;
+    std::string nickname;
 };
 struct invite_params : public params {
     std::string nickname;

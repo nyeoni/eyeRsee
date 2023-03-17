@@ -3,7 +3,6 @@
 namespace ft {
 
 int Parser::getToken(int flag = TOKEN) {
-    if (tokenStream.eof()) return EOF;
     if (flag == MSG)
         std::getline(tokenStream, token);
     else
@@ -13,13 +12,42 @@ int Parser::getToken(int flag = TOKEN) {
 bool Parser::isEOF() {
     if (tokenStream.eof()) return true;
     return false;
+}
 
+std::string &Parser::validChannelName(std::string &channel) {
+    // chstring any string except for SPACE, BELL, NUL, CR, LF and comma(',')
+    if (channel.size() > 200) throw std::logic_error("Invalid Channel Name");
+    for (int i = 0; i < channel.length(); i++) {
+        if (isspace(channel[i]) || channel[i] == ',') throw std::logic_error("Invalid Channel Name");
+    }
+    return channel;
+}
+std::vector<std::string> &Parser::validChannelName(std::vector<std::string> &channels) {
+    std::vector<std::string>::iterator it;
+    for (it = channels.begin(); it != channels.end(); it++) {
+        validChannelName(*it);
+    }
+    return channels;
+}
+std::string &Parser::validNickName(std::string &nickname) {
+    // <letter> { <letter> | <number> | <special> }
+    if (nickname.length() > 9) throw std::logic_error("Invalid Channel Name");
+    if (isalpha(nickname[0]))
+        throw std::logic_error("Invalid Channel Name");
+    for (int i = 1; i < nickname.length(); i++) {
+        if (!isalnum(nickname[i]) && !strchr(&nickname[i], '-') && !strchr(&nickname[i], '[')
+            && !strchr(&nickname[i], ']') && !strchr(&nickname[i], '\\')
+            && !strchr(&nickname[i], '`') && !strchr(&nickname[i], '^')
+            && !strchr(&nickname[i], '{') && !strchr(&nickname[i], '}'))
+            throw std::logic_error("Invalid Channel Name");
+    }
+    return nickname;
 }
 
 void Parser::parseQuit(e_cmd &cmd, params *&params) {
     cmd = QUIT;
     quit_params *p;
-    if (getToken(MSG) != EOF) {
+    if (getToken(MSG)) {
         p = new quit_params;
         p->msg = token;
     }
@@ -57,18 +85,18 @@ void Parser::parseNick(e_cmd &cmd, params *&params) {
     std::vector<std::string> tokens = split(tokenStream, ' ');
     if (tokens.size() != 1) throw std::logic_error("Nick parse error");
     p = new nick_params;
-    p->nickname = tokens[0];
+    p->nickname = validNickName(tokens[0]);
     params = p;
 }
 void Parser::parseJoin(e_cmd &cmd, params *&params) {
     cmd = JOIN;
     join_params *p;
-    // irssi는 params 1개만 보고 나머지 무시..
-    // validate channel name
+
     if (!isEOF() && getToken()) {
         p = new join_params;
         std::vector<std::string> channels = split(token, ',');
-        p->channels = channels;
+
+        p->channels = validChannelName(channels);;
         if (!isEOF() && getToken()) {
             std::vector<std::string> keys = split(token, ',');
             p->keys = keys;
@@ -84,21 +112,27 @@ void Parser::parsePart(e_cmd &cmd, params *&params) {
     if (!isEOF() && getToken()) {
         p = new part_params;
         std::vector<std::string> channels = split(token, ',');
-        p->channels = channels;
+
+        p->channels = validChannelName(channels);
     } else {
         throw std::logic_error("Arugument must be given");
     }
     params = p;
 }
-
+void Parser::parseMode(e_cmd &cmd, params *&params) {
+    cmd = MODE;
+    mode_params *p;
+    
+}
 void Parser::parseInvite(e_cmd &cmd, params *&params) {
-    invite_params *p;
     cmd = INVITE;
+    invite_params *p;
     std::vector<std::string> tokens = split(tokenStream, ' ');
 
     if (tokens.size() != 2) throw std::logic_error("Argument must be 2");
-    p->nickname = tokens[0];
-    p->channel = tokens[1];
+
+    p->nickname = validNickName(tokens[0]);
+    p->channel = validChannelName(tokens[1]);
     params = p;
 }
 void Parser::parseKick(e_cmd &cmd, params *&params) {
@@ -107,7 +141,8 @@ void Parser::parseKick(e_cmd &cmd, params *&params) {
 
     if (!isEOF() && getToken()) {
         p = new kick_params;
-        p->channel = token;
+
+        p->channel = validChannelName(token);
         if (!isEOF() && getToken()) {
             p->user = token;
             if (getToken(MSG) != EOF) {
@@ -131,7 +166,8 @@ void Parser::parseTopic(e_cmd &cmd, params *&params) {
         throw std::logic_error("Argument must be 2 or 3");
     }
     p = new topic_params;
-    p->channel = tokens[0];
+
+    p->channel = validChannelName(tokens[0]);
     if (tokens.size() == 2) {
         p->topic = tokens[1];
     }

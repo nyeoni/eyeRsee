@@ -18,7 +18,8 @@ std::string &Parser::validChannelName(std::string &channel) {
     // chstring any string except for SPACE, BELL, NUL, CR, LF and comma(',')
     if (channel.size() > 200) throw std::logic_error("Invalid Channel Name");
     for (int i = 0; i < channel.length(); i++) {
-        if (isspace(channel[i]) || channel[i] == ',') throw std::logic_error("Invalid Channel Name");
+        if (!isascii(channel[i]) || isspace(channel[i]) || channel[i] == ',')
+            throw std::logic_error("Invalid Channel Name");
     }
     return channel;
 }

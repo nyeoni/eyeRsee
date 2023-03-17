@@ -122,7 +122,33 @@ void Parser::parsePart(e_cmd &cmd, params *&params) {
 void Parser::parseMode(e_cmd &cmd, params *&params) {
     cmd = MODE;
     mode_params *p;
-    
+
+    if (!isEOF() && getToken()) {
+        p = new mode_params;
+        p->channel = validChannelName(token);
+
+        if (!isEOF() && getToken()) {
+            if (token == "+o" || token == "o")
+                p->mode = OPER_T;
+            else if (token == "-o")
+                p->mode = OPER_F;
+            else if (token == "+i" || token == "i")
+                p->mode = INVITE_ONLY_T;
+            else if (token == "-i")
+                p->mode = INVITE_ONLY_F;
+            else if (token == "+t" || token == "t")
+                p->mode = TOPIC_PRIV_T;
+            else if (token == "-t")
+                p->mode = TOPIC_PRIV_F;
+            if (!isEOF() && getToken())
+                p->nickname = validNickName(token);
+        } else {
+            throw std::logic_error("Arugument must be given");
+        }
+    } else {
+        throw std::logic_error("Arugument must be given");
+    }
+    params = p;
 }
 void Parser::parseInvite(e_cmd &cmd, params *&params) {
     cmd = INVITE;

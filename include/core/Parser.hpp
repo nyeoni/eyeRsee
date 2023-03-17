@@ -22,10 +22,11 @@ class Parser {
     int getToken(int flag);
     bool isEOF();
 
+    static bool validSpecial(char c);
     static std::string &validChannelName(std::string &channel);
     static std::vector<std::string> &validChannelName(std::vector<std::string> &channels);
     static std::string &validNickName(std::string &nickname);
-
+    
    public:
     void parseQuit(e_cmd &cmd, params *&params);
     void parsePass(e_cmd &cmd, params *&params);

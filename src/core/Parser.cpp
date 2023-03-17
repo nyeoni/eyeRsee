@@ -14,6 +14,12 @@ bool Parser::isEOF() {
     return false;
 }
 
+bool isSpecial(char c) {
+    if (c == '-' || c == '[' || c == ']' || c == '\\'
+        || c == '`' || c == '^' || c == '{' || c == '}')
+        return true;
+    return false;
+}
 std::string &Parser::validChannelName(std::string &channel) {
     // chstring any string except for SPACE, BELL, NUL, CR, LF and comma(',')
     if (channel.size() > 200) throw std::logic_error("Invalid Channel Name");
@@ -36,10 +42,7 @@ std::string &Parser::validNickName(std::string &nickname) {
     if (isalpha(nickname[0]))
         throw std::logic_error("Invalid Channel Name");
     for (int i = 1; i < nickname.length(); i++) {
-        if (!isalnum(nickname[i]) && !strchr(&nickname[i], '-') && !strchr(&nickname[i], '[')
-            && !strchr(&nickname[i], ']') && !strchr(&nickname[i], '\\')
-            && !strchr(&nickname[i], '`') && !strchr(&nickname[i], '^')
-            && !strchr(&nickname[i], '{') && !strchr(&nickname[i], '}'))
+        if (!isalnum(nickname[i]) && !isSpecial(nickname[i]))
             throw std::logic_error("Invalid Channel Name");
     }
     return nickname;

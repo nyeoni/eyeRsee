@@ -110,11 +110,7 @@ void ClientController::updateNickname(int fd, const std::string &nickname) {
 
 void ClientController::updateNickname(Client *client,
                                       const std::string &nickname) {
-    if (find(nickname)) {
-        // no change (already exist)
-    } else {
-        client->setNickname(nickname);
-    }
+    client->setNickname(nickname);
 }
 
 void ClientController::insertChannel(Client *client, Channel *channel) {

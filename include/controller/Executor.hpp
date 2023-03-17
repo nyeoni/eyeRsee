@@ -1,6 +1,7 @@
 #ifndef EXECUTOR_HPP
 #define EXECUTOR_HPP
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -10,11 +11,13 @@
 #include "core/Udata.hpp"
 
 namespace ft {
+class Client;
 
 class Executor {
    public:
     typedef std::vector<std::string> CmdLine;
     typedef std::vector<std::string>::iterator cmd_iterator;
+    typedef std::set<Client *> ClientList;
 
    private:
     ChannelController channel_controller;
@@ -53,7 +56,9 @@ class Executor {
 
    private:
     // exclude client
-    void broadcast(Channel *channel, std::string msg, Client *client = NULL);
+    void broadcast(Channel *channel, std::string msg = "",
+                   Client *client = NULL);
+    ClientList findReceivers(Client *client);
 };
 
 // Executor -> Server data update

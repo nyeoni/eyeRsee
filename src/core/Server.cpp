@@ -192,7 +192,7 @@ void Server::handleExecute(int event_idx) {
 
     switch (udata->command) {
         case NICK:
-            _executor.nick(client, "nickname");  // TODO nickname
+            _executor.nick(fd, "nickname");  // TODO nickname
             break;
         case JOIN:
             _executor.join(

@@ -1,4 +1,4 @@
-#include "core/EventHandler.hpp"
+#include "handler/EventHandler.hpp"
 
 #include <iostream>
 

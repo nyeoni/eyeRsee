@@ -29,6 +29,11 @@ SRC_ENTITY			= $(addprefix $(SRC_ENTITY_DIR), \
 										Channel.cpp \
 										Client.cpp)
 
+SRC_HANDLER_DIR		= handler/
+SRC_HANDLER			= $(addprefix $(SRC_CORE_DIR), \
+										EventHandler.cpp \
+										ErrorHandler.cpp)
+
 SRC_CORE_DIR		= core/
 SRC_CORE			= $(addprefix $(SRC_CORE_DIR), \
 										EventHandler.cpp \
@@ -41,6 +46,7 @@ SRC_CORE			= $(addprefix $(SRC_CORE_DIR), \
 SRC					= $(SRC_MAIN) \
 						$(SRC_CONTROLLER) \
 						$(SRC_ENTITY) \
+						$(SRC_HANDLER) \
 						$(SRC_CORE)
 
 SRCS_DIR	= ./src/
@@ -59,6 +65,7 @@ $(OBJS_DIR)%.o: $(SRCS_DIR)%.cpp
 	@mkdir -p $(OBJS_DIR)/$(SRC_CONTROLLER_DIR)
 	@mkdir -p $(OBJS_DIR)/$(SRC_CORE_DIR)
 	@mkdir -p $(OBJS_DIR)/$(SRC_ENTITY_DIR)
+	@mkdir -p $(OBJS_DIR)/$(SRC_HANDLER_DIR)
 	@$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 	@echo $(CUT)$(BOLD)$(MINT) Compiling with $(CFLAGS)...$(RESET)
 	@echo $(CUT)$(MAUVE) [$(notdir $<)] to [$(notdir $@)] $(RESET)

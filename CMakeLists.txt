@@ -14,7 +14,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Create ft_irc_lib interface
-add_library(ft_irc_lib STATIC src/entity/Channel.cpp src/entity/Client.cpp src/core/EventHandler.cpp src/core/Server.cpp src/core/Socket.cpp src/controller/ChannelController.cpp src/controller/ClientController.cpp include/controller/Executor.hpp src/controller/Executor.cpp src/core/Udata.cpp src/core/Parser.cpp src/core/utility.cpp)
+add_library(ft_irc_lib STATIC src/entity/Channel.cpp src/entity/Client.cpp src/handler/EventHandler.cpp src/core/Server.cpp src/core/Socket.cpp src/controller/ChannelController.cpp src/controller/ClientController.cpp include/controller/Executor.hpp src/controller/Executor.cpp src/core/Udata.cpp src/core/Parser.cpp src/core/utility.cpp include/handler/ErrorHandler.hpp)
 # Include ft_irc hpp files
 target_include_directories(ft_irc_lib PUBLIC include)
 # Set ft_irc_lib compile option

@@ -27,11 +27,11 @@ std::vector<std::string> split(std::istringstream &stream, char delimiter) {
     return tokens;
 }
 
-long getTicks(void) {
+long long getTicks(void) {
     struct timeval t_val;
 
     gettimeofday(&t_val, NULL);
-    return (t_val.tv_sec + t_val.tv_usec / 1000000L);
+    return (t_val.tv_sec * 1000LL + t_val.tv_usec / 1000LL);
 }
 
 }  // namespace ft

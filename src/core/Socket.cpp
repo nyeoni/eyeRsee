@@ -11,6 +11,8 @@
 
 namespace ft {
 
+long long getTicks(void);  // utility.cpp
+
 /****************************************************/
 /*                  SocketBase                      */
 /****************************************************/
@@ -71,6 +73,7 @@ void ListenSocket::createSocket(const int &port) {
 /****************************************************/
 
 ConnectSocket::ConnectSocket() : SocketBase(-1) {
+    create_time = getTicks();
     recv_buf.reserve(510);
     send_buf.reserve(510);
 }

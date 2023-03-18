@@ -25,7 +25,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -98,12 +98,10 @@ void Server::handleConnect(int event_idx) {
     char buf[BUF_SIZE];
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
-    Client *new_client = ((Udata *) event.udata)->src;
+    Client *new_client = ((Udata *)event.udata)->src;
     Udata *udata = static_cast<Udata *>(event.udata);
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
-    buf[n] = 0;
-
     buf[n] = 0;
     new_client->recv_buf += buf;
     std::string::size_type pos;
@@ -111,8 +109,8 @@ void Server::handleConnect(int event_idx) {
     pos = new_client->recv_buf.find('\n');
     if (pos != std::string::npos) {
         command_line = new_client->recv_buf.substr(0, pos);
-        _parser.parse(command_line, ((Udata *) udata)->command,
-                      ((Udata *) udata)->params);
+        _parser.parse(command_line, ((Udata *)udata)->command,
+                      ((Udata *)udata)->params);
         new_client->recv_buf =
             new_client->recv_buf.substr(pos + 1, new_client->recv_buf.length());
     }
@@ -148,7 +146,8 @@ void Server::handleConnect(int event_idx) {
     if (new_client->isAuthenticate()) {
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
 
-        registerEvent(event.ident, READ, (Udata *) event.udata);
+        registerEvent(event.ident, READ, (Udata *)event.udata);
+        registerEvent(event.ident, WRITE, (Udata *)event.udata);
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }
@@ -161,7 +160,7 @@ void Server::handleRead(int event_idx) {
     Event event = _ev_list[event_idx];
     ssize_t n = 0;
 
-    ConnectSocket *sock = ((Udata *) event.udata)->src;
+    ConnectSocket *sock = ((Udata *)event.udata)->src;
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
@@ -176,8 +175,8 @@ void Server::handleRead(int event_idx) {
 
     if (pos != std::string::npos) {
         command_line = str_buf.substr(0, pos);
-        _parser.parse(command_line, ((Udata *) event.udata)->command,
-                      ((Udata *) event.udata)->params);
+        _parser.parse(command_line, ((Udata *)event.udata)->command,
+                      ((Udata *)event.udata)->params);
 
         sock->recv_buf = str_buf.substr(pos + 1, str_buf.length());
     }
@@ -223,7 +222,6 @@ void Server::handleExecute(int event_idx) {
                 client,
                 dynamic_cast<privmsg_params *>(udata->params)->receivers,
                 dynamic_cast<privmsg_params *>(udata->params)->msg);
-
             break;
             // case NOTICE:
             //      _executor.notice(fd);
@@ -235,32 +233,26 @@ void Server::handleExecute(int event_idx) {
             //      _executor.pong(fd);
             //     break;
         default:
+            return;
             break;
     }
-
     registerEvent(_ev_list[event_idx].ident, WRITE, udata);
-
-    // TODO : findClie`nt(fd).channel.client_list;
-    // Command
-    // vector<Client> client_list;
-    // for (iterator it = client_list.begin(); it != client_list.end(); ++it)
-    {
-        // registerEvent(it->fd, WRITE);
-    }
 }
 
 void Server::handleWrite(int event_idx) {
-    // (X) TODO : findSocket(fd).response.buf || findResponse(fd).buf;
-    // TODO : udata.buf
+    // Udata *udata = static_cast<Udata *>(_ev_list[event_idx].udata);
+    std::string &send_buf =
+        static_cast<Udata *>(_ev_list[event_idx].udata)->src->send_buf;
     std::cout << "write " << event_idx << std::endl;
-    registerEvent(_ev_list[event_idx].ident, DEL_WRITE,
-                  (Udata *) _ev_list[event_idx]
-                      .udata);  // every client in client_list has their own
-    // buf... message must be send in once.... (if
-    // particial send occures, message can be mixedF
-    // with others) n = send(fd, buf.c_str(),
-    // buf.length(), 0); if (n != -1)
-    //    register(DEL_WRITE);
+    ssize_t n;
+    n = send(_ev_list[event_idx].ident, send_buf.c_str(), send_buf.length(), 0);
+    if (n == send_buf.length())
+        registerEvent(_ev_list[event_idx].ident, DEL_WRITE, NULL);
+    else if (n == -1) {
+        std::cerr << "[UB] send return -1" << std::endl;
+    } else {
+        send_buf = send_buf.substr(n, send_buf.length());
+    }
 }
 
 const char *Parser::SyntaxException::what() const throw() {

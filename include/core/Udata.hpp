@@ -65,15 +65,19 @@ struct ping_params : public params {
     std::string servername;
 };
 
+struct Command {
+    e_cmd command;
+    params *params;
+};
+
 struct Udata {
     e_event action;
     int status;
+    std::string msg;
     e_cmd command;
     params *params;
-    std::string msg;
-    Client *src;  // CHECK src??
-
-    // Client
+//    std::vector<Command> commands;
+    Client *src;
 
     Udata();
     Udata(const Udata &copy);

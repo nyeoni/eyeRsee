@@ -236,7 +236,9 @@ void Server::handleExecute(int event_idx) {
 
 void Server::handleWrite(int event_idx) {
     Event &event = _ev_list[event_idx];
-    std::string &send_buf = static_cast<Udata *>(event.udata)->src->send_buf;
+    std::string &send_buf =
+        static_cast<Udata *>(event.udata)->src->send_buf;
+
     std::cout << "write " << event_idx << std::endl;
     ssize_t n;
     n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);

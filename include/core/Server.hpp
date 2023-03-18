@@ -56,6 +56,10 @@ class Server : public EventHandler {
     void handleExecute(int event_idx);
     void handleWrite(int event_idx);
     void handleTimeout(int event_idx);
+
+   private:
+    // core methods
+    void authenticate();
 };
 
 }  // namespace ft

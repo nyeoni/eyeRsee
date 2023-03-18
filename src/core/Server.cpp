@@ -91,8 +91,9 @@ void Server::handleAccept() {
 
 void Server::handleConnect(int event_idx) {
     std::cout << "Connect" << std::endl;
-    std::string command_line;
+
     char buf[BUF_SIZE];
+    std::string command_line;
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
@@ -100,37 +101,34 @@ void Server::handleConnect(int event_idx) {
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
-    new_client->recv_buf += buf;
-    std::string::size_type pos;
 
-    pos = new_client->recv_buf.find('\n');
-    if (pos != std::string::npos) {
-        command_line = new_client->recv_buf.substr(0, pos);
-        // _parser.parse(command_line, ((Udata *)udata)->command,
-        //               ((Udata *)udata)->params);
-        new_client->recv_buf =
-            new_client->recv_buf.substr(pos + 1, new_client->recv_buf.length());
-    }
-    if (n > 0) {
-        std::cout << "Connect msg: " << buf << " (fd: " << event.ident << ")"
-                  << std::endl;
-        std::cout << "\tcommand_line: " << command_line << std::endl;
-        std::cout << "\trecv_buf: " << new_client->recv_buf << std::endl;
+    new_client->recv_buf.append(buf);
+
+    // multi commands parse
+    std::string line = new_client->readRecvBuf();
+    std::vector<std::string> command_lines = split(line, '\n');
+    std::vector<std::string>::iterator it;
+    for (it = command_lines.begin(); it != command_lines.end(); it++) {
+        Command command = {};
+
+        _parser.parse(*it, command.type, command.params);
+        udata->commands.push_back(command);
     }
 
+    // connect to clients logic
+    // authenticate error
     std::vector<Command>::iterator iter = udata->commands.begin();
     for (; iter != udata->commands.end(); ++iter) {
         _executor.connect(&*iter, new_client, _env.password);
     }
 
+    // check is authenticate
     if (new_client->isAuthenticate()) {
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
 
         registerEvent(event.ident, READ, (Udata *)event.udata);
         registerEvent(event.ident, DEL_WRITE,
                       static_cast<Udata *>(event.udata));
-        std::cout << "#" << event.ident << "READ event registered!"
-                  << std::endl;
     }
 }
 
@@ -202,7 +200,8 @@ void Server::handleWrite(int event_idx) {
 void Server::handleTimeout(int event_idx) {
     long long start =
         static_cast<Udata *>(_ev_list[event_idx].udata)->src->create_time;
-    // registerEvent(_ev_list[event_idx].ident, DEL_WRITE, 0);  // 나중에고치기
+    // registerEvent(_ev_list[event_idx].ident, DEL_WRITE, 0);  //
+    // 나중에고치기
 
     if (getTicks() > start + 10000) {
         registerEvent(_ev_list[event_idx].ident, DEL_READ, 0);

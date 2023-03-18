@@ -46,11 +46,16 @@ class ConnectSocket : public SocketBase {
     ConnectSocket();
     ConnectSocket(const ConnectSocket &copy);
     virtual ~ConnectSocket();
+
     ConnectSocket &operator=(const ConnectSocket &ref);
 
-    void createSocket(const int &listen_fd);
-
     bool isAuthenticate();
+    void createSocket(const int &listen_fd);
+    std::string readRecvBuf() {
+        std::string::size_type found = recv_buf.find_last_of('\n');
+        recv_buf = recv_buf.substr(found + 1);
+        return (recv_buf.substr(0, found));
+    }
 };
 
 }  // namespace ft

@@ -90,7 +90,7 @@ fclean: clean
 re: fclean all
 
 .PHONY	: debug
-debug	: fclean
+debug	:
 	@make DEBUG=1 all
 
 .PHONY	: leaks

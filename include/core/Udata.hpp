@@ -66,17 +66,14 @@ struct ping_params : public params {
 };
 
 struct Command {
-    e_cmd command;
+    e_cmd type;
     params *params;
 };
 
 struct Udata {
     e_event action;
     int status;
-    std::string msg;
-    e_cmd command;
-    params *params;
-//    std::vector<Command> commands;
+    std::vector<Command> commands;
     Client *src;
 
     Udata();

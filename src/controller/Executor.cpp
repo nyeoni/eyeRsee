@@ -14,6 +14,66 @@ Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
+void Executor::connect(Command *command, Client *client, std::string password) {
+    switch (command->type) {
+        case PASS:
+            pass(client, command->params, password);
+            break;
+        case USER:
+            user(client, command->params);
+            break;
+        case NICK:
+            nick(client, command->params);
+            break;
+        default:
+            // TODO :NAYEON.local 451 * JOIN :You have not registered.
+            break;
+    }
+}
+
+void Executor::execute(Command *command, Client *client) {
+    switch (command->type) {
+        case NICK:
+            nick(client->getFd(), command->params);
+            break;
+        case JOIN:
+            join(client, command->params);
+            break;
+        case PART:
+            part(client, command->params);
+            break;
+        case MODE:
+            mode(client, command->params);
+            break;
+        case INVITE:
+            invite(client, command->params);
+            break;
+        case KICK:
+            kick(client, command->params);
+            break;
+        case PRIVMSG:
+            privmsg(client, command->params);
+            break;
+        case TOPIC:
+            topic(client, command->params);
+            break;
+        case QUIT:
+            quit(client, command->params);
+            break;
+            // case NOTICE:
+            //      notice(fd);
+            //     break;
+            // case PING:
+            //      ping(fd);
+            //     break;
+            // case PONG:
+            //      pong(fd);
+            //     break;
+        default:
+            break;
+    }
+}
+
 Client *Executor::creatClient(int fd) { return client_controller.insert(fd); }
 
 /**

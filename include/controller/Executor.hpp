@@ -25,7 +25,8 @@ class Executor {
 
     void connect(Command *command, Client *client, std::string password);
     void execute(Command *command, Client *client);
-    Client *creatClient(int fd);
+    Client *createClient(int fd);
+    Channel *createChannel(std::string channel_name);
 
    private:
     void pass(Client *new_client, params *params, std::string server_password);

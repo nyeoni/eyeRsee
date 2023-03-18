@@ -143,7 +143,7 @@ void Server::handleConnect(int event_idx) {
     }
     if (new_client->isAuthenticate()) {
         registerEvent(event.ident, READ, (Udata *)event.udata);
-        registerEvent(event.ident, WRITE, (Udata *)event.udata);
+        registerEvent(event.ident, WRITE, static_cast<Udata *>(event.udata));
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }
@@ -233,14 +233,14 @@ void Server::handleExecute(int event_idx) {
 }
 
 void Server::handleWrite(int event_idx) {
-    // Udata *udata = static_cast<Udata *>(_ev_list[event_idx].udata);
+    Event &event = _ev_list[event_idx];
     std::string &send_buf =
-        static_cast<Udata *>(_ev_list[event_idx].udata)->src->send_buf;
+        static_cast<Udata *>(event.udata)->src->send_buf;
     std::cout << "write " << event_idx << std::endl;
     ssize_t n;
-    n = send(_ev_list[event_idx].ident, send_buf.c_str(), send_buf.length(), 0);
+    n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
     if (n == send_buf.length())
-        registerEvent(_ev_list[event_idx].ident, DEL_WRITE, NULL);
+        registerEvent(event.ident, DEL_WRITE, NULL);
     else if (n == -1) {
         std::cerr << "[UB] send return -1" << std::endl;
     } else {

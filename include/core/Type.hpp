@@ -8,11 +8,11 @@ enum e_event {
     READ,
     READ_MORE,
     WRITE,
-    WRITE_MORE,
     EXCUTE,
+    CLOSE,
     DEL_READ,
-    DEL_EXCUTE,
     DEL_WRITE,
+    TIMEOUT,
     IDLE
 };
 

@@ -4,12 +4,13 @@
 #include <sys/event.h>
 
 #include <vector>
+
 #include "Udata.hpp"
 
 namespace ft {
 
 class EventHandler {
- protected:
+   protected:
     typedef struct kevent Event;
     typedef std::vector<Event> EventList;
 
@@ -21,7 +22,7 @@ class EventHandler {
     Event _ev_list[_max_event];
     EventList _change_list;
 
- public:
+   public:
     EventHandler();
     EventHandler(const EventHandler &copy);
     virtual ~EventHandler();
@@ -37,7 +38,7 @@ class EventHandler {
     virtual void handleRead(int event_idx) = 0;
     virtual void handleExecute(int event_idx) = 0;
     virtual void handleWrite(int event_idx) = 0;
-
+    virtual void handleTimeout(int event_idx) = 0;
 };
 }  // namespace ft
 

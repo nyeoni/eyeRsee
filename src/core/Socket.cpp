@@ -9,6 +9,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "core/utility.hpp"
+
 namespace ft {
 
 /****************************************************/
@@ -71,7 +73,9 @@ void ListenSocket::createSocket(const int &port) {
 /****************************************************/
 
 ConnectSocket::ConnectSocket() : SocketBase(-1) {
-    //    recv_buf = new char[BUF_SIZE];
+    create_time = getTicks();
+    recv_buf.reserve(512);
+    send_buf.reserve(512);
 }
 ConnectSocket::ConnectSocket(const ConnectSocket &copy)
     : SocketBase(copy.getFd()) {}
@@ -93,6 +97,5 @@ void ConnectSocket::createSocket(const int &listen_fd) {
 }
 
 bool ConnectSocket::isAuthenticate() { return auth[0] && auth[1] && auth[2]; }
-
 
 }  // namespace ft

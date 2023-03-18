@@ -1,10 +1,11 @@
 #include "core/EventHandler.hpp"
-#include "core/Udata.hpp"
-#include "core/Type.hpp"
+
 #include <iostream>
 
-namespace ft {
+#include "core/Type.hpp"
+#include "core/Udata.hpp"
 
+namespace ft {
 EventHandler::EventHandler() : _change_cnt(0) {
     _kq_fd = kqueue();
     _change_list.reserve(128);
@@ -33,13 +34,13 @@ int EventHandler::monitorEvent() {
  */
 void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
-    int action = ((Udata *) event.udata)->action;
+    Udata *udata = static_cast<Udata *>(event.udata);
 
-    if (event.flags == EV_ERROR) {
+    if (event.flags & EV_ERROR) {
         std::cerr << "EV_ERROR OCCURED" << std::endl;
         return;
     }
-    switch (action) {
+    switch (udata->action) {
         case ACCEPT:
             handleAccept();
             break;
@@ -54,6 +55,12 @@ void EventHandler::handleEvent(int event_idx) {
             break;
         case WRITE:
             handleWrite(event_idx);  // TODO
+            break;
+        case TIMEOUT:
+            handleTimeout(event_idx);
+            break;
+        case CLOSE:
+            //handleClose(event_idx); // TODO
             break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
@@ -72,34 +79,34 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
     switch (action) {
         case ACCEPT:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) udata);
+                   static_cast<void *>(udata));
             break;
         case CONNECT:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) udata);
+                   static_cast<void *>(udata));
             break;
         case READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) udata);
+                   static_cast<void *>(udata));
             break;
         case EXCUTE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) udata);
+                   static_cast<void *>(udata));
         case WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   (void *) udata);
+                   static_cast<void *>(udata));
+            break;
+        case TIMEOUT:
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
+                   static_cast<void *>(udata));
             break;
         case DEL_READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0,
-                   (void *) (intptr_t) READ);
+                   static_cast<void *>(udata));
             break;
         case DEL_WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
-                   (void *) (intptr_t) WRITE);
-            break;
-        case DEL_EXCUTE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
-                   (void *) (intptr_t) EXCUTE);
+                   static_cast<void *>(udata));
             break;
         default:
             return;

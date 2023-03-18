@@ -1,6 +1,7 @@
-#include <iostream>
-#include <sstream>
-#include <vector>
+#include <sys/time.h>
+
+#include <core/utility.hpp>
+#include <istream>
 
 namespace ft {
 
@@ -23,6 +24,13 @@ std::vector<std::string> split(std::istringstream &stream, char delimiter) {
         tokens.push_back(token);
     }
     return tokens;
+}
+
+long long getTicks(void) {
+    struct timeval t_val;
+
+    gettimeofday(&t_val, NULL);
+    return (t_val.tv_sec * 1000LL + t_val.tv_usec / 1000LL);
 }
 
 }  // namespace ft

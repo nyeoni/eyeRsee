@@ -9,11 +9,11 @@
 
 #include "core/Type.hpp"
 #include "core/Udata.hpp"
+#include "core/utility.hpp"
 #include "entity/Client.hpp"
 
 namespace ft {
-std::vector<std::string> split(std::string str,
-                               char Delimiter);  // 임시로 만든거
+
 void Env::parse(int argc, char **argv) {
     double d_port;
     char *back;
@@ -86,10 +86,8 @@ void Server::handleAccept() {
     data = new Udata;
     data->src = new_client;
 
-    // TODO : timeout error. registerEvent(TIME_OUT) timer 설정해서 등록
-    // -> handleTimeout 에서 delete, close
-    registerEvent(new_client->getFd(), CONNECT, data);  // READ
-    // registerEvent(new_client->getFd(), TIMEOUT, data); // WRITE  EXCUTE/WRITE
+    registerEvent(new_client->getFd(), CONNECT, data);
+    // registerEvent(new_client->getFd(), TIMEOUT, data); // TODO
 }
 
 void Server::handleConnect(int event_idx) {
@@ -102,8 +100,6 @@ void Server::handleConnect(int event_idx) {
     Udata *udata = static_cast<Udata *>(event.udata);
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
-    buf[n] = 0;
-
     buf[n] = 0;
     new_client->recv_buf += buf;
     std::string::size_type pos;
@@ -147,6 +143,7 @@ void Server::handleConnect(int event_idx) {
     }
     if (new_client->isAuthenticate()) {
         registerEvent(event.ident, READ, (Udata *)event.udata);
+        registerEvent(event.ident, WRITE, static_cast<Udata *>(event.udata));
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }
@@ -191,8 +188,6 @@ void Server::handleExecute(int event_idx) {
     int numeric_replie;
     int fd = _ev_list[event_idx].ident;
 
-    registerEvent(fd, DEL_EXCUTE, udata);
-
     switch (udata->command) {
         case NICK:
             _executor.nick(client, "nickname");  // TODO nickname
@@ -221,7 +216,6 @@ void Server::handleExecute(int event_idx) {
                 client,
                 dynamic_cast<privmsg_params *>(udata->params)->receivers,
                 dynamic_cast<privmsg_params *>(udata->params)->msg);
-
             break;
             // case NOTICE:
             //      _executor.notice(fd);
@@ -235,30 +229,34 @@ void Server::handleExecute(int event_idx) {
         default:
             break;
     }
-
     registerEvent(_ev_list[event_idx].ident, WRITE, udata);
-
-    // TODO : findClie`nt(fd).channel.client_list;
-    // Command
-    // vector<Client> client_list;
-    // for (iterator it = client_list.begin(); it != client_list.end(); ++it)
-    {
-        // registerEvent(it->fd, WRITE);
-    }
 }
 
 void Server::handleWrite(int event_idx) {
-    // (X) TODO : findSocket(fd).response.buf || findResponse(fd).buf;
-    // TODO : udata.buf
+    Event &event = _ev_list[event_idx];
+    std::string &send_buf =
+        static_cast<Udata *>(event.udata)->src->send_buf;
     std::cout << "write " << event_idx << std::endl;
-    registerEvent(_ev_list[event_idx].ident, DEL_WRITE,
-                  (Udata *)_ev_list[event_idx]
-                      .udata);  // every client in client_list has their own
-    // buf... message must be send in once.... (if
-    // particial send occures, message can be mixedF
-    // with others) n = send(fd, buf.c_str(),
-    // buf.length(), 0); if (n != -1)
-    //    register(DEL_WRITE);
+    ssize_t n;
+    n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
+    if (n == send_buf.length())
+        registerEvent(event.ident, DEL_WRITE, NULL);
+    else if (n == -1) {
+        std::cerr << "[UB] send return -1" << std::endl;
+    } else {
+        send_buf = send_buf.substr(n, send_buf.length());
+    }
+}
+
+void Server::handleTimeout(int event_idx) {
+    long long start =
+        static_cast<Udata *>(_ev_list[event_idx].udata)->src->create_time;
+    // registerEvent(_ev_list[event_idx].ident, DEL_WRITE, 0);  // 나중에고치기
+
+    if (getTicks() > start + 10000) {
+        registerEvent(_ev_list[event_idx].ident, DEL_READ, 0);
+        registerEvent(_ev_list[event_idx].ident, CLOSE, 0);
+    }
 }
 
 const char *Parser::SyntaxException::what() const throw() {

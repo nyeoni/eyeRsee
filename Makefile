@@ -30,13 +30,12 @@ SRC_ENTITY			= $(addprefix $(SRC_ENTITY_DIR), \
 										Client.cpp)
 
 SRC_HANDLER_DIR		= handler/
-SRC_HANDLER			= $(addprefix $(SRC_CORE_DIR), \
+SRC_HANDLER			= $(addprefix $(SRC_HANDLER_DIR), \
 										EventHandler.cpp \
 										ErrorHandler.cpp)
 
 SRC_CORE_DIR		= core/
 SRC_CORE			= $(addprefix $(SRC_CORE_DIR), \
-										EventHandler.cpp \
 										Server.cpp \
 										Parser.cpp \
 										Udata.cpp \

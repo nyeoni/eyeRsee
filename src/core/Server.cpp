@@ -25,7 +25,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port<1025 | d_port> 65535) {
+    if (*back || d_port < 1025 | d_port > 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -79,7 +79,7 @@ void Server::handleAccept() {
     Udata *data;
 
     new_socket.createSocket(_listen_socket.getFd());
-    new_client = _executor.creatClient(new_socket.getFd());
+    new_client = _executor.createClient(new_socket.getFd());
     new_client->setFd(new_socket.getFd());
 
     data = new Udata;
@@ -93,12 +93,12 @@ void Server::handleConnect(int event_idx) {
     std::cout << "Connect" << std::endl;
 
     char buf[BUF_SIZE];
-    std::string command_line;
-    ssize_t n = 0;
+    ssize_t n;
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
     Client *new_client = udata->src;
 
+    // read connect_socket
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
 
@@ -121,14 +121,15 @@ void Server::handleConnect(int event_idx) {
     for (; iter != udata->commands.end(); ++iter) {
         _executor.connect(&*iter, new_client, _env.password);
     }
+    udata->commands.clear();
 
     // check is authenticate
     if (new_client->isAuthenticate()) {
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
 
-        registerEvent(event.ident, READ, (Udata *)event.udata);
-        registerEvent(event.ident, DEL_WRITE,
-                      static_cast<Udata *>(event.udata));
+        registerEvent(event.ident, READ, (Udata *) event.udata);
+//        registerEvent(event.ident, DEL_WRITE,
+//                      static_cast<Udata *>(event.udata));
     }
 }
 
@@ -136,33 +137,31 @@ void Server::handleRead(int event_idx) {
     std::cout << "==== Read ====" << std::endl;
 
     char buf[BUF_SIZE];
-    Event event = _ev_list[event_idx];
     ssize_t n = 0;
+    Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
-    ConnectSocket *sock = udata->src;
+    ConnectSocket *connect_socket = udata->src;
 
+    // read connect_socket
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
-    sock->recv_buf += buf;
 
-    std::cout << "rev_buf: " << sock->recv_buf << std::endl;
+    connect_socket->recv_buf.append(buf);
 
-    // get command_line from buf
-    std::string str_buf(buf, n);
-    std::string command_line;
-    std::string::size_type pos = str_buf.find('\n');
+    // multi commands parse
+    std::string line = connect_socket->readRecvBuf();
+    std::vector<std::string> command_lines = split(line, '\n');
+    std::vector<std::string>::iterator it;
+    for (it = command_lines.begin(); it != command_lines.end(); it++) {
+        Command command = {};
 
-    if (pos != std::string::npos) {
-        command_line = str_buf.substr(0, pos);
-        // _parser.parse(command_line, ((Udata *)event.udata)->command,
-        //               ((Udata *)event.udata)->params);
-
-        sock->recv_buf = str_buf.substr(pos + 1, str_buf.length());
-
-        // if (buf res) register(READ_MORE);
+        _parser.parse(*it, command.type, command.params);
+        udata->commands.push_back(command);
     }
 
-    //    std::vector<std::string> tokens = split(buf, ' ');
+    // registerRead
+    if (command_lines.size())
+        registerEvent(event.ident, EXCUTE, udata);
 }
 
 void Server::handleExecute(int event_idx) {
@@ -170,13 +169,12 @@ void Server::handleExecute(int event_idx) {
 
     Udata *udata = static_cast<Udata *>(_ev_list[event_idx].udata);
     Client *client = udata->src;
-    int numeric_replie;
-    int fd = _ev_list[event_idx].ident;
 
     std::vector<Command>::iterator iter = udata->commands.begin();
     for (; iter != udata->commands.end(); ++iter) {
         _executor.execute(&*iter, client);
     }
+    udata->commands.clear();
 
     registerEvent(_ev_list[event_idx].ident, WRITE, udata);
 }

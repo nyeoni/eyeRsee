@@ -14,7 +14,7 @@
 namespace ft {
 std::vector<std::string> split(std::string str,
                                char Delimiter);  // 임시로 만든거
-long getTicks(void);                             // utility.cpp
+long long getTicks(void);                        // utility.cpp
 
 void Env::parse(int argc, char **argv) {
     double d_port;
@@ -89,7 +89,7 @@ void Server::handleAccept() {
     data->src = new_client;
 
     registerEvent(new_client->getFd(), CONNECT, data);
-    registerEvent(new_client->getFd(), IDLE, data);
+    // registerEvent(new_client->getFd(), TIMEOUT, data); // TODO
 }
 
 void Server::handleConnect(int event_idx) {
@@ -192,8 +192,6 @@ void Server::handleExecute(int event_idx) {
     int numeric_replie;
     int fd = _ev_list[event_idx].ident;
 
-    registerEvent(fd, DEL_EXCUTE, udata);
-
     switch (udata->command) {
         case NICK:
             _executor.nick(client, "nickname");  // TODO nickname
@@ -233,7 +231,6 @@ void Server::handleExecute(int event_idx) {
             //      _executor.pong(fd);
             //     break;
         default:
-            return;
             break;
     }
     registerEvent(_ev_list[event_idx].ident, WRITE, udata);
@@ -255,9 +252,12 @@ void Server::handleWrite(int event_idx) {
     }
 }
 
-void Server::handleIdel(int event_idx) {
-    long start = reinterpret_cast<long>(_ev_list[event_idx].udata);
-    if (getTicks() > start + 10){
+void Server::handleTimeout(int event_idx) {
+    long long start =
+        static_cast<Udata *>(_ev_list[event_idx].udata)->src->create_time;
+    // registerEvent(_ev_list[event_idx].ident, DEL_WRITE, 0);  // 나중에고치기
+
+    if (getTicks() > start + 10000) {
         registerEvent(_ev_list[event_idx].ident, DEL_READ, 0);
         registerEvent(_ev_list[event_idx].ident, CLOSE, 0);
     }

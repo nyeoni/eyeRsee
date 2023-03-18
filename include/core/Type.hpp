@@ -12,6 +12,7 @@ enum e_event {
     CLOSE,
     DEL_READ,
     DEL_WRITE,
+    TIMEOUT,
     IDLE
 };
 

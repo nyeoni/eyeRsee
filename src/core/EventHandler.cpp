@@ -6,9 +6,6 @@
 #include "core/Udata.hpp"
 
 namespace ft {
-
-long getTicks(void);  // utility.cpp
-
 EventHandler::EventHandler() : _change_cnt(0) {
     _kq_fd = kqueue();
     _change_list.reserve(128);
@@ -39,7 +36,7 @@ void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
 
-    if (event.flags == EV_ERROR) {
+    if (event.flags & EV_ERROR) {
         std::cerr << "EV_ERROR OCCURED" << std::endl;
         return;
     }
@@ -59,8 +56,11 @@ void EventHandler::handleEvent(int event_idx) {
         case WRITE:
             handleWrite(event_idx);  // TODO
             break;
-        case IDLE:
-            handleIdel(event_idx);
+        case TIMEOUT:
+            handleTimeout(event_idx);
+            break;
+        case CLOSE:
+            //handleClose(event_idx); // TODO
             break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
@@ -96,19 +96,15 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
                    static_cast<void *>(udata));
             break;
-        case IDLE:
+        case TIMEOUT:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   reinterpret_cast<void *>(getTicks()));
+                   static_cast<void *>(udata));
             break;
         case DEL_READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0,
                    static_cast<void *>(udata));
             break;
         case DEL_WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
-                   static_cast<void *>(udata));
-            break;
-        case DEL_EXCUTE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
                    static_cast<void *>(udata));
             break;

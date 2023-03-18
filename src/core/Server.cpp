@@ -142,6 +142,8 @@ void Server::handleConnect(int event_idx) {
             break;
     }
     if (new_client->isAuthenticate()) {
+        send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
+
         registerEvent(event.ident, READ, (Udata *)event.udata);
         registerEvent(event.ident, WRITE, static_cast<Udata *>(event.udata));
         std::cout << "#" << event.ident << "READ event registered!"
@@ -236,6 +238,7 @@ void Server::handleWrite(int event_idx) {
     Event &event = _ev_list[event_idx];
     std::string &send_buf =
         static_cast<Udata *>(event.udata)->src->send_buf;
+
     std::cout << "write " << event_idx << std::endl;
     ssize_t n;
     n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);

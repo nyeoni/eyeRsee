@@ -2,6 +2,7 @@
 #define CHANNELCONTROLLER_HPP
 
 #include <map>
+#include <string>
 
 namespace ft {
 
@@ -39,22 +40,16 @@ class ChannelController {
     void updateTopic(Client *client, Channel *channel,
                      const std::string &topic);
 
-    /**
-     * @brief insert Client to Channel's _clientList
-     */
     void insertClient(Channel *channel, Client *client, bool is_operator);
 
-    /**
-     * @brief erase Client to Channel's _clientList
-     */
     void eraseClient(Channel *channel, Client *client);
 
-    /**
-     * @brief Clear Client to _clientList on all channels
-     */
     void eraseClient(Client *client);
 
     bool hasPermission(Channel *channel, Client *client);
+
+    void broadcast(Channel *channel, std::string msg = "",
+                   Client *client = NULL);
 };
 
 }  // namespace ft

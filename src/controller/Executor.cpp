@@ -22,27 +22,29 @@ Client *Executor::creatClient(int fd) { return client_controller.insert(fd); }
  * @param fd
  * @param channels 여러 개의 channel
  */
-void Executor::part(int fd, CmdLine channels) {
-    Client *client = client_controller.find(fd);
+void Executor::part(Client *client, params *params) {
+    std::vector<std::string> channels =
+        dynamic_cast<part_params *>(params)->channels;
+    std::vector<std::string>::iterator iter = channels.begin();
     Channel *channel;
-    cmd_iterator iter = channels.begin();
 
     for (; iter != channels.end(); ++iter) {
         channel = channel_controller.find(*iter);
         if (channel) {
             client_controller.eraseChannel(client, channel);
             channel_controller.eraseClient(channel, client);
-            broadcast(channel);
+            channel_controller.broadcast(channel);
         } else {
             // 403 nick3 #bye :No such channel
         }
     }
 }
 
-void Executor::join(int fd, CmdLine cmd_line) {
-    Client *client = client_controller.find(fd);
-    cmd_iterator iter = cmd_line.begin();
-    for (; iter != cmd_line.end(); iter++) {
+void Executor::join(Client *client, params *params) {
+    std::vector<std::string> channels =
+        dynamic_cast<join_params *>(params)->channels;
+    std::vector<std::string>::iterator iter = channels.begin();
+    for (; iter != channels.end(); iter++) {
         if (iter->front() == '#') {
             Channel *channel = channel_controller.find(*iter);
             if (channel == NULL) {  // new channel
@@ -52,32 +54,36 @@ void Executor::join(int fd, CmdLine cmd_line) {
                 channel_controller.insertClient(channel, client, false);
             }
             client_controller.insertChannel(client, channel);
-            broadcast(channel);
+            channel_controller.broadcast(channel);
         }
     }
 }
 
-void Executor::mode(int fd, std::string channel_name, e_mode mode) {
+void Executor::mode(Client *client, params *params) {
+    std::string channel_name = dynamic_cast<mode_params *>(params)->channel;
+    e_mode mode = dynamic_cast<mode_params *>(params)->mode;
     Channel *channel = channel_controller.find(channel_name);
 
     channel_controller.updateMode(mode, channel_name);
-    broadcast(channel);
+    channel_controller.broadcast(channel);
 }
 
-void Executor::topic(int fd, std::string channel_name, std::string topic) {
-    Client *client = client_controller.find(fd);
+void Executor::topic(Client *client, params *params) {
+    std::string channel_name = dynamic_cast<topic_params *>(params)->channel;
+    std::string topic = dynamic_cast<topic_params *>(params)->topic;
     Channel *channel = channel_controller.find(channel_name);
 
     if (channel && client) {
         channel_controller.updateTopic(client, channel, topic);
-        broadcast(channel);
+        channel_controller.broadcast(channel);
     } else {
         // error
     }
 }
 
-void Executor::invite(int fd, std::string nickname, std::string channel_name) {
-    Client *invitor = client_controller.find(fd);
+void Executor::invite(Client *invitor, params *params) {
+    std::string nickname = dynamic_cast<invite_params *>(params)->nickname;
+    std::string channel_name = dynamic_cast<invite_params *>(params)->channel;
     Client *client = client_controller.find(nickname);
     Channel *channel = channel_controller.find(channel_name);
 
@@ -96,8 +102,10 @@ void Executor::invite(int fd, std::string nickname, std::string channel_name) {
     }
 }
 
-void Executor::pass(Client *new_client, std::string password,
+void Executor::pass(Client *new_client, params *params,
                     std::string server_password) {
+    std::string password = dynamic_cast<pass_params *>(params)->password;
+
     if (new_client->auth[PASS]) {
         // already auth
         return;
@@ -107,9 +115,13 @@ void Executor::pass(Client *new_client, std::string password,
     else
         new_client->auth[PASS] = false;
 }
-void Executor::user(Client *new_client, std::string username,
-                    std::string hostname, std::string server,
-                    std::string realname) {
+void Executor::user(Client *new_client, params *params) {
+    user_params *param = dynamic_cast<user_params *>(params);
+    std::string username = param->username;
+    std::string hostname = param->hostname;
+    std::string server = param->servername;
+    std::string realname = param->realname;
+
     if (new_client->auth[USER]) {
         // 462 abc :You may not reregister.
         return;
@@ -125,7 +137,9 @@ void Executor::user(Client *new_client, std::string username,
 /**
  * @brief only used in handleConnect
  */
-void Executor::nick(Client *new_client, std::string nickname) {
+void Executor::nick(Client *new_client, params *params) {
+    std::string nickname = dynamic_cast<nick_params *>(params)->nickname;
+
     if (client_controller.find(nickname)) {
         // 433 user2 user1 :Nickname is already in use.
     } else {
@@ -137,28 +151,32 @@ void Executor::nick(Client *new_client, std::string nickname) {
 /**
  * @brief only used in handleExecute
  */
-void Executor::nick(int fd, std::string nickname) {
+void Executor::nick(int fd, params *params) {
+    std::string nickname = dynamic_cast<nick_params *>(params)->nickname;
     Client *client = client_controller.find(fd);
+
     if (client_controller.find(nickname)) {
         // 433 user2 user1 :Nickname is already in use.
         return;  // throw
     }
     client_controller.updateNickname(client, nickname);
-    broadcast(client);
+    client_controller.broadcast(client);
 }
-void Executor::quit(int fd, std::string msg) {
+void Executor::quit(Client *client, params *params) {
+    std::string msg = dynamic_cast<quit_params *>(params)->msg;
     // 모든 채널에서 quit && send message
-    Client *client = client_controller.find(fd);
-
-    broadcast(client_controller.find(fd), msg);
-    client_controller.erase(fd);
+    client_controller.broadcast(client, msg);
+    client_controller.erase(client);
     channel_controller.eraseClient(client);
 }
-void Executor::kick(int fd, std::string channel_name, std::string nickname,
-                    std::string comment) {
-    Client *kicker = client_controller.find(fd);
+void Executor::kick(Client *kicker, params *params) {
+    kick_params *param = dynamic_cast<kick_params *>(params);
+    std::string channel_name = param->channel;
+    std::string nickname = param->user;  // TODO param->user nickname?
+    std::string comment = param->comment;
     Client *client = client_controller.find(nickname);
     Channel *channel = channel_controller.find(channel_name);
+
     if (channel == NULL) {
         //
         //  403 user2 #testchannel :No such channel
@@ -172,15 +190,18 @@ void Executor::kick(int fd, std::string channel_name, std::string nickname,
     if (channel_controller.hasPermission(channel, kicker)) {
         channel_controller.eraseClient(channel, client);
         client_controller.eraseChannel(client, channel);
-        broadcast(channel);
+        channel_controller.broadcast(channel);
     } else {
         // error - hasPermission can generate error message code
     }
 }
 
-void Executor::privmsg(Client *client, CmdLine receivers, std::string msg) {
+void Executor::privmsg(Client *client, params *params) {
     std::string name;
-    cmd_iterator iter = receivers.begin();
+    std::vector<std::string> receivers =
+        dynamic_cast<privmsg_params *>(params)->receivers;
+    std::string msg = dynamic_cast<privmsg_params *>(params)->msg;
+    std::vector<std::string>::iterator iter = receivers.begin();
 
     for (; iter != receivers.end(); ++iter) {
         if (iter->front() == '#') {  // channel
@@ -189,7 +210,7 @@ void Executor::privmsg(Client *client, CmdLine receivers, std::string msg) {
             if (channel) {
                 if (channel->isOnChannel(client)) {
                     // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
-                    broadcast(channel, msg, client);
+                    channel_controller.broadcast(channel, msg, client);
                 } else {
                     //  404 You cannot send external  messages to this
                     //  channel
@@ -208,71 +229,6 @@ void Executor::privmsg(Client *client, CmdLine receivers, std::string msg) {
             }
         }
     }
-}
-
-/**
- * @brief channel에 가입한 모든 clients에게 broadcast
- *
- * @param client - excluded client, 없으면 default NULL
- */
-void Executor::broadcast(Channel *channel, std::string msg, Client *client) {
-    Channel::ClientList operators = channel->getOperators();
-    Channel::ClientList regulars = channel->getRegulars();
-    Channel::client_list_iterator iter = operators.begin();
-
-    for (; iter != operators.end(); ++iter) {
-        if (client == NULL || client->getFd() != (*iter)->getFd())
-            //	client -> send queue -> push_back
-            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
-    }
-    iter = regulars.begin();
-    for (; iter != regulars.end(); ++iter) {
-        if (client == NULL || client->getFd() != (*iter)->getFd())
-            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
-    }
-}
-
-/**
- * @brief client가 가입한 모든 채널에 broadcast
- */
-void Executor::broadcast(Client *client, std::string msg) {
-    Channel::ClientList receivers = findReceivers(client);
-    Channel::client_list_iterator client_iter = receivers.begin();
-    for (; client_iter != receivers.end(); ++client_iter) {
-        // push send_queue
-        // (*client_iter)->insertSendQueue(respons);
-        send((*client_iter)->getFd(), msg.c_str(), msg.length(), 0);
-    }
-}
-
-/**
- * @brief 클라이언트가 가입한 채널의 모든 Client List 반환 (중복 X)
- *
- * @return ClientList
- * @note ClientController에 옮길 수 있음
- */
-Executor::ClientList Executor::findReceivers(Client *client) {
-    Client::ChannelList channels = client->getChannelList();
-    Client::channel_list_iterator channel_iter = channels.begin();
-    Channel::ClientList receivers;
-
-    for (; channel_iter != channels.end(); ++channel_iter) {
-        {
-            Channel::ClientList operators = (*channel_iter)->getOperators();
-            Channel::client_list_iterator client_iter = operators.begin();
-            for (; client_iter != operators.end(); ++client_iter) {
-                receivers.insert(*client_iter);
-            }
-        }
-        {
-            Channel::ClientList regulars = (*channel_iter)->getRegulars();
-            Channel::client_list_iterator client_iter = regulars.begin();
-            for (; client_iter != regulars.end(); ++client_iter) {
-                receivers.insert(*client_iter);
-            }
-        }
-    }
-    return receivers;
 }
 
 }  // namespace ft

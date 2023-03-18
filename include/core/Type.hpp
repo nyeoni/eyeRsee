@@ -29,7 +29,6 @@ enum e_cmd {
     TOPIC,
     PRIVMSG,
     NOTICE,
-    // KILL, server operator
     PING,
     PONG
 };

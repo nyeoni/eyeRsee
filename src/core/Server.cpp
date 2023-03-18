@@ -120,22 +120,13 @@ void Server::handleConnect(int event_idx) {
     }
     switch (udata->command) {
         case PASS:
-            _executor.pass(new_client,
-                           dynamic_cast<pass_params *>(udata->params)->password,
-                           _env.password);
+            _executor.pass(new_client, udata->params, _env.password);
             break;
         case USER:
-            _executor.user(
-                new_client,
-                dynamic_cast<user_params *>(udata->params)->username,
-                dynamic_cast<user_params *>(udata->params)->hostname,
-                dynamic_cast<user_params *>(udata->params)->servername,
-                dynamic_cast<user_params *>(udata->params)->realname);
+            _executor.user(new_client, udata->params);
             break;
         case NICK:
-            _executor.nick(
-                new_client,
-                dynamic_cast<nick_params *>(udata->params)->nickname);
+            _executor.nick(new_client, udata->params);
             break;
         default:
             // TODO :NAYEON.local 451 * JOIN :You have not registered.
@@ -192,32 +183,31 @@ void Server::handleExecute(int event_idx) {
 
     switch (udata->command) {
         case NICK:
-            _executor.nick(fd, "nickname");  // TODO nickname
+            _executor.nick(fd, udata->params);
             break;
         case JOIN:
-            _executor.join(
-                fd, dynamic_cast<join_params *>(udata->params)->channels);
+            _executor.join(client, udata->params);
             break;
         case PART:
-            _executor.part(
-                fd, dynamic_cast<part_params *>(udata->params)->channels);
+            _executor.part(client, udata->params);
             break;
         case MODE:
-            _executor.mode(fd,
-                           dynamic_cast<mode_params *>(udata->params)->channel,
-                           dynamic_cast<mode_params *>(udata->params)->mode);
+            _executor.mode(client, udata->params);
             break;
         case INVITE:
-            _executor.invite(fd, "nickname", "channel");  // TODO
+            _executor.invite(client, udata->params);
             break;
         case KICK:
-            _executor.kick(fd, "channel", "nickname", "comment");  // TODO
+            _executor.kick(client, udata->params);
             break;
         case PRIVMSG:
-            _executor.privmsg(
-                client,
-                dynamic_cast<privmsg_params *>(udata->params)->receivers,
-                dynamic_cast<privmsg_params *>(udata->params)->msg);
+            _executor.privmsg(client, udata->params);
+            break;
+        case TOPIC:
+            _executor.topic(client, udata->params);
+            break;
+        case QUIT:
+            _executor.quit(client, udata->params);
             break;
             // case NOTICE:
             //      _executor.notice(fd);
@@ -236,8 +226,7 @@ void Server::handleExecute(int event_idx) {
 
 void Server::handleWrite(int event_idx) {
     Event &event = _ev_list[event_idx];
-    std::string &send_buf =
-        static_cast<Udata *>(event.udata)->src->send_buf;
+    std::string &send_buf = static_cast<Udata *>(event.udata)->src->send_buf;
 
     std::cout << "write " << event_idx << std::endl;
     ssize_t n;

@@ -9,12 +9,10 @@
 
 #include "core/Type.hpp"
 #include "core/Udata.hpp"
+#include "core/utility.hpp"
 #include "entity/Client.hpp"
 
 namespace ft {
-std::vector<std::string> split(std::string str,
-                               char Delimiter);  // 임시로 만든거
-long long getTicks(void);                        // utility.cpp
 
 void Env::parse(int argc, char **argv) {
     double d_port;

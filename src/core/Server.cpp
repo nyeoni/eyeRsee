@@ -25,7 +25,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -95,8 +95,8 @@ void Server::handleConnect(int event_idx) {
     char buf[BUF_SIZE];
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
-    Client *new_client = ((Udata *) event.udata)->src;
     Udata *udata = static_cast<Udata *>(event.udata);
+    Client *new_client = udata->src;
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
@@ -106,8 +106,8 @@ void Server::handleConnect(int event_idx) {
     pos = new_client->recv_buf.find('\n');
     if (pos != std::string::npos) {
         command_line = new_client->recv_buf.substr(0, pos);
-        _parser.parse(command_line, ((Udata *) udata)->command,
-                      ((Udata *) udata)->params);
+        // _parser.parse(command_line, ((Udata *)udata)->command,
+        //               ((Udata *)udata)->params);
         new_client->recv_buf =
             new_client->recv_buf.substr(pos + 1, new_client->recv_buf.length());
     }
@@ -117,25 +117,18 @@ void Server::handleConnect(int event_idx) {
         std::cout << "\tcommand_line: " << command_line << std::endl;
         std::cout << "\trecv_buf: " << new_client->recv_buf << std::endl;
     }
-    switch (udata->command) {
-        case PASS:
-            _executor.pass(new_client, udata->params, _env.password);
-            break;
-        case USER:
-            _executor.user(new_client, udata->params);
-            break;
-        case NICK:
-            _executor.nick(new_client, udata->params);
-            break;
-        default:
-            // TODO :NAYEON.local 451 * JOIN :You have not registered.
-            break;
+
+    std::vector<Command>::iterator iter = udata->commands.begin();
+    for (; iter != udata->commands.end(); ++iter) {
+        _executor.connect(&*iter, new_client, _env.password);
     }
+
     if (new_client->isAuthenticate()) {
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
 
-        registerEvent(event.ident, READ, (Udata *) event.udata);
-        registerEvent(event.ident, DEL_WRITE, static_cast<Udata *>(event.udata));
+        registerEvent(event.ident, READ, (Udata *)event.udata);
+        registerEvent(event.ident, DEL_WRITE,
+                      static_cast<Udata *>(event.udata));
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }
@@ -147,8 +140,8 @@ void Server::handleRead(int event_idx) {
     char buf[BUF_SIZE];
     Event event = _ev_list[event_idx];
     ssize_t n = 0;
-
-    ConnectSocket *sock = ((Udata *) event.udata)->src;
+    Udata *udata = static_cast<Udata *>(event.udata);
+    ConnectSocket *sock = udata->src;
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
@@ -163,8 +156,8 @@ void Server::handleRead(int event_idx) {
 
     if (pos != std::string::npos) {
         command_line = str_buf.substr(0, pos);
-        _parser.parse(command_line, ((Udata *) event.udata)->command,
-                      ((Udata *) event.udata)->params);
+        // _parser.parse(command_line, ((Udata *)event.udata)->command,
+        //               ((Udata *)event.udata)->params);
 
         sock->recv_buf = str_buf.substr(pos + 1, str_buf.length());
 
@@ -182,46 +175,11 @@ void Server::handleExecute(int event_idx) {
     int numeric_replie;
     int fd = _ev_list[event_idx].ident;
 
-    switch (udata->command) {
-        case NICK:
-            _executor.nick(fd, udata->params);
-            break;
-        case JOIN:
-            _executor.join(client, udata->params);
-            break;
-        case PART:
-            _executor.part(client, udata->params);
-            break;
-        case MODE:
-            _executor.mode(client, udata->params);
-            break;
-        case INVITE:
-            _executor.invite(client, udata->params);
-            break;
-        case KICK:
-            _executor.kick(client, udata->params);
-            break;
-        case PRIVMSG:
-            _executor.privmsg(client, udata->params);
-            break;
-        case TOPIC:
-            _executor.topic(client, udata->params);
-            break;
-        case QUIT:
-            _executor.quit(client, udata->params);
-            break;
-            // case NOTICE:
-            //      _executor.notice(fd);
-            //     break;
-            // case PING:
-            //      _executor.ping(fd);
-            //     break;
-            // case PONG:
-            //      _executor.pong(fd);
-            //     break;
-        default:
-            break;
+    std::vector<Command>::iterator iter = udata->commands.begin();
+    for (; iter != udata->commands.end(); ++iter) {
+        _executor.execute(&*iter, client);
     }
+
     registerEvent(_ev_list[event_idx].ident, WRITE, udata);
 }
 

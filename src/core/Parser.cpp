@@ -38,9 +38,9 @@ std::vector<std::string> &Parser::validChannelName(std::vector<std::string> &cha
 }
 std::string &Parser::validNickName(std::string &nickname) {
     // <letter> { <letter> | <number> | <special> }
-    if (nickname.length() > 9) throw std::logic_error("Invalid Channel Name");
-    if (isalpha(nickname[0]))
-        throw std::logic_error("Invalid Channel Name");
+    if (nickname.length() > 9) throw std::logic_error("Invalid Nick Name");
+    if (!isalpha(nickname[0]))
+        throw std::logic_error("Invalid Nick Name");
     for (int i = 1; i < nickname.length(); i++) {
         if (!isalnum(nickname[i]) && !isSpecial(nickname[i]))
             throw std::logic_error("Invalid Channel Name");

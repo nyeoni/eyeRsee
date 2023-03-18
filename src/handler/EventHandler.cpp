@@ -60,7 +60,7 @@ void EventHandler::handleEvent(int event_idx) {
             handleTimeout(event_idx);
             break;
         case CLOSE:
-            //handleClose(event_idx); // TODO
+            // handleClose(event_idx); // TODO
             break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident

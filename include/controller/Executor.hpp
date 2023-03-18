@@ -7,7 +7,7 @@
 
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
-#include "core/Type.hpp"  // ChannelController.hpp 로 이사
+// #include "core/Type.hpp"  // ChannelController.hpp 로 이사
 #include "core/Udata.hpp"
 
 namespace ft {
@@ -35,13 +35,13 @@ class Executor {
     // int joinClient(std::string nickname, std::string channel_name);
 
     void join(int fd, CmdLine cmd_line);
-    void mode(int fd, std::string channel,
+    void mode(int fd, std::string channel_name,
               e_mode mode);  // std::string info
-    void topic(int fd, std::string channel,
+    void topic(int fd, std::string channel_name,
                std::string topic);  // fd -> client ...
-    void invite(int fd, std::string nickname, std::string channel);
+    void invite(int fd, std::string nickname, std::string channel_name);
 
-    void kick(int fd, std::string channel, std::string nickname,
+    void kick(int fd, std::string channel_name, std::string nickname,
               std::string comment);
     void pass(Client *new_client, std::string password,
               std::string server_password);
@@ -55,20 +55,12 @@ class Executor {
     void privmsg(Client *client, CmdLine receivers, std::string msg);
 
    private:
-    // exclude client
     void broadcast(Channel *channel, std::string msg = "",
                    Client *client = NULL);
+    void broadcast(Client *client, std::string msg = "");
+
     ClientList findReceivers(Client *client);
 };
-
-// Executor -> Server data update
-// recv command 수행 PART/QUIT
-
-// join, part, mode, ... cmds
-// switch(cmd)
-// case: join
-// Executor.joinClient()
-
 }  // namespace ft
 
 #endif

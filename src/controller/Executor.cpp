@@ -53,8 +53,6 @@ void Executor::join(int fd, CmdLine cmd_line) {
             }
             client_controller.insertChannel(client, channel);
             broadcast(channel);
-        } else {
-            // invalid channel name
         }
     }
 }

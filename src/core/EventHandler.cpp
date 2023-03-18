@@ -7,6 +7,8 @@
 
 namespace ft {
 
+long getTicks(void);  // utility.cpp
+
 EventHandler::EventHandler() : _change_cnt(0) {
     _kq_fd = kqueue();
     _change_list.reserve(128);
@@ -57,6 +59,9 @@ void EventHandler::handleEvent(int event_idx) {
         case WRITE:
             handleWrite(event_idx);  // TODO
             break;
+        case IDLE:
+            handleIdel(event_idx);
+            break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
                       << " (unknown event occured)" << std::endl;
@@ -90,6 +95,10 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
         case WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
                    static_cast<void *>(udata));
+            break;
+        case IDLE:
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
+                   reinterpret_cast<void *>(getTicks()));
             break;
         case DEL_READ:
             EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0,

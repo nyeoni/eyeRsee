@@ -1,9 +1,9 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#include <string>
 #include <netinet/in.h>
-#include <queue>
+
+#include <string>
 
 #include "core/Udata.hpp"
 
@@ -37,13 +37,10 @@ class ListenSocket : public SocketBase {
 class ConnectSocket : public SocketBase {
    public:
     std::string recv_buf;
-
-    // char recv_buf[BUF_SIZE];
+    std::string send_buf;
     bool auth[3];
 
    protected:
-    //    std::queue<Response> send_queue;
-
    public:
     ConnectSocket();
     ConnectSocket(const ConnectSocket &copy);
@@ -51,6 +48,7 @@ class ConnectSocket : public SocketBase {
     ConnectSocket &operator=(const ConnectSocket &ref);
 
     void createSocket(const int &listen_fd);
+
     bool isAuthenticate();
 };
 

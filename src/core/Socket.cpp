@@ -71,7 +71,8 @@ void ListenSocket::createSocket(const int &port) {
 /****************************************************/
 
 ConnectSocket::ConnectSocket() : SocketBase(-1) {
-    //    recv_buf = new char[BUF_SIZE];
+    recv_buf.reserve(510);
+    send_buf.reserve(510);
 }
 ConnectSocket::ConnectSocket(const ConnectSocket &copy)
     : SocketBase(copy.getFd()) {}
@@ -93,6 +94,5 @@ void ConnectSocket::createSocket(const int &listen_fd) {
 }
 
 bool ConnectSocket::isAuthenticate() { return auth[0] && auth[1] && auth[2]; }
-
 
 }  // namespace ft

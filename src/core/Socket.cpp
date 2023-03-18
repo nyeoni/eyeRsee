@@ -9,9 +9,9 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace ft {
+#include "core/utility.hpp"
 
-long long getTicks(void);  // utility.cpp
+namespace ft {
 
 /****************************************************/
 /*                  SocketBase                      */

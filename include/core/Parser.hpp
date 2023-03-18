@@ -1,32 +1,32 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <iostream>
-#include "Type.hpp"
-#include "Udata.hpp"
 
+#include "core/Type.hpp"
+#include "core/Udata.hpp"
+#include "core/utility.hpp"
 namespace ft {
-
-std::vector<std::string> split(std::string str, char delimiter);
-std::vector<std::string> split(std::istringstream &stream, char delimiter);
 
 class Parser {
    private:
     enum { TOKEN, MSG };
     std::istringstream tokenStream;
     std::string token;
+
    protected:
     int getToken(int flag);
     bool isEOF();
 
     static bool validSpecial(char c);
     static std::string &validChannelName(std::string &channel);
-    static std::vector<std::string> &validChannelName(std::vector<std::string> &channels);
+    static std::vector<std::string> &validChannelName(
+        std::vector<std::string> &channels);
     static std::string &validNickName(std::string &nickname);
-    
+
    public:
     void parseQuit(e_cmd &cmd, params *&params);
     void parsePass(e_cmd &cmd, params *&params);

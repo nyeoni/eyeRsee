@@ -1,8 +1,7 @@
 #include <sys/time.h>
 
-#include <iostream>
-#include <sstream>
-#include <vector>
+#include <core/utility.hpp>
+#include <istream>
 
 namespace ft {
 

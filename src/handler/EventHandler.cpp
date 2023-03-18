@@ -1,7 +1,8 @@
 #include "handler/EventHandler.hpp"
 
-#include <iostream>
+#include <errno.h>
 
+#include <iostream>
 #include "core/Type.hpp"
 #include "core/Udata.hpp"
 
@@ -36,10 +37,11 @@ void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
 
-    if (event.flags & EV_ERROR) {
-        std::cerr << "EV_ERROR OCCURED" << std::endl;
-        return;
-    }
+//    if (event.flags & EV_ERROR) {
+//        std::cerr << "EV_ERROR OCCURED" << std::endl;
+//        perror("handleEvent ");
+//        return;
+//    }
     switch (udata->action) {
         case ACCEPT:
             handleAccept();

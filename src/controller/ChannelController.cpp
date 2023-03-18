@@ -88,11 +88,17 @@ bool ChannelController::hasPermission(Channel *channel, Client *client) {
     return false;
 }
 
+/**
+ * @brief insert Client to Channel's _clientList
+ */
 void ChannelController::insertClient(Channel *channel, Client *client,
                                      bool is_operator) {
     channel->insertClient(client, is_operator);
 }
 
+/**
+ * @brief erase Client to Channel's _clientList
+ */
 void ChannelController::eraseClient(Channel *channel, Client *client) {
     channel->eraseClient(client);
     if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
@@ -100,12 +106,39 @@ void ChannelController::eraseClient(Channel *channel, Client *client) {
     }
 }
 
+/**
+ * @brief Clear Client to _clientList on all channels
+ */
 void ChannelController::eraseClient(Client *client) {
     Client::ChannelList channel_list = client->getChannelList();
     Client::channel_list_iterator iter = channel_list.begin();
 
     for (; iter != channel_list.end(); ++iter) {
         eraseClient(*iter, client);
+    }
+}
+
+/**
+ * @brief channel에 가입한 모든 clients에게 broadcast
+ *
+ * @param msg - 없으면 defulat ""
+ * @param client - excluded client, 없으면 default NULL
+ */
+void ChannelController::broadcast(Channel *channel, std::string msg,
+                                  Client *client) {
+    Channel::ClientList operators = channel->getOperators();
+    Channel::ClientList regulars = channel->getRegulars();
+    Channel::client_list_iterator iter = operators.begin();
+
+    for (; iter != operators.end(); ++iter) {
+        if (client == NULL || client->getFd() != (*iter)->getFd())
+            //	client -> send queue -> push_back
+            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
+    }
+    iter = regulars.begin();
+    for (; iter != regulars.end(); ++iter) {
+        if (client == NULL || client->getFd() != (*iter)->getFd())
+            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
     }
 }
 

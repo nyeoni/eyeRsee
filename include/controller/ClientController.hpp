@@ -2,6 +2,7 @@
 #define CLIENTCONTROLLER_HPP
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -15,6 +16,7 @@ class ClientController {
     typedef std::map<int, Client> Clients;
     typedef Clients::iterator client_iterator;
     typedef std::pair<client_iterator, bool> pair;
+    typedef std::set<Client*> ClientList;
 
    private:
     Clients _clients;
@@ -38,16 +40,15 @@ class ClientController {
     void updateNickname(int fd, const std::string& nickname);
     void updateNickname(Client* client, const std::string& nickname);
 
-    /**
-     * @brief insert Channel to Client's _channelList
-     */
     void insertChannel(Client* client, Channel* channel);
     void insertInviteChannel(Client* client, Channel* channel);
 
-    /**
-     * @brief erase Channel to Client's _channelList
-     */
     void eraseChannel(Client* client, Channel* channel);
+
+    void broadcast(Client* client, std::string msg = "");
+
+   private:
+    ClientList findReceivers(Client* client);
 };
 
 }  // namespace ft

@@ -6,15 +6,17 @@
 
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
-#include "core/Type.hpp"  // ChannelController.hpp 로 이사
+// #include "core/Type.hpp"  // ChannelController.hpp 로 이사
 #include "core/Udata.hpp"
 
 namespace ft {
+class Client;
 
 class Executor {
    public:
-    typedef std::vector<std::string> CmdLine;
-    typedef std::vector<std::string>::iterator cmd_iterator;
+    // typedef std::vector<std::string> std::vector<std::string>;
+    typedef std::vector<std::string>::iterator vector_iterator;
+    // typedef std::set<Client *> ClientList;
 
    private:
     ChannelController channel_controller;
@@ -28,42 +30,24 @@ class Executor {
 
     // method
     Client *creatClient(int fd);
-    void part(int fd, CmdLine channels);
+    void part(Client *client, params *params);
     // int joinClient(std::string nickname, std::string channel_name);
 
-    void join(int fd, CmdLine cmd_line);
-    void mode(int fd, std::string channel,
-              e_mode mode);  // std::string info
-    void topic(int fd, std::string channel,
-               std::string topic);  // fd -> client ...
-    void invite(int fd, std::string nickname, std::string channel);
+    void join(Client *client, params *params);
+    void mode(Client *client, params *params);
+    void topic(Client *client, params *params);
+    void invite(Client *invitor, params *params);
 
-    void kick(int fd, std::string channel, std::string nickname,
-              std::string comment);
-    void pass(Client *new_client, std::string password,
-              std::string server_password);
-    void user(Client *new_client, std::string username, std::string hostname,
-              std::string server, std::string realname);
-    void nick(Client *new_client, std::string nickname);
-    void nick(int fd, std::string nickname);
+    void kick(Client *kicker, params *params);
+    void pass(Client *new_client, params *params, std::string server_password);
+    void user(Client *new_client, params *params);
+    void nick(Client *new_client, params *params);
+    void nick(int fd, params *params);
 
-    void quit(int fd, std::string msg);
+    void quit(Client *client, params *params);
 
-    void privmsg(Client *client, CmdLine receivers, std::string msg);
-
-   private:
-    // exclude client
-    void broadcast(Channel *channel, std::string msg, Client *client = NULL);
+    void privmsg(Client *client, params *params);
 };
-
-// Executor -> Server data update
-// recv command 수행 PART/QUIT
-
-// join, part, mode, ... cmds
-// switch(cmd)
-// case: join
-// Executor.joinClient()
-
 }  // namespace ft
 
 #endif

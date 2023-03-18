@@ -14,6 +14,8 @@
 namespace ft {
 std::vector<std::string> split(std::string str,
                                char Delimiter);  // 임시로 만든거
+long getTicks(void);                             // utility.cpp
+
 void Env::parse(int argc, char **argv) {
     double d_port;
     char *back;
@@ -86,10 +88,8 @@ void Server::handleAccept() {
     data = new Udata;
     data->src = new_client;
 
-    // TODO : timeout error. registerEvent(TIME_OUT) timer 설정해서 등록
-    // -> handleTimeout 에서 delete, close
-    registerEvent(new_client->getFd(), CONNECT, data);  // READ
-    // registerEvent(new_client->getFd(), TIMEOUT, data); // WRITE  EXCUTE/WRITE
+    registerEvent(new_client->getFd(), CONNECT, data);
+    registerEvent(new_client->getFd(), IDLE, data);
 }
 
 void Server::handleConnect(int event_idx) {
@@ -246,11 +246,18 @@ void Server::handleWrite(int event_idx) {
     n = send(_ev_list[event_idx].ident, send_buf.c_str(), send_buf.length(), 0);
     if (n == send_buf.length())
         registerEvent(_ev_list[event_idx].ident, DEL_WRITE, NULL);
-    else if (n == -1){
+    else if (n == -1) {
         std::cerr << "[UB] send return -1" << std::endl;
-    }
-    else {
+    } else {
         send_buf = send_buf.substr(n, send_buf.length());
+    }
+}
+
+void Server::handleIdel(int event_idx) {
+    long start = reinterpret_cast<long>(_ev_list[event_idx].udata);
+    if (getTicks() > start + 10){
+        registerEvent(_ev_list[event_idx].ident, DEL_READ, 0);
+        registerEvent(_ev_list[event_idx].ident, CLOSE, 0);
     }
 }
 

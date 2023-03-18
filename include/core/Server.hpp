@@ -6,7 +6,7 @@
 
 #include "Parser.hpp"
 #include "controller/Executor.hpp"
-#include "core/EventHandler.hpp"
+#include "handler/EventHandler.hpp"
 #include "core/Socket.hpp"
 
 namespace ft {

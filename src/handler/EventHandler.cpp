@@ -42,9 +42,10 @@ void EventHandler::garbageCollector() {
 void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
-    e_event action = udata ? udata->action : IDLE;
+    e_event action = udata ? udata->r_action : ACCEPT;
+    if (event.filter == EVFILT_WRITE) action = udata->w_action;
 
-    if ((event.flags & EV_EOF) && udata && !isConnected(udata)) {
+    if ((event.fflags & EV_EOF) && udata && !isConnected(udata)) {
         // TODO : ctrl-D 처리
         _unregisters.erase(udata);
         _garbage.insert(udata);
@@ -60,13 +61,13 @@ void EventHandler::handleEvent(int event_idx) {
             handleConnect(event_idx);
             break;
         case READ:
-            handleRead(event_idx);  // TODO
+            handleRead(event_idx);
             break;
-        case EXCUTE:
-            handleExecute(event_idx);  // TODO
+        case EXECUTE:
+            handleExecute(event_idx);
             break;
         case WRITE:
-            handleWrite(event_idx);  // TODO
+            handleWrite(event_idx);
             break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
@@ -75,35 +76,25 @@ void EventHandler::handleEvent(int event_idx) {
     }
 }
 
-void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
+void EventHandler::registerEvent(int fd, e_filt filt, e_event action,
+                                 Udata *udata) {
     Event ev = {};
 
-    // TODO 이것도 모든 경우에 다 맞는지 생각해 주어야 함
-    // ACCEPT/CONNECT/READ 따로 EXCUTE/WRITE 따로
-    if (udata) udata->action = action;
-    switch (action) {
-        case ACCEPT:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD, 0, 0,
-                   static_cast<void *>(udata));
-            break;
-        case CONNECT:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD, 0, 0,
-                   static_cast<void *>(udata));
-            break;
-        case READ:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD, 0, 0,
-                   static_cast<void *>(udata));
-            break;
-        case EXCUTE:
+    if (filt == FILT_WRITE) {
+        if (action == D_WRITE)
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+        else {
+            udata->w_action = action;
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD, 0, 0,
                    static_cast<void *>(udata));
-        case WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0,
+        }
+    } else {
+        if (udata) {
+            udata->r_action = action;
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
                    static_cast<void *>(udata));
-            break;
-        default:
-            return;
-            break;
+        } else
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
     }
     _change_list.push_back(ev);
     _change_cnt++;

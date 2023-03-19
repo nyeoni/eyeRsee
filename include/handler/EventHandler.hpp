@@ -31,7 +31,7 @@ class EventHandler {
     EventHandler(const EventHandler &copy);
     virtual ~EventHandler();
 
-    void registerEvent(int fd, e_event action, Udata *udata);
+    void registerEvent(int fd, e_filt filt, e_event action, Udata *udata);
 
     int monitorEvent();
 

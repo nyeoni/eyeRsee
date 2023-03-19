@@ -74,7 +74,8 @@ struct Command {
 };
 
 struct Udata {
-    e_event action;
+    e_event r_action;
+    e_event w_action;
     int status;
     std::vector<Command *> commands;
     Client *src;

@@ -1,6 +1,7 @@
 #include "controller/Executor.hpp"
 
 #include <utility>
+#include <iostream>
 
 #include "entity/Channel.hpp"
 #include "entity/Client.hpp"
@@ -26,7 +27,7 @@ void Executor::connect(Command *command, Client *client, std::string password) {
             nick(client, command->params);
             break;
         default:
-            // TODO :NAYEON.local 451 * JOIN :You have not registered.
+            std::cout << ":NAYEON.local 451 * JOIN :You have not registered." << std::endl;
             break;
     }
 }
@@ -74,7 +75,8 @@ void Executor::execute(Command *command, Client *client) {
     }
 }
 
-Client *Executor::creatClient(int fd) { return client_controller.insert(fd); }
+Client *Executor::createClient(int fd) { return client_controller.insert(fd); }
+Channel *Executor::createChannel(std::string channel_name) { return channel_controller.insert(channel_name); }
 
 /**
  * @brief part channels
@@ -108,7 +110,8 @@ void Executor::join(Client *client, params *params) {
         if (iter->front() == '#') {
             Channel *channel = channel_controller.find(*iter);
             if (channel == NULL) {  // new channel
-                channel_controller.insert(*iter);
+                channel = channel_controller.insert(*iter);
+//                channel_controller.insert(*iter);
                 channel_controller.insertClient(channel, client, true);
             } else {
                 channel_controller.insertClient(channel, client, false);

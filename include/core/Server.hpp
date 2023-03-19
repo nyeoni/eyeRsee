@@ -18,8 +18,7 @@
 ███████╗   ██║   ███████╗██║  ██║███████║███████╗███████╗\n\
 ╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝\n\
 \n\
-WELCOME TO \033[0;36meyeRsee\033[0m SERVER\n\
-by KIMx3\n"
+WELCOME TO \033[0;36meyeRsee\033[0m SERVER by KIMx3\n"
 
 namespace ft {
 

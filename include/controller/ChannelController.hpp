@@ -15,7 +15,7 @@ class ChannelController {
     typedef std::map<std::string, Channel> Channels;
     // TODO Consider client_iterator || Client *
     typedef Channels::iterator channel_iterator;
-    // typedef std::pair<client_iterator, bool>;
+    typedef std::pair<channel_iterator, bool> pair;
 
    private:
     Channels _channels;
@@ -26,11 +26,10 @@ class ChannelController {
     ~ChannelController();
     ChannelController &operator=(const ChannelController &ref);
 
+    Channel *insert(std::string &channel_name);
+
     Channel *find(const Channel *channel);
     Channel *find(const std::string &channel_name);
-
-    void insert(const Channel *channel);
-    void insert(const std::string &channel_name);
 
     void erase(const Channel *channel);
     void erase(const std::string &channel_name);

@@ -80,6 +80,11 @@
 		"__functional_base": "cpp",
 		"bit": "cpp",
 		"functional": "cpp",
-		"utility": "cpp"
+		"utility": "cpp",
+		"any": "cpp",
+		"condition_variable": "cpp",
+		"forward_list": "cpp",
+		"list": "cpp",
+		"unordered_set": "cpp"
 	}
 }

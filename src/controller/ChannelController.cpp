@@ -32,14 +32,6 @@ Channel *ChannelController::find(const std::string &channel_name) {
     return &(iter->second);
 }
 
-void ChannelController::insert(const Channel *channel) {
-    _channels.insert(std::make_pair(channel->getName(), *channel));
-}
-void ChannelController::insert(const std::string &channel_name) {
-    Channel new_channel(channel_name);  // TODO : init mode
-    _channels.insert(std::make_pair(channel_name, new_channel));
-}
-
 void ChannelController::erase(const Channel *channel) {  // const
     _channels.erase(channel->getName());
 }
@@ -140,6 +132,11 @@ void ChannelController::broadcast(Channel *channel, std::string msg,
         if (client == NULL || client->getFd() != (*iter)->getFd())
             send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
     }
+}
+Channel *ChannelController::insert(std::string &channel_name) {
+    Channel channel;
+    pair p = _channels.insert(std::make_pair(channel_name, channel));
+    return &(p.first->second);
 }
 
 }  // namespace ft

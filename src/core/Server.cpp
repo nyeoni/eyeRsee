@@ -25,7 +25,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port<1025 | d_port> 65535) {
+    if (*back || d_port < 1025 | d_port > 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -185,17 +185,15 @@ void Server::handleWrite(int event_idx) {
     Event &event = _ev_list[event_idx];
     // tmp
     Udata *udata = static_cast<Udata *>(event.udata);
-    // std::cout << "udata->src->send_buf : " << udata->src->send_buf <<
-    // std::endl;
 
     std::string &send_buf = static_cast<Udata *>(event.udata)->src->send_buf;
 
-    std::cout << "write " << event_idx << std::endl;
+//    std::cout << "write " << event_idx << std::endl;
     ssize_t n;
     n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
     if (n == send_buf.length()) {
-        registerEvent(event.ident, D_WRITE, NULL);
         send_buf.clear();
+        registerEvent(event.ident, READ, udata);
     } else if (n == -1) {
         std::cerr << "[UB] send return -1" << std::endl;
     } else {

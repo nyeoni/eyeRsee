@@ -68,10 +68,10 @@ void EventHandler::handleEvent(int event_idx) {
         case WRITE:
             handleWrite(event_idx);  // TODO
             break;
-            // default:
-            //     std::cout << "client #" << _ev_list[event_idx].ident
-            //               << " (unknown event occured)" << std::endl;
-            //     break;
+        default:
+            std::cout << "client #" << _ev_list[event_idx].ident
+                      << " (unknown event occured)" << std::endl;
+            break;
     }
 }
 
@@ -83,15 +83,15 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
     if (udata) udata->action = action;
     switch (action) {
         case ACCEPT:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD, 0, 0,
                    static_cast<void *>(udata));
             break;
         case CONNECT:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD, 0, 0,
                    static_cast<void *>(udata));
             break;
         case READ:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD, 0, 0,
                    static_cast<void *>(udata));
             break;
         case EXCUTE:
@@ -100,13 +100,6 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
         case WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0,
                    static_cast<void *>(udata));
-            break;
-        case D_READ:
-            EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0, 0);
-            break;
-        case D_WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
-            // EV_SET(&ev, fd, EVFILT_WRITE, EV_DISABLE | EV_ADD, 0, 0, 0);
             break;
         default:
             return;

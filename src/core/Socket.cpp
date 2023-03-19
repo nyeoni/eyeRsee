@@ -29,6 +29,7 @@ SocketBase &SocketBase::operator=(const SocketBase &ref) {
 const int SocketBase::getFd() const { return _fd; }
 
 void SocketBase::deleteSocket() {
+    // std::cout << "delet?";
     if (_fd != -1) close(_fd);
 }
 void SocketBase::setFd(int fd) { _fd = fd; }
@@ -54,7 +55,7 @@ void ListenSocket::createSocket(const int &port) {
     sin.sin_port = htons(port);
     int i = 0;
     // 임시
-    while (bind(_fd, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
+    while (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
         sin.sin_port = htons(port + ++i);
     }
     std::cout << "listening port : " << port + i << std::endl;
@@ -88,7 +89,7 @@ void ConnectSocket::createSocket(const int &listen_fd) {
     struct sockaddr_in in = {};
     socklen_t in_len = sizeof(in);
 
-    _fd = accept(listen_fd, (struct sockaddr *) &in, &in_len);
+    _fd = accept(listen_fd, (struct sockaddr *)&in, &in_len);
     setNonBlock();
     // TODO : password
     // recv(connect_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)

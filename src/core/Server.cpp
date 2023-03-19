@@ -110,17 +110,17 @@ void Server::handleConnect(int event_idx) {
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command command;
+        Command *command = new Command;
 
-        _parser.parse(*it, command.type, command.params);
+        _parser.parse(*it, command->type, command->params);
         udata->commands.push_back(command);
     }
 
     // connect to clients logic
     // authenticate error
-    std::vector<Command>::iterator iter = udata->commands.begin();
+    std::vector<Command *>::iterator iter = udata->commands.begin();
     for (; iter != udata->commands.end(); ++iter) {
-        _executor.connect(&*iter, new_client, _env.password);
+        _executor.connect(*iter, new_client, _env.password);
     }
     udata->commands.clear();
 
@@ -154,9 +154,9 @@ void Server::handleRead(int event_idx) {
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command command;
+        Command *command = new Command;
 
-        _parser.parse(*it, command.type, command.params);
+        _parser.parse(*it, command->type, command->params);
         udata->commands.push_back(command);
     }
 
@@ -170,9 +170,9 @@ void Server::handleExecute(int event_idx) {
     Udata *udata = static_cast<Udata *>(_ev_list[event_idx].udata);
     Client *client = udata->src;
 
-    std::vector<Command>::iterator iter = udata->commands.begin();
+    std::vector<Command *>::iterator iter = udata->commands.begin();
     for (; iter != udata->commands.end(); ++iter) {
-        _executor.execute(&*iter, client);
+        _executor.execute(*iter, client);
     }
     udata->commands.clear();
 
@@ -181,14 +181,20 @@ void Server::handleExecute(int event_idx) {
 
 void Server::handleWrite(int event_idx) {
     Event &event = _ev_list[event_idx];
+    // tmp
+    Udata *udata = static_cast<Udata *>(event.udata);
+    // std::cout << "udata->src->send_buf : " << udata->src->send_buf <<
+    // std::endl;
+
     std::string &send_buf = static_cast<Udata *>(event.udata)->src->send_buf;
 
     std::cout << "write " << event_idx << std::endl;
     ssize_t n;
     n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
-    if (n == send_buf.length())
+    if (n == send_buf.length()) {
         registerEvent(event.ident, D_WRITE, NULL);
-    else if (n == -1) {
+        send_buf.clear();
+    } else if (n == -1) {
         std::cerr << "[UB] send return -1" << std::endl;
     } else {
         send_buf = send_buf.substr(n, send_buf.length());
@@ -219,9 +225,10 @@ void Server::handleTimeout() {
 void Server::handleClose() {
     std::set<Udata *>::iterator iter = _garbage.begin();
     for (; iter != _garbage.end(); ++iter) {
-        std::cout << "New client # " << (*iter)->src->getFd() << " gone"
-                  << std::endl;
-        _executor.deleteClient((*iter)->src);
+        Client *client = (*iter)->src;
+        std::cout << "New client # " << client->getFd() << " gone" << std::endl;
+        client->deleteSocket();
+        _executor.deleteClient(client);
         delete (*iter);
     }
     _garbage.clear();

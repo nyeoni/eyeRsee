@@ -94,17 +94,18 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
                    static_cast<void *>(udata));
             break;
         case EXCUTE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0,
                    static_cast<void *>(udata));
         case WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0,
                    static_cast<void *>(udata));
             break;
         case D_READ:
-            EV_SET(&ev, fd, EVFILT_READ, EV_DISABLE, 0, 0, 0);
+            EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0, 0);
             break;
         case D_WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_DISABLE, 0, 0, 0);
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+            // EV_SET(&ev, fd, EVFILT_WRITE, EV_DISABLE | EV_ADD, 0, 0, 0);
             break;
         default:
             return;

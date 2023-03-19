@@ -125,12 +125,14 @@ void ChannelController::broadcast(Channel *channel, std::string msg,
     for (; iter != operators.end(); ++iter) {
         if (client == NULL || client->getFd() != (*iter)->getFd())
             //	client -> send queue -> push_back
-            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
+            // send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
+            client->send_buf.append("msg : " + msg);
     }
     iter = regulars.begin();
     for (; iter != regulars.end(); ++iter) {
         if (client == NULL || client->getFd() != (*iter)->getFd())
-            send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
+            // send((*iter)->getFd(), msg.c_str(), msg.length(), 0);
+            client->send_buf.append("msg : " + msg);
     }
 }
 Channel *ChannelController::insert(std::string &channel_name) {

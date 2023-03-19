@@ -142,7 +142,8 @@ void ClientController::broadcast(Client *client, std::string msg) {
     for (; client_iter != receivers.end(); ++client_iter) {
         // push send_queue
         // (*client_iter)->insertSendQueue(respons);
-        send((*client_iter)->getFd(), msg.c_str(), msg.length(), 0);
+        // send((*client_iter)->getFd(), msg.c_str(), msg.length(), 0);
+        client->send_buf.append("msg : " + msg);
     }
 }
 

@@ -90,6 +90,11 @@ void Executor::execute(Command *command, Client *client) {
     }
 }
 
+Client *Executor::createClient(int fd) { return client_controller.insert(fd); }
+Channel *Executor::createChannel(std::string channel_name) {
+    return channel_controller.insert(channel_name);
+}
+
 /**
  * @brief part channels
  *
@@ -297,8 +302,9 @@ void Executor::privmsg(Client *client, params *params) {
             name = *iter;
             Client *receiver = client_controller.find(name);
             if (receiver) {
-                send(client_controller.find(name)->getFd(), msg.c_str(),
-                     msg.length(), 0);
+                receiver->send_buf.append("privmsg : " + msg);
+                // send(client_controller.find(name)->getFd(), msg.c_str(),
+                //      msg.length(), 0);
             } else {
                 // 401 user3 wow :No such nick
             }

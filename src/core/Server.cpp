@@ -25,7 +25,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -161,8 +161,7 @@ void Server::handleRead(int event_idx) {
     }
 
     // registerRead
-    if (command_lines.size())
-        registerEvent(event.ident, EXCUTE, udata);
+    if (command_lines.size()) registerEvent(event.ident, EXCUTE, udata);
 }
 
 void Server::handleExecute(int event_idx) {
@@ -197,7 +196,7 @@ void Server::handleWrite(int event_idx) {
 }
 
 void Server::handleTimeout() {
-    std::vector<Udata *> tmp; // iterator 생명주기..
+    std::vector<Udata *> tmp;  // iterator 생명주기..
     std::set<Udata *>::iterator iter = _unregisters.begin();
 
     tmp.reserve(_unregisters.size());

@@ -42,7 +42,7 @@ void EventHandler::garbageCollector() {
 void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
-    e_event action = udata ? udata->action : ACCEPT;
+    e_event action = udata ? udata->action : IDLE;
 
     if ((event.flags & EV_EOF) && udata && !isConnected(udata)) {
         // TODO : ctrl-D 처리
@@ -68,10 +68,10 @@ void EventHandler::handleEvent(int event_idx) {
         case WRITE:
             handleWrite(event_idx);  // TODO
             break;
-        default:
-            std::cout << "client #" << _ev_list[event_idx].ident
-                      << " (unknown event occured)" << std::endl;
-            break;
+            // default:
+            //     std::cout << "client #" << _ev_list[event_idx].ident
+            //               << " (unknown event occured)" << std::endl;
+            //     break;
     }
 }
 
@@ -83,7 +83,8 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
     if (udata) udata->action = action;
     switch (action) {
         case ACCEPT:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
+                   static_cast<void *>(udata));
             break;
         case CONNECT:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,

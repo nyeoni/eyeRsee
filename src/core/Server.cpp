@@ -56,7 +56,9 @@ void Server::run() {
     std::cout << "🚀 Server running listening on port " << _env.port
               << std::endl;
     // TODO : [naming] 실제로 register 되는 시점은 여기가 아님.
-    registerEvent(_listen_socket.getFd(), ACCEPT, 0);
+    Udata *udata = new Udata;
+    udata->action = ACCEPT;
+    registerEvent(_listen_socket.getFd(), ACCEPT, udata);
     //_change_list.clear();
     //_change_cnt = 0;
     // 2. update (server socket)

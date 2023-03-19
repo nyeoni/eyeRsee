@@ -188,7 +188,7 @@ void Server::handleWrite(int event_idx) {
 
     std::string &send_buf = static_cast<Udata *>(event.udata)->src->send_buf;
 
-//    std::cout << "write " << event_idx << std::endl;
+    std::cout << "write " << event_idx << std::endl;
     ssize_t n;
     n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
     if (n == send_buf.length()) {
@@ -198,6 +198,7 @@ void Server::handleWrite(int event_idx) {
         std::cerr << "[UB] send return -1" << std::endl;
     } else {
         send_buf = send_buf.substr(n, send_buf.length());
+        registerEvent(event.ident, WRITE, udata);
     }
 }
 

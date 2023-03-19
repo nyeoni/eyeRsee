@@ -95,7 +95,7 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
                    static_cast<void *>(udata));
             break;
         case EXCUTE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0,
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD, 0, 0,
                    static_cast<void *>(udata));
         case WRITE:
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0,

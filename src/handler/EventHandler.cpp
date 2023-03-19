@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #include <iostream>
+
 #include "core/Type.hpp"
 #include "core/Udata.hpp"
 
@@ -21,11 +22,16 @@ EventHandler::~EventHandler() {}
 
 int EventHandler::monitorEvent() {
     int n = kevent(_kq_fd, &_change_list[0], _change_cnt, _ev_list, _max_event,
-                   NULL);
+                   NULL); // TODO : TIMEOUT
 
     _change_list.clear();
     _change_cnt = 0;
     return n;
+}
+
+void EventHandler::garbageCollector() {
+    handleTimeout();
+    handleClose();
 }
 
 /**
@@ -36,13 +42,17 @@ int EventHandler::monitorEvent() {
 void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
+    e_event action = udata ? udata->action : ACCEPT;
 
-//    if (event.flags & EV_ERROR) {
-//        std::cerr << "EV_ERROR OCCURED" << std::endl;
-//        perror("handleEvent ");
-//        return;
-//    }
-    switch (udata->action) {
+    if ((event.flags & EV_EOF) && udata && !isConnected(udata)) {
+        // TODO : ctrl-D 처리
+        _unregisters.erase(udata);
+        _garbage.insert(udata);
+        std::cout << "# " << event.ident << " EOF with no recv buf"
+                  << std::endl;
+        return;
+    }
+    switch (action) {
         case ACCEPT:
             handleAccept();
             break;
@@ -58,12 +68,6 @@ void EventHandler::handleEvent(int event_idx) {
         case WRITE:
             handleWrite(event_idx);  // TODO
             break;
-        case TIMEOUT:
-            handleTimeout(event_idx);
-            break;
-        case CLOSE:
-            // handleClose(event_idx); // TODO
-            break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
                       << " (unknown event occured)" << std::endl;
@@ -74,14 +78,11 @@ void EventHandler::handleEvent(int event_idx) {
 void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
     Event ev = {};
 
-    // TODO udata 어디서 new 해줄지 생각하기
-    if (!udata) udata = new Udata();
     // TODO 이것도 모든 경우에 다 맞는지 생각해 주어야 함
-    udata->action = action;
+    if (udata) udata->action = action;
     switch (action) {
         case ACCEPT:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   static_cast<void *>(udata));
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
             break;
         case CONNECT:
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
@@ -98,17 +99,11 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
                    static_cast<void *>(udata));
             break;
-        case TIMEOUT:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   static_cast<void *>(udata));
-            break;
         case DEL_READ:
-            EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0,
-                   static_cast<void *>(udata));
+            EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0, 0);
             break;
         case DEL_WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0,
-                   static_cast<void *>(udata));
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
             break;
         default:
             return;

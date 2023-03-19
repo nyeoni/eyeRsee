@@ -15,6 +15,18 @@ Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
+Client *Executor::createClient(int fd) { return client_controller.insert(fd); }
+
+void Executor::deleteClient(Client *client) {
+    channel_controller.eraseClient(client);
+    client_controller.erase(client->getFd());
+}
+
+bool Executor::isConnected(Client *client) {
+    // TODO : SIGINT(CTRL-C)
+    return client && client->recv_buf.length();
+}
+
 void Executor::connect(Command *command, Client *client, std::string password) {
     switch (command->type) {
         case PASS:

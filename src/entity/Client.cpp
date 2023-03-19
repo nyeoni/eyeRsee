@@ -7,7 +7,7 @@ Client::Client(const std::string &nickname) : _nickname(nickname) {}
 
 Client::Client(const Client &copy) { *this = copy; }
 
-Client::~Client() {}
+Client::~Client() { deleteSocket(); }
 
 Client &Client::operator=(const Client &ref) { return (*this); }
 

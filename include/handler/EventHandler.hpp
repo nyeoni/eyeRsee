@@ -3,6 +3,7 @@
 
 #include <sys/event.h>
 
+#include <set>
 #include <vector>
 
 #include "core/Udata.hpp"
@@ -19,6 +20,9 @@ class EventHandler {
     int _kq_fd;
     int _change_cnt;
 
+    std::set<Udata *> _unregisters;  // timeout
+    std::set<Udata *> _garbage;      // client gone
+
     Event _ev_list[_max_event];
     EventList _change_list;
 
@@ -31,6 +35,10 @@ class EventHandler {
 
     int monitorEvent();
 
+    void garbageCollector();           // TODO : naming;
+    virtual void handleTimeout() = 0;  // TODO : naming;
+    virtual void handleClose() = 0;    // TODO : naming;
+
     // handle functions
     void handleEvent(int event_idx);
     virtual void handleAccept() = 0;
@@ -38,7 +46,9 @@ class EventHandler {
     virtual void handleRead(int event_idx) = 0;
     virtual void handleExecute(int event_idx) = 0;
     virtual void handleWrite(int event_idx) = 0;
-    virtual void handleTimeout(int event_idx) = 0;
+
+    // TODO : checkConnection in handleConnect, handleREAD
+    virtual bool isConnected(Udata *udata) = 0;
 };
 }  // namespace ft
 

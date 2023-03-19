@@ -50,6 +50,7 @@ class ConnectSocket : public SocketBase {
     ConnectSocket &operator=(const ConnectSocket &ref);
 
     bool isAuthenticate();
+    // TODO : bool isConnected();
     void createSocket(const int &listen_fd);
     std::string readRecvBuf();
 };

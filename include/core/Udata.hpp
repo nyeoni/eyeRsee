@@ -68,6 +68,9 @@ struct ping_params : public params {
 struct Command {
     e_cmd type;
     params *params;
+
+    Command();
+    ~Command();
 };
 
 struct Udata {

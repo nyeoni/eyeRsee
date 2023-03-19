@@ -65,6 +65,7 @@ void Server::run() {
         for (int i = 0; i < n; i++) {
             handleEvent(i);
         }
+        garbageCollector();
     }
 }
 
@@ -86,7 +87,7 @@ void Server::handleAccept() {
     data->src = new_client;
 
     registerEvent(new_client->getFd(), CONNECT, data);
-    // registerEvent(new_client->getFd(), TIMEOUT, data); // TODO
+    _unregisters.insert(data);
 }
 
 void Server::handleConnect(int event_idx) {
@@ -109,7 +110,7 @@ void Server::handleConnect(int event_idx) {
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command command = {};
+        Command command;
 
         _parser.parse(*it, command.type, command.params);
         udata->commands.push_back(command);
@@ -126,10 +127,10 @@ void Server::handleConnect(int event_idx) {
     // check is authenticate
     if (new_client->isAuthenticate()) {
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
-
-        registerEvent(event.ident, READ, (Udata *) event.udata);
-//        registerEvent(event.ident, DEL_WRITE,
-//                      static_cast<Udata *>(event.udata));
+        _unregisters.erase(udata);
+        registerEvent(event.ident, READ, udata);
+        std::cout << "#" << event.ident << "READ event registered!"
+                  << std::endl;
     }
 }
 
@@ -153,7 +154,7 @@ void Server::handleRead(int event_idx) {
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command command = {};
+        Command command;
 
         _parser.parse(*it, command.type, command.params);
         udata->commands.push_back(command);
@@ -187,7 +188,7 @@ void Server::handleWrite(int event_idx) {
     ssize_t n;
     n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
     if (n == send_buf.length())
-        registerEvent(event.ident, DEL_WRITE, NULL);
+        registerEvent(event.ident, D_WRITE, NULL);
     else if (n == -1) {
         std::cerr << "[UB] send return -1" << std::endl;
     } else {
@@ -195,16 +196,40 @@ void Server::handleWrite(int event_idx) {
     }
 }
 
-void Server::handleTimeout(int event_idx) {
-    long long start =
-        static_cast<Udata *>(_ev_list[event_idx].udata)->src->create_time;
-    // registerEvent(_ev_list[event_idx].ident, DEL_WRITE, 0);  //
-    // 나중에고치기
+void Server::handleTimeout() {
+    std::vector<Udata *> tmp; // iterator 생명주기..
+    std::set<Udata *>::iterator iter = _unregisters.begin();
 
-    if (getTicks() > start + 10000) {
-        registerEvent(_ev_list[event_idx].ident, DEL_READ, 0);
-        registerEvent(_ev_list[event_idx].ident, CLOSE, 0);
+    tmp.reserve(_unregisters.size());
+    for (; iter != _unregisters.end(); ++iter) {
+        if (getTicks() > (*iter)->src->create_time + 15000) {
+            _garbage.insert(*iter);
+            tmp.push_back(*iter);
+            // std::cout << "New client # " << (*iter)->src->getFd()
+            //           << " timeout for register" << std::endl;
+        }
     }
+    if (tmp.size()) {
+        std::vector<Udata *>::iterator tmp_iter = tmp.begin();
+        for (; tmp_iter != tmp.end(); ++tmp_iter) {
+            _unregisters.erase(*tmp_iter);
+        }
+    }
+}
+
+void Server::handleClose() {
+    std::set<Udata *>::iterator iter = _garbage.begin();
+    for (; iter != _garbage.end(); ++iter) {
+        std::cout << "New client # " << (*iter)->src->getFd() << " gone"
+                  << std::endl;
+        _executor.deleteClient((*iter)->src);
+        delete (*iter);
+    }
+    _garbage.clear();
+}
+
+bool Server::isConnected(Udata *udata) {
+    return _executor.isConnected(udata->src);
 }
 
 const char *Parser::SyntaxException::what() const throw() {

@@ -9,10 +9,8 @@ enum e_event {
     READ_MORE,
     WRITE,
     EXCUTE,
-    CLOSE,
-    DEL_READ,
-    DEL_WRITE,
-    TIMEOUT,
+    D_READ,
+    D_WRITE,
     IDLE
 };
 
@@ -30,7 +28,8 @@ enum e_cmd {
     PRIVMSG,
     NOTICE,
     PING,
-    PONG
+    PONG,
+    UNKNOWN
 };
 
 enum e_mode {

@@ -6,10 +6,11 @@
 
 #include "Parser.hpp"
 #include "controller/Executor.hpp"
-#include "handler/EventHandler.hpp"
 #include "core/Socket.hpp"
+#include "handler/EventHandler.hpp"
 
-#define WELCOME_PROMPT "\n\
+#define WELCOME_PROMPT \
+    "\n\
 \n\
 ███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗███████╗\n\
 ██╔════╝╚██╗ ██╔╝██╔════╝██╔══██╗██╔════╝██╔════╝██╔════╝\n\
@@ -54,7 +55,12 @@ class Server : public EventHandler {
     void handleRead(int event_idx);
     void handleExecute(int event_idx);
     void handleWrite(int event_idx);
-    void handleTimeout(int event_idx);
+
+    // garbageCollector methods
+    void handleTimeout();
+    void handleClose();
+
+    bool isConnected(Udata *udata);
 };
 
 }  // namespace ft

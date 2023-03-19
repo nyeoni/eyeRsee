@@ -110,7 +110,7 @@ void Server::handleConnect(int event_idx) {
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command command = {};
+        Command command;
 
         _parser.parse(*it, command.type, command.params);
         udata->commands.push_back(command);
@@ -154,7 +154,7 @@ void Server::handleRead(int event_idx) {
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command command = {};
+        Command command;
 
         _parser.parse(*it, command.type, command.params);
         udata->commands.push_back(command);
@@ -188,7 +188,7 @@ void Server::handleWrite(int event_idx) {
     ssize_t n;
     n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
     if (n == send_buf.length())
-        registerEvent(event.ident, DEL_WRITE, NULL);
+        registerEvent(event.ident, D_WRITE, NULL);
     else if (n == -1) {
         std::cerr << "[UB] send return -1" << std::endl;
     } else {

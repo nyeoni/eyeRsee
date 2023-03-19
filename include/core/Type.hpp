@@ -9,8 +9,8 @@ enum e_event {
     READ_MORE,
     WRITE,
     EXCUTE,
-    DEL_READ,
-    DEL_WRITE,
+    D_READ,
+    D_WRITE,
     IDLE
 };
 

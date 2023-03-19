@@ -22,7 +22,7 @@ EventHandler::~EventHandler() {}
 
 int EventHandler::monitorEvent() {
     int n = kevent(_kq_fd, &_change_list[0], _change_cnt, _ev_list, _max_event,
-                   NULL); // TODO : TIMEOUT
+                   NULL);  // TODO : TIMEOUT
 
     _change_list.clear();
     _change_cnt = 0;
@@ -79,6 +79,7 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
     Event ev = {};
 
     // TODO 이것도 모든 경우에 다 맞는지 생각해 주어야 함
+    // ACCEPT/CONNECT/READ 따로 EXCUTE/WRITE 따로
     if (udata) udata->action = action;
     switch (action) {
         case ACCEPT:
@@ -99,11 +100,11 @@ void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
             EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
                    static_cast<void *>(udata));
             break;
-        case DEL_READ:
-            EV_SET(&ev, fd, EVFILT_READ, EV_DELETE, 0, 0, 0);
+        case D_READ:
+            EV_SET(&ev, fd, EVFILT_READ, EV_DISABLE, 0, 0, 0);
             break;
-        case DEL_WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+        case D_WRITE:
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_DISABLE, 0, 0, 0);
             break;
         default:
             return;

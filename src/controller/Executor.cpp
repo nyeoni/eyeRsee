@@ -1,7 +1,7 @@
 #include "controller/Executor.hpp"
 
-#include <utility>
 #include <iostream>
+#include <utility>
 
 #include "entity/Channel.hpp"
 #include "entity/Client.hpp"
@@ -16,7 +16,9 @@ Executor::~Executor() {}
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
 Client *Executor::createClient(int fd) { return client_controller.insert(fd); }
-
+Channel *Executor::createChannel(std::string channel_name) {
+    return channel_controller.insert(channel_name);
+}
 void Executor::deleteClient(Client *client) {
     channel_controller.eraseClient(client);
     client_controller.erase(client->getFd());
@@ -39,7 +41,8 @@ void Executor::connect(Command *command, Client *client, std::string password) {
             nick(client, command->params);
             break;
         default:
-            std::cout << ":NAYEON.local 451 * JOIN :You have not registered." << std::endl;
+            std::cout << ":NAYEON.local 451 * JOIN :You have not registered."
+                      << std::endl;
             break;
     }
 }
@@ -87,9 +90,6 @@ void Executor::execute(Command *command, Client *client) {
     }
 }
 
-Client *Executor::createClient(int fd) { return client_controller.insert(fd); }
-Channel *Executor::createChannel(std::string channel_name) { return channel_controller.insert(channel_name); }
-
 /**
  * @brief part channels
  *
@@ -123,7 +123,7 @@ void Executor::join(Client *client, params *params) {
             Channel *channel = channel_controller.find(*iter);
             if (channel == NULL) {  // new channel
                 channel = channel_controller.insert(*iter);
-//                channel_controller.insert(*iter);
+                //                channel_controller.insert(*iter);
                 channel_controller.insertClient(channel, client, true);
             } else {
                 channel_controller.insertClient(channel, client, false);

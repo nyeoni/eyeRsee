@@ -47,6 +47,7 @@ class EventHandler {
     virtual void handleExecute(int event_idx) = 0;
     virtual void handleWrite(int event_idx) = 0;
 
+    // TODO : checkConnection in handleConnect, handleREAD
     virtual bool isConnected(Udata *udata) = 0;
 };
 }  // namespace ft

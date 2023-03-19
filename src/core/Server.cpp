@@ -240,7 +240,4 @@ bool Server::isConnected(Udata *udata) {
     return _executor.isConnected(udata->src);
 }
 
-const char *Parser::SyntaxException::what() const throw() {
-    return exception::what();
-}
 }  // namespace ft

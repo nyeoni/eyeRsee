@@ -44,10 +44,10 @@ class Parser {
 
     void parse(const std::string &command_line, e_cmd &cmd, params *&params);
 
-    class SyntaxException : public std::exception {
-       public:
-        const char *what() const throw();
-    };
+    class UnknownCommandException : public std::exception {};
+    class NotEnoughParamsException : public std::exception {};
+    class InvalidChannelNameException : public std::exception {};
+    class InvalidNickNameException : public std::exception {};
 };
 
 }  // namespace ft

@@ -111,8 +111,8 @@ void Executor::part(Client *client, params *params) {
             channel_controller.eraseClient(channel, client);
             channel_controller.broadcast(channel);
         } else {
-            // ResponseHandler::handleResponse();
-            // ResponseHandler::handleError();
+            // ErrorHandler::handleResponse();
+            // ErrorHandler::handleError();
 //            ErrorHandler::handleError("asdfasdf")
             // 403 nick3 #bye :No such channel
         }

@@ -161,7 +161,8 @@ void Server::handleRead(int event_idx) {
             _parser.parse(*it, command->type, command->params);
             udata->commands.push_back(command);
         } catch (std::exception &e) {
-//            ResponseHandler::handleError(e);
+//            ErrorHandler::handleError(e);
+            // ErrorHandler::handler
             delete command;
         }
     }

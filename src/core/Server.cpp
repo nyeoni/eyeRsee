@@ -175,7 +175,6 @@ void Server::handleRead(int event_idx) {
 void Server::handleExecute(int event_idx) {
     std::cout << "execute " << event_idx << std::endl;
     Event &event = _ev_list[event_idx];
-
     Udata *udata = static_cast<Udata *>(event.udata);
     Client *client = udata->src;
 
@@ -185,26 +184,19 @@ void Server::handleExecute(int event_idx) {
     }
     udata->commands.clear();
 
-    registerEvent(event.ident, FILT_WRITE, WRITE, udata);
+    if (response(event.ident, udata->src->send_buf) == 0)
+        registerEvent(event.ident, FILT_WRITE, D_WRITE, 0);
+    else
+        registerEvent(event.ident, FILT_WRITE, WRITE, udata);
 }
 
 void Server::handleWrite(int event_idx) {
     Event &event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
 
-    std::string &send_buf = static_cast<Udata *>(event.udata)->src->send_buf;
-
     std::cout << "write # " << event.ident << std::endl;
-    ssize_t n;
-    n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
-    if (n == send_buf.length()) {
-        send_buf.clear();
-        registerEvent(event.ident, FILT_WRITE, D_WRITE, NULL);
-    } else if (n == -1) {
-        std::cerr << "[UB] send return -1" << std::endl;
-    } else {
-        send_buf = send_buf.substr(n, send_buf.length());
-    }
+    if (response(event.ident, udata->src->send_buf) == 0)
+        registerEvent(event.ident, FILT_WRITE, D_WRITE, 0);
 }
 
 void Server::handleTimeout() {
@@ -244,4 +236,21 @@ bool Server::isConnected(Udata *udata) {
     return _executor.isConnected(udata->src);
 }
 
+int Server::response(int fd, std::string &send_buf) {
+    ssize_t n;
+    n = send(fd, send_buf.c_str(), send_buf.length(), 0);
+    if (n == send_buf.length()) {
+        send_buf.clear();
+        return 0;
+    }
+    if (n > 0) // TODO
+        send_buf = send_buf.substr(n, send_buf.length());
+    else
+        std::cerr << "[UB] send return -1" << std::endl;
+    return -1;
+}
+
+const char *Parser::SyntaxException::what() const throw() {
+    return exception::what();
+}
 }  // namespace ft

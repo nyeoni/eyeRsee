@@ -60,6 +60,8 @@ class Server : public EventHandler {
     void handleClose();
 
     bool isConnected(Udata *udata);
+
+    int response(int fd, std::string &send_buf);
 };
 
 }  // namespace ft

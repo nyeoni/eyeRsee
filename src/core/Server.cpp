@@ -211,25 +211,17 @@ void Server::handleTimer(int event_idx) {
     _rsv_garbage.insert(udata);
 }
 void Server::handleTimeout() {
-    std::vector<Udata *> tmp;  // iterator 생명주기..
     std::set<Udata *>::iterator iter = _rsv_garbage.begin();
 
-    tmp.reserve(_rsv_garbage.size());
     for (; iter != _rsv_garbage.end(); ++iter) {
         if (getTicks() > (*iter)->src->create_time + 5000) {
             _garbage.insert(*iter);
-            tmp.push_back(*iter);
             send((*iter)->src->getFd(), "Timeout\n", 9, 0);
-
-            // std::cout << "New client # " << (*iter)->src->getFd()
-            //           << " timeout for register" << std::endl;
         }
     }
-    if (tmp.size()) {
-        std::vector<Udata *>::iterator tmp_iter = tmp.begin();
-        for (; tmp_iter != tmp.end(); ++tmp_iter) {
-            _rsv_garbage.erase(*tmp_iter);
-        }
+    iter = _garbage.begin();
+    for (; iter != _garbage.end(); ++iter) {
+        _rsv_garbage.erase(*iter);
     }
 }
 

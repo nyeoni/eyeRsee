@@ -56,6 +56,7 @@ class Parser {
     class UnknownCommandException : public SyntaxException {
        public:
         UnknownCommandException(std::string cause) : SyntaxException(cause) {};
+
     };
     class NotEnoughParamsException : public SyntaxException {
        public:

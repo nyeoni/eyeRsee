@@ -14,7 +14,7 @@ bool Parser::isEOF() {
     return false;
 }
 
-bool isSpecial(char c) {
+bool Parser::isSpecial(char c) {
     if (c == '-' || c == '[' || c == ']' || c == '\\'
         || c == '`' || c == '^' || c == '{' || c == '}')
         return true;
@@ -286,5 +286,9 @@ void Parser::parse(const std::string &command_line, e_cmd &cmd, params *&params)
     }
     tokenStream.clear();
 }
+
+Parser::SyntaxException::SyntaxException(const std::string &cause) : _cause(cause) {}
+Parser::SyntaxException::~SyntaxException() throw() {}
+std::string Parser::SyntaxException::getCause() { return _cause; }
 
 } // namespace ft

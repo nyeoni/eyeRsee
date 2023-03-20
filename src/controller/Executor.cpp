@@ -15,8 +15,6 @@ Executor::~Executor() {}
 
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
-Client *Executor::createClient(int fd) { return client_controller.insert(fd); }
-
 Channel *Executor::createChannel(std::string channel_name) {
     return channel_controller.insert(channel_name);
 }
@@ -24,6 +22,15 @@ Channel *Executor::createChannel(std::string channel_name) {
 void Executor::deleteClient(Client *client) {
     channel_controller.eraseClient(client);
     client_controller.erase(client->getFd());
+}
+
+Client *Executor::accept(int fd) {
+    ConnectSocket tmp;
+    Client *new_client;
+
+    tmp.createSocket(fd);
+    new_client = client_controller.insert(tmp.getFd());
+    return new_client;
 }
 
 void Executor::connect(Command *command, Client *client, std::string password) {
@@ -108,7 +115,7 @@ void Executor::part(Client *client, params *params) {
         } else {
             // ErrorHandler::handleResponse();
             // ErrorHandler::handleError();
-//            ErrorHandler::handleError("asdfasdf")
+            //            ErrorHandler::handleError("asdfasdf")
             // 403 nick3 #bye :No such channel
         }
     }

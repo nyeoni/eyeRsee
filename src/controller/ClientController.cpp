@@ -55,9 +55,11 @@ Client *ClientController::find(const std::string &nickname) {
  * @param client
  */
 Client *ClientController::insert(int fd) {
-    Client client;
-    pair p = _clients.insert(std::make_pair(fd, client));
-    return &(p.first->second);
+    Client *new_client;
+    pair p = _clients.insert(std::make_pair(fd, Client()));
+    new_client = &(p.first->second);
+    new_client->setFd(fd);
+    return new_client;
 }
 
 /**

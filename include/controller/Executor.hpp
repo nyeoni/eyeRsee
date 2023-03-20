@@ -23,9 +23,9 @@ class Executor {
     ~Executor();
     Executor &operator=(const Executor &ref);
 
+    Client *accept(int fd);
     void connect(Command *command, Client *client, std::string password);
     void execute(Command *command, Client *client);
-    Client *createClient(int fd);
     Channel *createChannel(std::string channel_name);
     void deleteClient(Client *client);
 

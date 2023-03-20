@@ -9,8 +9,6 @@ namespace ft {
 
 class ErrorHandler {
     enum e_err_code {
-        RPL_NOTOPIC = 331,
-        RPL_TOPIC = 332,
         ERR_NOSUCHNICK = 401,
         ERR_NOSUCHCHANNEL = 403,
         ERR_UNKNOWNCOMMAND = 421,
@@ -45,58 +43,35 @@ class ErrorHandler {
     static const std::string ERR_BADCHANMASK_MSG;
 
    public:
-    void handleError(Parser::UnknownCommandException &e) {
-        // NAYEON.local 421 nickname SDFSDF :Unknown command
-
-    }
-    void handleError(Parser::NotEnoughParamsException &e) {
-        // NAYEON.local 461 nickname JOIN :Not enough parameters.
-    }
-    void handleError(Parser::InvalidChannelNameException &e) {
-        // join aaa
-        // NAYEON.local 476 nickname aaa :Invalid channel name
-        // aaa : channel name
-    }
-    void handleError(Parser::InvalidNickNameException &e) {
-        // NAYEON.local 432 nickname 123 :Erroneous Nickname
-    }
-    void handleError(std::exception &e, Client *src) {
-//        if (Parser::UnknownCommandException *uce = dynamic_cast<Parser::UnknownCommandException *>(&e)) {
-//            handleError(*uce);
-//        } else if (Parser::NotEnoughParamsException *nepe = dynamic_cast<Parser::NotEnoughParamsException *>(&e)) {
-//            handleError(*nepe);
-//        } else if (Parser::InvalidChannelNameException
-//            *icne = dynamic_cast<Parser::InvalidChannelNameException *>(&e)) {
-//            handleError(*icne);
-//        } else if (Parser::InvalidNickNameException *inne = dynamic_cast<Parser::InvalidNickNameException *>(&e)) {
-//            handleError(*inne);
-//        } else {
-//            std::cout << "ErrorHandler: Unknown error occurred" << std::endl;
-//        }
-    }
-    static void handleResponse(Client *client, std::string command, std::string param, std::string msg = "") {
-        std::stringstream res_stream;
-        std::string res;
-
-        res_stream << ":" << client->getNickname() << "!" << client->getUsername() << "@" << client->getHostname()
-                   << " " << command;
-        if (msg.empty())
-            res_stream << " :" << param;
-        else
-            res_stream << " " << param << " :\"" << msg << "\"";
-        res = res_stream.str();
-        client->send_buf.append(res);
-    }
-    static void handleResponse(Client *client, std::string command, e_err_code code) {
+    /**
+     * @brief Handle error add error response to send_buf
+     * @param client client source
+     * @param cause cause of error (command or param)
+     * @param code error code
+     */
+    static void handleError(Client *client, std::string cause, e_err_code code) {
         std::stringstream res_stream;
         std::string res;
         std::string msg = getErrorMessage(code);
 
         res_stream << ":" << servername << " " << std::to_string(code)
-                   << " " << client->getNickname() << " " << command
+                   << " " << client->getNickname() << " " << cause
                    << " :\"" << msg << "\"";
         res = res_stream.str();
         client->send_buf.append(res);
+    }
+    static void handleError(std::exception &e, Client *src) {
+        if (Parser::UnknownCommandException *uce = dynamic_cast<Parser::UnknownCommandException *>(&e))
+            handleError(src, uce->getCause(), ERR_UNKNOWNCOMMAND);
+        else if (Parser::NotEnoughParamsException *nepe = dynamic_cast<Parser::NotEnoughParamsException *>(&e))
+            handleError(src, nepe->getCause(), ERR_NEEDMOREPARAMS);
+        else if (Parser::InvalidChannelNameException *icne = dynamic_cast<Parser::InvalidChannelNameException *>(&e))
+            handleError(src, icne->getCause(), ERR_BADCHANMASK);
+        else if (Parser::InvalidNickNameException *inne = dynamic_cast<Parser::InvalidNickNameException *>(&e))
+            handleError(src, inne->getCause(), ERR_ERRONEUSNICKNAME);
+        else
+            std::cout << "ErrorHandler: Unknown error occurred" << std::endl;
+
     }
 
     static std::string getErrorMessage(e_err_code code) {

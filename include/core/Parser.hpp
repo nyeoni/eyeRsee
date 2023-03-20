@@ -21,7 +21,7 @@ class Parser {
     int getToken(int flag);
     bool isEOF();
 
-    static bool validSpecial(char c);
+    static bool isSpecial(char c);
     static std::string &validChannelName(std::string &channel);
     static std::vector<std::string> &validChannelName(
         std::vector<std::string> &channels);
@@ -44,10 +44,31 @@ class Parser {
 
     void parse(const std::string &command_line, e_cmd &cmd, params *&params);
 
-    class UnknownCommandException : public std::exception {};
-    class NotEnoughParamsException : public std::exception {};
-    class InvalidChannelNameException : public std::exception {};
-    class InvalidNickNameException : public std::exception {};
+    class SyntaxException : public std::exception {
+       protected:
+        std::string _cause;
+       public:
+        SyntaxException(const std::string &cause);
+        ~SyntaxException() throw();
+
+        std::string getCause();
+    };
+    class UnknownCommandException : public SyntaxException {
+       public:
+        UnknownCommandException(std::string cause) : SyntaxException(cause) {};
+    };
+    class NotEnoughParamsException : public SyntaxException {
+       public:
+        NotEnoughParamsException(std::string cause) : SyntaxException(cause) {};
+    };
+    class InvalidChannelNameException : public SyntaxException {
+       public:
+        InvalidChannelNameException(std::string cause) : SyntaxException(cause) {};
+    };
+    class InvalidNickNameException : public SyntaxException {
+       public:
+        InvalidNickNameException(std::string cause) : SyntaxException(cause) {};
+    };
 };
 
 }  // namespace ft

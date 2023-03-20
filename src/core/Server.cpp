@@ -11,6 +11,7 @@
 #include "core/Udata.hpp"
 #include "core/utility.hpp"
 #include "entity/Client.hpp"
+#include "handler/ErrorHandler.hpp"
 #include "handler/ResponseHandler.hpp"
 
 namespace ft {
@@ -109,9 +110,11 @@ void Server::handleConnect(int event_idx) {
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
         Command *command = new Command;
-
-        _parser.parse(*it, command->type, command->params);
-        udata->commands.push_back(command);
+        try {
+            _parser.parse(*it, command->type, command->params);
+            udata->commands.push_back(command);
+        } catch (std::exception &e) {
+        }
     }
 
     // connect to clients logic
@@ -139,7 +142,7 @@ void Server::handleRead(int event_idx) {
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
-    Client *connect_socket = udata->src;
+    Client *client = udata->src;
 
     // read connect_socket
     n = recv(event.ident, &buf, BUF_SIZE, 0);
@@ -149,22 +152,23 @@ void Server::handleRead(int event_idx) {
     }
     buf[n] = 0;
 
-    connect_socket->recv_buf.append(buf);
+    client->recv_buf.append(buf);
 
     // multi commands parse
-    std::string line = connect_socket->readRecvBuf();
+    std::string line = client->readRecvBuf();
     std::vector<std::string> command_lines = split(line, '\n');
-    std::vector<std::string>::iterator it;
-    for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command *command = new Command;
-        try {
+
+    try {
+        std::vector<std::string>::iterator it;
+        for (it = command_lines.begin(); it != command_lines.end(); it++) {
+            Command *command = new Command;
             _parser.parse(*it, command->type, command->params);
             udata->commands.push_back(command);
-        } catch (std::exception &e) {
-            //            ErrorHandler::handleError(e);
-            // ErrorHandler::handler
-            delete command;
         }
+        if (command_lines.size())
+            registerEvent(event.ident, FILT_WRITE, EXECUTE, udata);
+    } catch (std::exception &e) {
+        ErrorHandler::handleError(e, client);
     }
 
     // registerRead

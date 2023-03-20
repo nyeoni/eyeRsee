@@ -45,7 +45,7 @@ void EventHandler::handleEvent(int event_idx) {
     e_event action = udata ? udata->r_action : ACCEPT;
     if (event.filter == EVFILT_WRITE) action = udata->w_action;
 
-    if ((event.fflags & EV_EOF) && udata && !isConnected(udata)) {
+    if ((event.flags & EV_EOF) && udata && !isConnected(udata)) {
         // TODO : ctrl-D 처리
         _unregisters.erase(udata);
         _garbage.insert(udata);

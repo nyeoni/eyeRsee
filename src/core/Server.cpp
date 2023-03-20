@@ -10,7 +10,6 @@
 #include "core/Type.hpp"
 #include "core/Udata.hpp"
 #include "core/utility.hpp"
-#include "entity/Client.hpp"
 #include "handler/ErrorHandler.hpp"
 #include "handler/ResponseHandler.hpp"
 
@@ -125,7 +124,7 @@ void Server::handleConnect(int event_idx) {
     udata->commands.clear();
 
     // check is authenticate
-    if (udata->src->isAuthenticate()) {
+    if (connect_socket->isAuthenticate()) {
         _tmp_garbage.erase(udata);
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
         registerEvent(event.ident, EVFILT_READ, READ, udata);

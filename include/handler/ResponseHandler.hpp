@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "entity/Client.hpp"
+
 namespace ft {
 
 class ResponseHandler {
@@ -16,11 +18,13 @@ class ResponseHandler {
     static const std::string RPL_TOPIC_MSG;
 
    public:
-    static void handleResponse(Client *client, std::string command, std::string param, std::string msg = "") {
+    static void handleResponse(Client *client, std::string command,
+                               std::string param, std::string msg = "") {
         std::stringstream res_stream;
         std::string res;
 
-        res_stream << ":" << client->getNickname() << "!" << client->getUsername() << "@" << client->getHostname()
+        res_stream << ":" << client->getNickname() << "!"
+                   << client->getUsername() << "@" << client->getHostname()
                    << " " << command;
         if (msg.empty())
             res_stream << " :" << param;
@@ -29,14 +33,15 @@ class ResponseHandler {
         res = res_stream.str();
         client->send_buf.append(res);
     }
-    static void handleResponse(Client *client, std::string command, e_res_code res_code) {
+    static void handleResponse(Client *client, std::string command,
+                               e_res_code res_code) {
         std::stringstream res_stream;
         std::string res;
         std::string msg = getErrorMessage(res_code);
 
         res_stream << ":" << servername << " " << std::to_string(res_code)
-                   << " " << client->getNickname() << " " << command
-                   << " :\"" << msg << "\"";
+                   << " " << client->getNickname() << " " << command << " :\""
+                   << msg << "\"";
         res = res_stream.str();
         client->send_buf.append(res);
     }
@@ -58,6 +63,6 @@ const std::string ResponseHandler::servername = "eyeRsee.local";
 const std::string ResponseHandler::RPL_NOTOPIC_MSG = "No topic is set";
 const std::string ResponseHandler::RPL_TOPIC_MSG = "";
 
-}
+}  // namespace ft
 
-#endif //RESPONSEHANDLER_HPP
+#endif  // RESPONSEHANDLER_HPP

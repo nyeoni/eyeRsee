@@ -101,6 +101,8 @@ class ErrorHandler {
 
     static std::string getErrorMessage(e_err_code code) {
         switch (code) {
+            case ERR_UNKNOWNMODE:
+                return ERR_UNKNOWNCOMMAND_MSG;
             case ERR_NEEDMOREPARAMS:
                 return ERR_NEEDMOREPARAMS_MSG;
             case ERR_ALREADYREGISTERED:
@@ -115,8 +117,6 @@ class ErrorHandler {
                 return ERR_NOTONCHANNEL_MSG;
             case ERR_USERONCHANNEL:
                 return ERR_USERONCHANNEL_MSG;
-            case ERR_UNKNOWNMODE:
-                return ERR_UNKNOWNMODE_MSG;
             case ERR_INVITEONLYCHAN:
                 return ERR_INVITEONLYCHAN_MSG;
             case ERR_CHANOPRIVSNEEDED:

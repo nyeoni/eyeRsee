@@ -51,7 +51,7 @@ void EventHandler::handleEvent(int event_idx) {
         action = udata->timer;
 
     if (event.flags & EV_EOF) {
-        _rsv_garbage.erase(udata);
+        _tmp_garbage.erase(udata);
         _garbage.insert(udata);
         std::cout << "# " << event.ident << " EOF" << std::endl;
         return;

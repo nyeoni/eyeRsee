@@ -26,7 +26,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -124,7 +124,7 @@ void Server::handleConnect(int event_idx) {
 
     // check is authenticate
     if (new_client->isAuthenticate()) {
-        _rsv_garbage.erase(udata);
+        _tmp_garbage.erase(udata);
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
         registerEvent(event.ident, EVFILT_READ, READ, udata);
         std::cout << "#" << event.ident << "READ event registered!"
@@ -161,7 +161,7 @@ void Server::handleRead(int event_idx) {
             _parser.parse(*it, command->type, command->params);
             udata->commands.push_back(command);
         } catch (std::exception &e) {
-//            ErrorHandler::handleError(e);
+            //            ErrorHandler::handleError(e);
             // ErrorHandler::handler
             delete command;
         }
@@ -208,20 +208,18 @@ void Server::handleTimer(int event_idx) {
     if (socket->isAuthenticate()) {
         return;
     }
-    _rsv_garbage.insert(udata);
+    _tmp_garbage.insert(udata);
 }
 void Server::handleTimeout() {
-    std::set<Udata *>::iterator iter = _rsv_garbage.begin();
+    std::set<Udata *>::iterator iter = _tmp_garbage.begin();
 
-    for (; iter != _rsv_garbage.end(); ++iter) {
-        if (getTicks() > (*iter)->src->create_time + 5000) {
-            _garbage.insert(*iter);
-            send((*iter)->src->getFd(), "Timeout\n", 9, 0);
-        }
+    for (; iter != _tmp_garbage.end(); ++iter) {
+        _garbage.insert(*iter);
+        send((*iter)->src->getFd(), "Timeout\n", 9, 0);
     }
     iter = _garbage.begin();
     for (; iter != _garbage.end(); ++iter) {
-        _rsv_garbage.erase(*iter);
+        _tmp_garbage.erase(*iter);
     }
 }
 

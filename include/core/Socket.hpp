@@ -39,7 +39,6 @@ class ConnectSocket : public SocketBase {
     std::string recv_buf;
     std::string send_buf;
     bool auth[3];
-    long long create_time;
 
    protected:
    public:

@@ -20,7 +20,7 @@ class EventHandler {
     int _kq_fd;
     int _change_cnt;
 
-    std::set<Udata *> _rsv_garbage;  // timeout
+    std::set<Udata *> _tmp_garbage;  // timeout
     std::set<Udata *> _garbage;      // client gone
 
     Event _ev_list[_max_event];

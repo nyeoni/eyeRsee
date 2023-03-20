@@ -36,6 +36,7 @@ class Client : public ConnectSocket {
     // getter
     ChannelList getChannelList() const;
     std::string getNickname() const;
+    std::string getUsername() const;
     std::string getHostname() const;
     std::string getRealname() const;
 

@@ -22,10 +22,10 @@ bool isSpecial(char c) {
 }
 std::string &Parser::validChannelName(std::string &channel) {
     // chstring any string except for SPACE, BELL, NUL, CR, LF and comma(',')
-    if (channel.size() > 200) throw std::logic_error("Invalid Channel Name");
+    if (channel.size() > 200) throw InvalidChannelNameException();
     for (int i = 0; i < channel.length(); i++) {
         if (!isascii(channel[i]) || isspace(channel[i]) || channel[i] == ',')
-            throw std::logic_error("Invalid Channel Name");
+            throw InvalidChannelNameException();
     }
     return channel;
 }
@@ -38,12 +38,12 @@ std::vector<std::string> &Parser::validChannelName(std::vector<std::string> &cha
 }
 std::string &Parser::validNickName(std::string &nickname) {
     // <letter> { <letter> | <number> | <special> }
-    if (nickname.length() > 9) throw std::logic_error("Invalid Nick Name");
+    if (nickname.length() > 9) throw InvalidNickNameException();
     if (!isalpha(nickname[0]))
-        throw std::logic_error("Invalid Nick Name");
+        throw InvalidNickNameException();
     for (int i = 1; i < nickname.length(); i++) {
         if (!isalnum(nickname[i]) && !isSpecial(nickname[i]))
-            throw std::logic_error("Invalid Channel Name");
+            throw InvalidNickNameException();
     }
     return nickname;
 }
@@ -65,7 +65,7 @@ void Parser::parsePass(e_cmd &cmd, params *&params) {
         p = new pass_params;
         p->password = token;
     } else {
-        throw std::logic_error("Pass argument error");
+        throw NotEnoughParamsException();
     }
     params = p;
 }
@@ -106,7 +106,7 @@ void Parser::parseJoin(e_cmd &cmd, params *&params) {
             p->keys = keys;
         }
     } else {
-        throw std::logic_error("Arugument must be given");
+        throw NotEnoughParamsException();
     }
     params = p;
 }
@@ -119,7 +119,7 @@ void Parser::parsePart(e_cmd &cmd, params *&params) {
 
         p->channels = validChannelName(channels);
     } else {
-        throw std::logic_error("Arugument must be given");
+        throw NotEnoughParamsException();
     }
     params = p;
 }
@@ -147,10 +147,10 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
             if (!isEOF() && getToken())
                 p->nickname = validNickName(token);
         } else {
-            throw std::logic_error("Arugument must be given");
+            throw NotEnoughParamsException();
         }
     } else {
-        throw std::logic_error("Arugument must be given");
+        throw NotEnoughParamsException();
     }
     params = p;
 }
@@ -180,10 +180,10 @@ void Parser::parseKick(e_cmd &cmd, params *&params) {
             }
         } else {
             delete p;
-            throw std::logic_error("Argument must be 2 or 3");
+            throw NotEnoughParamsException();
         }
     } else {
-        throw std::logic_error("Argument must be 2 or 3");
+        throw NotEnoughParamsException();
     }
     params = p;
 }
@@ -193,7 +193,7 @@ void Parser::parseTopic(e_cmd &cmd, params *&params) {
 
     std::vector<std::string> tokens = split(tokenStream, ' ');
     if (!(tokens.size() == 1 || tokens.size() == 2)) {
-        throw std::logic_error("Argument must be 2 or 3");
+        throw NotEnoughParamsException();
     }
     p = new topic_params;
 
@@ -215,10 +215,10 @@ void Parser::parsePrivmsg(e_cmd &cmd, params *&params) {
             p->msg = token;
         } else {
             delete p;
-            throw std::logic_error("PRIV parsing error");
+            throw NotEnoughParamsException();
         }
     } else {
-        throw std::logic_error("Privmsg: Argument error");
+        throw NotEnoughParamsException();
     }
     params = p;
 }
@@ -232,10 +232,10 @@ void Parser::parseNotice(e_cmd &cmd, params *&params) {
             p->msg = token;
         } else {
             delete p;
-            throw std::logic_error("Notice argument error");
+            throw NotEnoughParamsException();
         }
     } else {
-        throw std::logic_error("Notice argument error");
+        throw NotEnoughParamsException();
     }
     params = p;
 }
@@ -246,7 +246,7 @@ void Parser::parsePing(e_cmd &cmd, params *&params) {
     if (!isEOF() && getToken()) {
         p->servername = token;
     } else {
-        throw std::logic_error("Ping parsing error");
+        throw NotEnoughParamsException();
     }
     params = p;
 }
@@ -282,8 +282,7 @@ void Parser::parse(const std::string &command_line, e_cmd &cmd, params *&params)
     } else if (token == "PING") {
         parsePing(cmd, params);
     } else {
-        std::cout << "wtf: " << token << std::endl;
-        throw std::logic_error("Invalid Command");
+        throw UnknownCommandException();
     }
     tokenStream.clear();
 }

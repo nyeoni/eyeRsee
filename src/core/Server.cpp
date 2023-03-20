@@ -110,10 +110,12 @@ void Server::handleConnect(int event_idx) {
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
         Command *command = new Command;
+
         try {
             _parser.parse(*it, command->type, command->params);
             udata->commands.push_back(command);
         } catch (std::exception &e) {
+            ErrorHandler::handleError(e, new_client);
         }
     }
 
@@ -144,7 +146,6 @@ void Server::handleRead(int event_idx) {
     Udata *udata = static_cast<Udata *>(event.udata);
     Client *client = udata->src;
 
-    // read connect_socket
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     if (n == -1) {
         perror("handleRead (recv -1): ");
@@ -158,17 +159,16 @@ void Server::handleRead(int event_idx) {
     std::string line = client->readRecvBuf();
     std::vector<std::string> command_lines = split(line, '\n');
 
-    try {
-        std::vector<std::string>::iterator it;
-        for (it = command_lines.begin(); it != command_lines.end(); it++) {
-            Command *command = new Command;
+    std::vector<std::string>::iterator it;
+    for (it = command_lines.begin(); it != command_lines.end(); it++) {
+        Command *command = new Command;
+
+        try {
             _parser.parse(*it, command->type, command->params);
             udata->commands.push_back(command);
+        } catch (std::exception &e) {
+            ErrorHandler::handleError(e, client);
         }
-        if (command_lines.size())
-            registerEvent(event.ident, FILT_WRITE, EXECUTE, udata);
-    } catch (std::exception &e) {
-        ErrorHandler::handleError(e, client);
     }
 
     // registerRead

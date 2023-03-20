@@ -237,10 +237,6 @@ void Server::handleClose() {
     _garbage.clear();
 }
 
-bool Server::isConnected(Udata *udata) {
-    return _executor.isConnected(udata->src);
-}
-
 int Server::response(int fd, std::string &send_buf) {
     ssize_t n;
     n = send(fd, send_buf.c_str(), send_buf.length(), 0);

@@ -29,8 +29,6 @@ class Executor {
     Channel *createChannel(std::string channel_name);
     void deleteClient(Client *client);
 
-    bool isConnected(Client *client);
-
    private:
     void pass(Client *new_client, params *params, std::string server_password);
     void user(Client *new_client, params *params);

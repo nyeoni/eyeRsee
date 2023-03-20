@@ -26,11 +26,6 @@ void Executor::deleteClient(Client *client) {
     client_controller.erase(client->getFd());
 }
 
-bool Executor::isConnected(Client *client) {
-    // TODO : SIGINT(CTRL-C)
-    return client && client->recv_buf.length();
-}
-
 void Executor::connect(Command *command, Client *client, std::string password) {
     switch (command->type) {
         case PASS:

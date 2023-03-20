@@ -74,6 +74,7 @@ struct Command {
 };
 
 struct Udata {
+    e_event timer;
     e_event r_action;
     e_event w_action;
     int status;

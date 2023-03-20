@@ -56,7 +56,7 @@ void Server::run() {
     _listen_socket.createSocket(_env.port);  // env.port
     std::cout << "🚀 Server running listening on port " << _env.port
               << std::endl;
-    registerEvent(_listen_socket.getFd(), FILT_READ, ACCEPT, 0);
+    registerEvent(_listen_socket.getFd(), EVFILT_READ, ACCEPT, 0);
 
     while (true) {
         int n = monitorEvent();
@@ -84,8 +84,8 @@ void Server::handleAccept() {
     udata = new Udata;
     udata->src = new_client;
 
-    registerEvent(new_client->getFd(), FILT_READ, CONNECT, udata);
-    _unregisters.insert(udata);
+    registerEvent(new_client->getFd(), EVFILT_READ, CONNECT, udata);
+    registerEvent(new_client->getFd(), EVFILT_TIMER, TIMER, udata);
 }
 
 void Server::handleConnect(int event_idx) {
@@ -124,9 +124,9 @@ void Server::handleConnect(int event_idx) {
 
     // check is authenticate
     if (new_client->isAuthenticate()) {
+        _rsv_garbage.erase(udata);
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
-        _unregisters.erase(udata);
-        registerEvent(event.ident, FILT_READ, READ, udata);
+        registerEvent(event.ident, EVFILT_READ, READ, udata);
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }
@@ -169,7 +169,7 @@ void Server::handleRead(int event_idx) {
 
     // registerRead
     if (command_lines.size())
-        registerEvent(event.ident, FILT_WRITE, EXECUTE, udata);
+        registerEvent(event.ident, EVFILT_WRITE, EXECUTE, udata);
 }
 
 void Server::handleExecute(int event_idx) {
@@ -185,9 +185,9 @@ void Server::handleExecute(int event_idx) {
     udata->commands.clear();
 
     if (response(event.ident, udata->src->send_buf) == 0)
-        registerEvent(event.ident, FILT_WRITE, D_WRITE, 0);
+        registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
     else
-        registerEvent(event.ident, FILT_WRITE, WRITE, udata);
+        registerEvent(event.ident, EVFILT_WRITE, WRITE, udata);
 }
 
 void Server::handleWrite(int event_idx) {
@@ -196,18 +196,31 @@ void Server::handleWrite(int event_idx) {
 
     std::cout << "write # " << event.ident << std::endl;
     if (response(event.ident, udata->src->send_buf) == 0)
-        registerEvent(event.ident, FILT_WRITE, D_WRITE, 0);
+        registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
 }
 
+void Server::handleTimer(int event_idx) {
+    Event &event = _ev_list[event_idx];
+    Udata *udata = static_cast<Udata *>(event.udata);
+    ConnectSocket *socket = udata->src;
+
+    registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
+    if (socket->isAuthenticate()) {
+        return;
+    }
+    _rsv_garbage.insert(udata);
+}
 void Server::handleTimeout() {
     std::vector<Udata *> tmp;  // iterator 생명주기..
-    std::set<Udata *>::iterator iter = _unregisters.begin();
+    std::set<Udata *>::iterator iter = _rsv_garbage.begin();
 
-    tmp.reserve(_unregisters.size());
-    for (; iter != _unregisters.end(); ++iter) {
-        if (getTicks() > (*iter)->src->create_time + 15000) {
+    tmp.reserve(_rsv_garbage.size());
+    for (; iter != _rsv_garbage.end(); ++iter) {
+        if (getTicks() > (*iter)->src->create_time + 5000) {
             _garbage.insert(*iter);
             tmp.push_back(*iter);
+            send((*iter)->src->getFd(), "Timeout\n", 9, 0);
+
             // std::cout << "New client # " << (*iter)->src->getFd()
             //           << " timeout for register" << std::endl;
         }
@@ -215,7 +228,7 @@ void Server::handleTimeout() {
     if (tmp.size()) {
         std::vector<Udata *>::iterator tmp_iter = tmp.begin();
         for (; tmp_iter != tmp.end(); ++tmp_iter) {
-            _unregisters.erase(*tmp_iter);
+            _rsv_garbage.erase(*tmp_iter);
         }
     }
 }
@@ -243,14 +256,11 @@ int Server::response(int fd, std::string &send_buf) {
         send_buf.clear();
         return 0;
     }
-    if (n > 0) // TODO
+    if (n > 0)  // TODO
         send_buf = send_buf.substr(n, send_buf.length());
     else
         std::cerr << "[UB] send return -1" << std::endl;
     return -1;
 }
 
-const char *Parser::SyntaxException::what() const throw() {
-    return exception::what();
-}
 }  // namespace ft

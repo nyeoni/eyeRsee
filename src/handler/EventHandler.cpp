@@ -42,7 +42,8 @@ void EventHandler::garbageCollector() {
 void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
-    e_event action = udata ? udata->action : ACCEPT;
+    e_event action = udata ? udata->r_action : ACCEPT;
+    if (event.filter == EVFILT_WRITE) action = udata->w_action;
 
     if ((event.flags & EV_EOF) && udata && !isConnected(udata)) {
         // TODO : ctrl-D 처리
@@ -60,13 +61,13 @@ void EventHandler::handleEvent(int event_idx) {
             handleConnect(event_idx);
             break;
         case READ:
-            handleRead(event_idx);  // TODO
+            handleRead(event_idx);
             break;
-        case EXCUTE:
-            handleExecute(event_idx);  // TODO
+        case EXECUTE:
+            handleExecute(event_idx);
             break;
         case WRITE:
-            handleWrite(event_idx);  // TODO
+            handleWrite(event_idx);
             break;
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
@@ -75,40 +76,25 @@ void EventHandler::handleEvent(int event_idx) {
     }
 }
 
-void EventHandler::registerEvent(int fd, e_event action, Udata *udata) {
+void EventHandler::registerEvent(int fd, e_filt filt, e_event action,
+                                 Udata *udata) {
     Event ev = {};
 
-    // TODO 이것도 모든 경우에 다 맞는지 생각해 주어야 함
-    // ACCEPT/CONNECT/READ 따로 EXCUTE/WRITE 따로
-    if (udata) udata->action = action;
-    switch (action) {
-        case ACCEPT:
+    if (filt == FILT_WRITE) {
+        if (action == D_WRITE)
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+        else {
+            udata->w_action = action;
+            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD, 0, 0,
+                   static_cast<void *>(udata));
+        }
+    } else {
+        if (udata) {
+            udata->r_action = action;
+            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
+                   static_cast<void *>(udata));
+        } else
             EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
-            break;
-        case CONNECT:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   static_cast<void *>(udata));
-            break;
-        case READ:
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   static_cast<void *>(udata));
-            break;
-        case EXCUTE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   static_cast<void *>(udata));
-        case WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
-                   static_cast<void *>(udata));
-            break;
-        case D_READ:
-            EV_SET(&ev, fd, EVFILT_READ, EV_DISABLE, 0, 0, 0);
-            break;
-        case D_WRITE:
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_DISABLE, 0, 0, 0);
-            break;
-        default:
-            return;
-            break;
     }
     _change_list.push_back(ev);
     _change_cnt++;

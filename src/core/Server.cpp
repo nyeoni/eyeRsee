@@ -25,7 +25,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -55,8 +55,7 @@ void Server::run() {
     _listen_socket.createSocket(_env.port);  // env.port
     std::cout << "🚀 Server running listening on port " << _env.port
               << std::endl;
-    // TODO : [naming] 실제로 register 되는 시점은 여기가 아님.
-    registerEvent(_listen_socket.getFd(), ACCEPT, 0);
+    registerEvent(_listen_socket.getFd(), FILT_READ, ACCEPT, 0);
     //_change_list.clear();
     //_change_cnt = 0;
     // 2. update (server socket)
@@ -77,17 +76,17 @@ void Server::handleAccept() {
     std::cout << "Accept" << std::endl;
     ConnectSocket new_socket;
     Client *new_client;
-    Udata *data;
+    Udata *udata;
 
     new_socket.createSocket(_listen_socket.getFd());
     new_client = _executor.createClient(new_socket.getFd());
     new_client->setFd(new_socket.getFd());
 
-    data = new Udata;
-    data->src = new_client;
+    udata = new Udata;
+    udata->src = new_client;
 
-    registerEvent(new_client->getFd(), CONNECT, data);
-    _unregisters.insert(data);
+    registerEvent(new_client->getFd(), FILT_READ, CONNECT, udata);
+    _unregisters.insert(udata);
 }
 
 void Server::handleConnect(int event_idx) {
@@ -110,17 +109,17 @@ void Server::handleConnect(int event_idx) {
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command command;
+        Command *command = new Command;
 
-        _parser.parse(*it, command.type, command.params);
+        _parser.parse(*it, command->type, command->params);
         udata->commands.push_back(command);
     }
 
     // connect to clients logic
     // authenticate error
-    std::vector<Command>::iterator iter = udata->commands.begin();
+    std::vector<Command *>::iterator iter = udata->commands.begin();
     for (; iter != udata->commands.end(); ++iter) {
-        _executor.connect(&*iter, new_client, _env.password);
+        _executor.connect(*iter, new_client, _env.password);
     }
     udata->commands.clear();
 
@@ -128,7 +127,7 @@ void Server::handleConnect(int event_idx) {
     if (new_client->isAuthenticate()) {
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
         _unregisters.erase(udata);
-        registerEvent(event.ident, READ, udata);
+        registerEvent(event.ident, FILT_READ, READ, udata);
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }
@@ -145,6 +144,10 @@ void Server::handleRead(int event_idx) {
 
     // read connect_socket
     n = recv(event.ident, &buf, BUF_SIZE, 0);
+    if (n == -1) {
+        perror("handleRead (recv -1): ");
+        return;
+    }
     buf[n] = 0;
 
     connect_socket->recv_buf.append(buf);
@@ -154,42 +157,46 @@ void Server::handleRead(int event_idx) {
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command command;
+        Command *command = new Command;
 
-        _parser.parse(*it, command.type, command.params);
+        _parser.parse(*it, command->type, command->params);
         udata->commands.push_back(command);
     }
 
     // registerRead
     if (command_lines.size())
-        registerEvent(event.ident, EXCUTE, udata);
+        registerEvent(event.ident, FILT_WRITE, EXECUTE, udata);
 }
 
 void Server::handleExecute(int event_idx) {
     std::cout << "execute " << event_idx << std::endl;
+    Event &event = _ev_list[event_idx];
 
-    Udata *udata = static_cast<Udata *>(_ev_list[event_idx].udata);
+    Udata *udata = static_cast<Udata *>(event.udata);
     Client *client = udata->src;
 
-    std::vector<Command>::iterator iter = udata->commands.begin();
+    std::vector<Command *>::iterator iter = udata->commands.begin();
     for (; iter != udata->commands.end(); ++iter) {
-        _executor.execute(&*iter, client);
+        _executor.execute(*iter, client);
     }
     udata->commands.clear();
 
-    registerEvent(_ev_list[event_idx].ident, WRITE, udata);
+    registerEvent(event.ident, FILT_WRITE, WRITE, udata);
 }
 
 void Server::handleWrite(int event_idx) {
     Event &event = _ev_list[event_idx];
+    Udata *udata = static_cast<Udata *>(event.udata);
+
     std::string &send_buf = static_cast<Udata *>(event.udata)->src->send_buf;
 
-    std::cout << "write " << event_idx << std::endl;
+    std::cout << "write # " << event.ident << std::endl;
     ssize_t n;
     n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
-    if (n == send_buf.length())
-        registerEvent(event.ident, D_WRITE, NULL);
-    else if (n == -1) {
+    if (n == send_buf.length()) {
+        send_buf.clear();
+        registerEvent(event.ident, FILT_WRITE, D_WRITE, NULL);
+    } else if (n == -1) {
         std::cerr << "[UB] send return -1" << std::endl;
     } else {
         send_buf = send_buf.substr(n, send_buf.length());
@@ -197,7 +204,7 @@ void Server::handleWrite(int event_idx) {
 }
 
 void Server::handleTimeout() {
-    std::vector<Udata *> tmp; // iterator 생명주기..
+    std::vector<Udata *> tmp;  // iterator 생명주기..
     std::set<Udata *>::iterator iter = _unregisters.begin();
 
     tmp.reserve(_unregisters.size());
@@ -220,9 +227,10 @@ void Server::handleTimeout() {
 void Server::handleClose() {
     std::set<Udata *>::iterator iter = _garbage.begin();
     for (; iter != _garbage.end(); ++iter) {
-        std::cout << "New client # " << (*iter)->src->getFd() << " gone"
-                  << std::endl;
-        _executor.deleteClient((*iter)->src);
+        Client *client = (*iter)->src;
+        std::cout << "New client # " << client->getFd() << " gone" << std::endl;
+        client->deleteSocket();
+        _executor.deleteClient(client);
         delete (*iter);
     }
     _garbage.clear();

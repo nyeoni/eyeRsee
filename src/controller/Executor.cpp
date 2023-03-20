@@ -16,9 +16,11 @@ Executor::~Executor() {}
 Executor &Executor::operator=(const Executor &ref) { return (*this); }
 
 Client *Executor::createClient(int fd) { return client_controller.insert(fd); }
+
 Channel *Executor::createChannel(std::string channel_name) {
     return channel_controller.insert(channel_name);
 }
+
 void Executor::deleteClient(Client *client) {
     channel_controller.eraseClient(client);
     client_controller.erase(client->getFd());
@@ -119,18 +121,16 @@ void Executor::join(Client *client, params *params) {
         dynamic_cast<join_params *>(params)->channels;
     std::vector<std::string>::iterator iter = channels.begin();
     for (; iter != channels.end(); iter++) {
-        if (iter->front() == '#') {
-            Channel *channel = channel_controller.find(*iter);
-            if (channel == NULL) {  // new channel
-                channel = channel_controller.insert(*iter);
-                //                channel_controller.insert(*iter);
-                channel_controller.insertClient(channel, client, true);
-            } else {
-                channel_controller.insertClient(channel, client, false);
-            }
-            client_controller.insertChannel(client, channel);
-            channel_controller.broadcast(channel);
+        Channel *channel = channel_controller.find(*iter);
+        if (channel == NULL) {  // new channel
+            channel = channel_controller.insert(*iter);
+            //                channel_controller.insert(*iter);
+            channel_controller.insertClient(channel, client, true);
+        } else {
+            channel_controller.insertClient(channel, client, false);
         }
+        client_controller.insertChannel(client, channel);
+        channel_controller.broadcast(channel, "join msg");
     }
 }
 
@@ -297,8 +297,9 @@ void Executor::privmsg(Client *client, params *params) {
             name = *iter;
             Client *receiver = client_controller.find(name);
             if (receiver) {
-                send(client_controller.find(name)->getFd(), msg.c_str(),
-                     msg.length(), 0);
+                receiver->send_buf.append("privmsg : " + msg);
+                // send(client_controller.find(name)->getFd(), msg.c_str(),
+                //      msg.length(), 0);
             } else {
                 // 401 user3 wow :No such nick
             }

@@ -54,12 +54,13 @@ class Server : public EventHandler {
     void handleRead(int event_idx);
     void handleExecute(int event_idx);
     void handleWrite(int event_idx);
+    void handleTimer(int event_idx);
 
     // garbageCollector methods
     void handleTimeout();
     void handleClose();
 
-    bool isConnected(Udata *udata);
+    int response(int fd, std::string &send_buf);
 };
 
 }  // namespace ft

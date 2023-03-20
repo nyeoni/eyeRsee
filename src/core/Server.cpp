@@ -26,7 +26,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -56,7 +56,7 @@ void Server::run() {
     _listen_socket.createSocket(_env.port);  // env.port
     std::cout << "🚀 Server running listening on port " << _env.port
               << std::endl;
-    registerEvent(_listen_socket.getFd(), FILT_READ, ACCEPT, 0);
+    registerEvent(_listen_socket.getFd(), EVFILT_READ, ACCEPT, 0);
 
     while (true) {
         int n = monitorEvent();
@@ -84,8 +84,8 @@ void Server::handleAccept() {
     udata = new Udata;
     udata->src = new_client;
 
-    registerEvent(new_client->getFd(), FILT_READ, CONNECT, udata);
-    _unregisters.insert(udata);
+    registerEvent(new_client->getFd(), EVFILT_READ, CONNECT, udata);
+    registerEvent(new_client->getFd(), EVFILT_TIMER, TIMER, udata);
 }
 
 void Server::handleConnect(int event_idx) {
@@ -124,9 +124,9 @@ void Server::handleConnect(int event_idx) {
 
     // check is authenticate
     if (new_client->isAuthenticate()) {
+        _tmp_garbage.erase(udata);
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
-        _unregisters.erase(udata);
-        registerEvent(event.ident, FILT_READ, READ, udata);
+        registerEvent(event.ident, EVFILT_READ, READ, udata);
         std::cout << "#" << event.ident << "READ event registered!"
                   << std::endl;
     }
@@ -161,7 +161,7 @@ void Server::handleRead(int event_idx) {
             _parser.parse(*it, command->type, command->params);
             udata->commands.push_back(command);
         } catch (std::exception &e) {
-//            ErrorHandler::handleError(e);
+            //            ErrorHandler::handleError(e);
             // ErrorHandler::handler
             delete command;
         }
@@ -169,13 +169,12 @@ void Server::handleRead(int event_idx) {
 
     // registerRead
     if (command_lines.size())
-        registerEvent(event.ident, FILT_WRITE, EXECUTE, udata);
+        registerEvent(event.ident, EVFILT_WRITE, EXECUTE, udata);
 }
 
 void Server::handleExecute(int event_idx) {
     std::cout << "execute " << event_idx << std::endl;
     Event &event = _ev_list[event_idx];
-
     Udata *udata = static_cast<Udata *>(event.udata);
     Client *client = udata->src;
 
@@ -185,46 +184,42 @@ void Server::handleExecute(int event_idx) {
     }
     udata->commands.clear();
 
-    registerEvent(event.ident, FILT_WRITE, WRITE, udata);
+    if (response(event.ident, udata->src->send_buf) == 0)
+        registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
+    else
+        registerEvent(event.ident, EVFILT_WRITE, WRITE, udata);
 }
 
 void Server::handleWrite(int event_idx) {
     Event &event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
 
-    std::string &send_buf = static_cast<Udata *>(event.udata)->src->send_buf;
-
     std::cout << "write # " << event.ident << std::endl;
-    ssize_t n;
-    n = send(event.ident, send_buf.c_str(), send_buf.length(), 0);
-    if (n == send_buf.length()) {
-        send_buf.clear();
-        registerEvent(event.ident, FILT_WRITE, D_WRITE, NULL);
-    } else if (n == -1) {
-        std::cerr << "[UB] send return -1" << std::endl;
-    } else {
-        send_buf = send_buf.substr(n, send_buf.length());
-    }
+    if (response(event.ident, udata->src->send_buf) == 0)
+        registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
 }
 
-void Server::handleTimeout() {
-    std::vector<Udata *> tmp;  // iterator 생명주기..
-    std::set<Udata *>::iterator iter = _unregisters.begin();
+void Server::handleTimer(int event_idx) {
+    Event &event = _ev_list[event_idx];
+    Udata *udata = static_cast<Udata *>(event.udata);
+    ConnectSocket *socket = udata->src;
 
-    tmp.reserve(_unregisters.size());
-    for (; iter != _unregisters.end(); ++iter) {
-        if (getTicks() > (*iter)->src->create_time + 15000) {
-            _garbage.insert(*iter);
-            tmp.push_back(*iter);
-            // std::cout << "New client # " << (*iter)->src->getFd()
-            //           << " timeout for register" << std::endl;
-        }
+    registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
+    if (socket->isAuthenticate()) {
+        return;
     }
-    if (tmp.size()) {
-        std::vector<Udata *>::iterator tmp_iter = tmp.begin();
-        for (; tmp_iter != tmp.end(); ++tmp_iter) {
-            _unregisters.erase(*tmp_iter);
-        }
+    _tmp_garbage.insert(udata);
+}
+void Server::handleTimeout() {
+    std::set<Udata *>::iterator iter = _tmp_garbage.begin();
+
+    for (; iter != _tmp_garbage.end(); ++iter) {
+        _garbage.insert(*iter);
+        send((*iter)->src->getFd(), "Timeout\n", 9, 0);
+    }
+    iter = _garbage.begin();
+    for (; iter != _garbage.end(); ++iter) {
+        _tmp_garbage.erase(*iter);
     }
 }
 
@@ -240,8 +235,18 @@ void Server::handleClose() {
     _garbage.clear();
 }
 
-bool Server::isConnected(Udata *udata) {
-    return _executor.isConnected(udata->src);
+int Server::response(int fd, std::string &send_buf) {
+    ssize_t n;
+    n = send(fd, send_buf.c_str(), send_buf.length(), 0);
+    if (n == send_buf.length()) {
+        send_buf.clear();
+        return 0;
+    }
+    if (n > 0)  // TODO
+        send_buf = send_buf.substr(n, send_buf.length());
+    else
+        std::cerr << "[UB] send return -1" << std::endl;
+    return -1;
 }
 
 }  // namespace ft

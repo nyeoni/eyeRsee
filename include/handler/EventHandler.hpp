@@ -20,7 +20,7 @@ class EventHandler {
     int _kq_fd;
     int _change_cnt;
 
-    std::set<Udata *> _unregisters;  // timeout
+    std::set<Udata *> _tmp_garbage;  // timeout
     std::set<Udata *> _garbage;      // client gone
 
     Event _ev_list[_max_event];
@@ -31,7 +31,7 @@ class EventHandler {
     EventHandler(const EventHandler &copy);
     virtual ~EventHandler();
 
-    void registerEvent(int fd, e_filt filt, e_event action, Udata *udata);
+    void registerEvent(int fd, short filt, e_event action, Udata *udata);
 
     int monitorEvent();
 
@@ -46,9 +46,7 @@ class EventHandler {
     virtual void handleRead(int event_idx) = 0;
     virtual void handleExecute(int event_idx) = 0;
     virtual void handleWrite(int event_idx) = 0;
-
-    // TODO : checkConnection in handleConnect, handleREAD
-    virtual bool isConnected(Udata *udata) = 0;
+    virtual void handleTimer(int event_idx) = 0;
 };
 }  // namespace ft
 

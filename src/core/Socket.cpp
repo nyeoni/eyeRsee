@@ -74,7 +74,6 @@ void ListenSocket::createSocket(const int &port) {
 /****************************************************/
 
 ConnectSocket::ConnectSocket() : SocketBase(-1) {
-    create_time = getTicks();
     recv_buf.reserve(512);
     send_buf.reserve(512);
 }

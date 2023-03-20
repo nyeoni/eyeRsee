@@ -39,7 +39,6 @@ class ConnectSocket : public SocketBase {
     std::string recv_buf;
     std::string send_buf;
     bool auth[3];
-    long long create_time;
 
    protected:
    public:
@@ -50,7 +49,6 @@ class ConnectSocket : public SocketBase {
     ConnectSocket &operator=(const ConnectSocket &ref);
 
     bool isAuthenticate();
-    // TODO : bool isConnected();
     void createSocket(const int &listen_fd);
     std::string readRecvBuf();
 };

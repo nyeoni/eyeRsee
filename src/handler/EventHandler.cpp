@@ -42,15 +42,18 @@ void EventHandler::garbageCollector() {
 void EventHandler::handleEvent(int event_idx) {
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
-    e_event action = udata ? udata->r_action : ACCEPT;
-    if (event.filter == EVFILT_WRITE) action = udata->w_action;
+    e_event action = IDLE;
+    if (event.filter == EVFILT_READ)
+        udata ? action = udata->r_action : action = ACCEPT;
+    else if (event.filter == EVFILT_WRITE && udata)
+        action = udata->w_action;
+    else if (event.filter == EVFILT_TIMER && udata)
+        action = udata->timer;
 
-    if ((event.flags & EV_EOF) && udata && !isConnected(udata)) {
-        // TODO : ctrl-D 처리
-        _unregisters.erase(udata);
+    if (event.flags & EV_EOF) {
+        _tmp_garbage.erase(udata);
         _garbage.insert(udata);
-        std::cout << "# " << event.ident << " EOF with no recv buf"
-                  << std::endl;
+        std::cout << "# " << event.ident << " EOF" << std::endl;
         return;
     }
     switch (action) {
@@ -69,6 +72,8 @@ void EventHandler::handleEvent(int event_idx) {
         case WRITE:
             handleWrite(event_idx);
             break;
+        case TIMER:
+            handleTimer(event_idx);
         default:
             std::cout << "client #" << _ev_list[event_idx].ident
                       << " (unknown event occured)" << std::endl;
@@ -76,26 +81,21 @@ void EventHandler::handleEvent(int event_idx) {
     }
 }
 
-void EventHandler::registerEvent(int fd, e_filt filt, e_event action,
+void EventHandler::registerEvent(int fd, short filt, e_event action,
                                  Udata *udata) {
     Event ev = {};
+    u_short flags = action != D_WRITE && action != D_TIMER ? EV_ADD : EV_DELETE;
+    int64_t data = 0;
 
-    if (filt == FILT_WRITE) {
-        if (action == D_WRITE)
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
-        else {
-            udata->w_action = action;
-            EV_SET(&ev, fd, EVFILT_WRITE, EV_ADD, 0, 0,
-                   static_cast<void *>(udata));
-        }
-    } else {
-        if (udata) {
-            udata->r_action = action;
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-                   static_cast<void *>(udata));
-        } else
-            EV_SET(&ev, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+    if (filt == EVFILT_WRITE) {
+        if (action != D_WRITE) udata->w_action = action;
+    } else if (filt == EVFILT_READ) {
+        if (udata) udata->r_action = action;
+    } else {  // EVFILT_TIMER
+        if (action != D_TIMER) udata->timer = action;
+        data = 5000;
     }
+    EV_SET(&ev, fd, filt, flags, 0, data, static_cast<void *>(udata));
     _change_list.push_back(ev);
     _change_cnt++;
 }

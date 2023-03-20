@@ -9,8 +9,7 @@
 #include "core/Socket.hpp"
 #include "handler/EventHandler.hpp"
 
-#define WELCOME_PROMPT \
-    "\n\
+#define WELCOME_PROMPT "\n\
 \n\
 ███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗███████╗\n\
 ██╔════╝╚██╗ ██╔╝██╔════╝██╔══██╗██╔════╝██╔════╝██╔════╝\n\

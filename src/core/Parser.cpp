@@ -282,7 +282,7 @@ void Parser::parse(const std::string &command_line, e_cmd &cmd, params *&params)
     } else if (token == "PING") {
         parsePing(cmd, params);
     } else {
-        throw std::logic_error("Invalid Command");
+        throw UnknownCommandException();
     }
     tokenStream.clear();
 }

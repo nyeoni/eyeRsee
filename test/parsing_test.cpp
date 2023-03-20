@@ -106,3 +106,20 @@ TEST(string_test, commands_parsing_test) {
         std::cout << "===" << std::endl;
     }
 }
+
+TEST(string_test, stringstream_test) {
+    std::stringstream res_stream;
+    std::string res;
+
+    std::string msg = "fuckyou";
+    std::string param = "#channel1";
+
+    res_stream << ":" << "nickname" << "!" << "username" << "@" << "hostname" << " " << "JOIN";
+    if (msg.empty())
+        res_stream << " :" << param;
+    else
+        res_stream << " " << param << " :\"" << msg << "\"";
+    res = res_stream.str();
+
+    std::cout << res << std::endl;
+}

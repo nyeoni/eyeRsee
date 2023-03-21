@@ -10,7 +10,6 @@
 #include "core/Type.hpp"
 #include "core/Udata.hpp"
 #include "core/utility.hpp"
-#include "entity/Client.hpp"
 #include "handler/ErrorHandler.hpp"
 #include "handler/ResponseHandler.hpp"
 
@@ -74,13 +73,10 @@ void Server::run() {
 
 void Server::handleAccept() {
     std::cout << "Accept" << std::endl;
-    ConnectSocket new_socket;
     Client *new_client;
     Udata *udata;
 
-    new_socket.createSocket(_listen_socket.getFd());
-    new_client = _executor.createClient(new_socket.getFd());
-    new_client->setFd(new_socket.getFd());
+    new_client = _executor.accept(_listen_socket.getFd());
 
     udata = new Udata;
     udata->src = new_client;
@@ -128,7 +124,7 @@ void Server::handleConnect(int event_idx) {
     udata->commands.clear();
 
     // check is authenticate
-    if (udata->src->isAuthenticate()) {
+    if (connect_socket->isAuthenticate()) {
         _tmp_garbage.erase(udata);
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
         registerEvent(event.ident, EVFILT_READ, READ, udata);

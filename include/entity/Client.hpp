@@ -34,11 +34,11 @@ class Client : public ConnectSocket {
     Client &operator=(const Client &ref);
 
     // getter
-    ChannelList getChannelList() const;
-    std::string getNickname() const;
-    std::string getUsername() const;
-    std::string getHostname() const;
-    std::string getRealname() const;
+    const ChannelList &getChannelList() const;
+    const std::string &getNickname() const;
+    const std::string &getUsername() const;
+    const std::string &getHostname() const;
+    const std::string &getRealname() const;
 
     // setter
     void setNickname(const std::string &nickname);

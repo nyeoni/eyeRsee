@@ -37,10 +37,10 @@ class Channel {
     ~Channel();
     Channel &operator=(const Channel &ref);
 
-    std::string getName() const;
-    std::string getTopic() const;
-    ClientList getRegulars() const;
-    ClientList getOperators() const;
+    const std::string &getName() const;
+    const std::string &getTopic() const;
+    const ClientList &getRegulars() const;
+    const ClientList &getOperators() const;
     int getMode() const;
 
     void setName(const std::string &name);

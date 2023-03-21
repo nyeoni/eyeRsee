@@ -2,6 +2,7 @@
 #define CHANNELCONTROLLER_HPP
 
 #include <map>
+#include <set>
 #include <string>
 
 namespace ft {
@@ -17,6 +18,11 @@ class ChannelController {
     typedef Channels::iterator channel_iterator;
     typedef std::pair<channel_iterator, bool> pair;
 
+    typedef std::set<Channel *> ChannelList;
+    typedef std::set<Channel *>::iterator channel_list_iterator;
+    typedef std::set<Client *> ClientList;
+    typedef std::set<Client *>::iterator client_list_iterator;
+
    private:
     Channels _channels;
 
@@ -31,6 +37,8 @@ class ChannelController {
     Channel *find(const Channel *channel);
     Channel *find(const std::string &channel_name);
 
+    void findInSet(ClientList &client_list, Channel *channel);
+
     void erase(const Channel *channel);
     void erase(const std::string &channel_name);
 
@@ -43,12 +51,9 @@ class ChannelController {
 
     void eraseClient(Channel *channel, Client *client);
 
-    void eraseClient(Client *client);
+    void eraseClient(ChannelList &channel_list, Client *client);
 
     bool hasPermission(Channel *channel, Client *client);
-
-    void broadcast(Channel *channel, std::string msg = "",
-                   Client *client = NULL);
 };
 
 }  // namespace ft

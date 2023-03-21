@@ -50,14 +50,28 @@ Client *ClientController::find(const std::string &nickname) {
 }
 
 /**
+ * @brief find client and put channel_list
+ *
+ * @param client
+ * @return ClientController::client_iterator
+ */
+void ClientController::findInSet(Client::ChannelList &channel_list,
+                                 Client *client) {
+    const ChannelList joined_channels = client->getChannelList();
+    channel_list.insert(joined_channels.begin(), joined_channels.end());
+}
+
+/**
  * @brief insert client to _clients
  *
  * @param client
  */
 Client *ClientController::insert(int fd) {
-    Client client;
-    pair p = _clients.insert(std::make_pair(fd, client));
-    return &(p.first->second);
+    Client *new_client;
+    pair p = _clients.insert(std::make_pair(fd, Client()));
+    new_client = &(p.first->second);
+    new_client->setFd(fd);
+    return new_client;
 }
 
 /**
@@ -130,51 +144,6 @@ void ClientController::insertInviteChannel(Client *client, Channel *channel) {
  */
 void ClientController::eraseChannel(Client *client, Channel *channel) {
     client->eraseChannel(channel);
-}
-
-/**
- * @brief client가 가입한 모든 채널에 broadcast
- */
-void ClientController::broadcast(Client *client, std::string msg) {
-    Channel::ClientList receivers = findReceivers(client);
-    Channel::client_list_iterator client_iter = receivers.begin();
-
-    for (; client_iter != receivers.end(); ++client_iter) {
-        // push send_queue
-        // (*client_iter)->insertSendQueue(respons);
-        // send((*client_iter)->getFd(), msg.c_str(), msg.length(), 0);
-        client->send_buf.append("msg : " + msg);
-    }
-}
-
-/**
- * @brief 클라이언트가 가입한 채널의 모든 Client List 반환 (중복 X)
- *
- * @return ClientList
- * @note ClientController에 옮길 수 있음
- */
-std::set<Client *> ClientController::findReceivers(Client *client) {
-    Client::ChannelList channels = client->getChannelList();
-    Client::channel_list_iterator channel_iter = channels.begin();
-    Channel::ClientList receivers;
-
-    for (; channel_iter != channels.end(); ++channel_iter) {
-        {
-            Channel::ClientList operators = (*channel_iter)->getOperators();
-            Channel::client_list_iterator client_iter = operators.begin();
-            for (; client_iter != operators.end(); ++client_iter) {
-                receivers.insert(*client_iter);
-            }
-        }
-        {
-            Channel::ClientList regulars = (*channel_iter)->getRegulars();
-            Channel::client_list_iterator client_iter = regulars.begin();
-            for (; client_iter != regulars.end(); ++client_iter) {
-                receivers.insert(*client_iter);
-            }
-        }
-    }
-    return receivers;
 }
 
 }  // namespace ft

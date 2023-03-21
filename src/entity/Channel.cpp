@@ -22,10 +22,10 @@ Channel &Channel::operator=(const Channel &ref) {
     return (*this);
 }
 
-std::string Channel::getName() const { return _name; }
-std::string Channel::getTopic() const { return _topic; }
-Channel::ClientList Channel::getRegulars() const { return _regulars; }
-Channel::ClientList Channel::getOperators() const { return _operators; }
+const std::string &Channel::getName() const { return _name; }
+const std::string &Channel::getTopic() const { return _topic; }
+const Channel::ClientList &Channel::getRegulars() const { return _regulars; }
+const Channel::ClientList &Channel::getOperators() const { return _operators; }
 int Channel::getMode() const { return _mode; }
 
 void Channel::setName(const std::string &name) { _name = name; }

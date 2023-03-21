@@ -10,6 +10,7 @@ class Client;
 enum e_err_code {
     ERR_NOSUCHNICK = 401,
     ERR_NOSUCHCHANNEL = 403,
+    ERR_CANNOTSENDTOCHAN = 404,
     ERR_UNKNOWNCOMMAND = 421,
     ERR_NONICKNAMEGIVEN = 431,
     ERR_ERRONEUSNICKNAME = 432,
@@ -42,6 +43,7 @@ class ErrorHandler {
     static const std::string ERR_NOSUCHNICK_MSG;
     static const std::string ERR_NOSUCHCHANNEL_MSG;
     static const std::string ERR_BADCHANMASK_MSG;
+    static const std::string ERR_CANNOTSENDTOCHAN_MSG;
 
    public:
     static void handleError(Client *client, std::string cause, e_err_code code);

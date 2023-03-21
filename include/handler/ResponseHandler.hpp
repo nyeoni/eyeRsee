@@ -15,11 +15,6 @@ enum e_res_code {
     RPL_ENDOFNAMES = 366,
 };
 
-enum e_res_code {
-    RPL_NOTOPIC = 331,
-    RPL_TOPIC = 332,
-};
-
 class ResponseHandler {
     static const std::string servername;
 

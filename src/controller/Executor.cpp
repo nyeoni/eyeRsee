@@ -119,14 +119,14 @@ void Executor::part(Client *client, params *params) {
         if (channel) {
             client_controller.eraseChannel(client, channel);
             channel_controller.eraseClient(channel, client);
-            // TODO : make response with channel_name
-            std::string msg = "PART\n";
-            broadcast(channel, msg);
+
+            std::string response_msg = ResponseHandler::createResponse(
+                client, "PART", channel->getName());
+            broadcast(channel, response_msg);
         } else {
-            // ErrorHandler::handleResponse();
-            // ErrorHandler::handleError();
-            //            ErrorHandler::handleError("asdfasdf")
             // 403 nick3 #bye :No such channel
+            ErrorHandler::handleError(client, *iter, ERR_NOSUCHCHANNEL);
+            return;
         }
     }
 }
@@ -166,13 +166,17 @@ void Executor::join(Client *client, params *params) {
 }
 
 void Executor::mode(Client *client, params *params) {
+    const static std::string mode_str[] = {"-o", "+o", "-i", "+i", "-t", "+t"};
     std::string channel_name = dynamic_cast<mode_params *>(params)->channel;
     e_mode mode = dynamic_cast<mode_params *>(params)->mode;
     Channel *channel = channel_controller.find(channel_name);
 
+    // privlleage
+    // channel
     channel_controller.updateMode(mode, channel_name);
-    std::string msg = "channel mode change\n";
-    broadcast(channel, msg);
+    std::string response_msg = ResponseHandler::createResponse(
+        client, "MODE", channel_name, mode_str[mode]);
+    broadcast(channel, response_msg);
 }
 
 void Executor::topic(Client *client, params *params) {
@@ -197,6 +201,7 @@ void Executor::invite(Client *invitor, params *params) {
 
     if (channel == NULL) {
         //  403 user2 #testchannel :No such channel
+        ErrorHandler::handleError(client, channel_name, ERR_NOSUCHCHANNEL);
         return;
     }
     if (client == NULL) {
@@ -320,6 +325,7 @@ void Executor::kick(Client *kicker, params *params) {
         std::string response_msg = ResponseHandler::createResponse(
             client, "KICK", channel_name + " " + nickname);
         broadcast(channel, response_msg);
+        //
     } else {
         // 482 nick2 #channel1 :You must be a channel op or higher to kick a
         // more privileged user.
@@ -342,24 +348,31 @@ void Executor::privmsg(Client *client, params *params) {
             if (channel) {
                 if (channel->isOnChannel(client)) {
                     // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
-                    std::string msg = "priv msg\n";
-                    broadcast(channel, msg);
+                    std::string response_msg = ResponseHandler::createResponse(
+                        client, "PRIVMSG", name, msg);
+                    broadcast(channel, response_msg);
                 } else {
                     //  404 You cannot send external  messages to this
-                    //  channel
+                    ErrorHandler::handleError(client, name,
+                                              ERR_CANNOTSENDTOCHAN);
+                    return;
                 }
             } else {
                 //  403 user2 #testchannel :No such channel
+                ErrorHandler::handleError(client, name, ERR_NOSUCHCHANNEL);
+                return;
             }
         } else {  // user
             name = *iter;
             Client *receiver = client_controller.find(name);
             if (receiver) {
-                receiver->send_buf.append("privmsg : " + msg);
-                // send(client_controller.find(name)->getFd(), msg.c_str(),
-                //      msg.length(), 0);
+                std::string response_msg = ResponseHandler::createResponse(
+                    client, "PRIVMSG", name, msg);
+                receiver->send_buf.append(response_msg);
             } else {
                 // 401 user3 wow :No such nick
+                ErrorHandler::handleError(client, name, ERR_NOSUCHNICK);
+                return;
             }
         }
     }
@@ -376,6 +389,7 @@ void Executor::broadcast(Channel *channel, const std::string &msg) {
     client_iter = client_list.begin();
     for (; client_iter != client_list.end(); ++client_iter) {
         (*client_iter)->send_buf.append(msg);
+
         // if (client != NULL && client != *iter) {
         // }
     }

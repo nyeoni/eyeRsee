@@ -32,7 +32,8 @@ SRC_ENTITY			= $(addprefix $(SRC_ENTITY_DIR), \
 SRC_HANDLER_DIR		= handler/
 SRC_HANDLER			= $(addprefix $(SRC_HANDLER_DIR), \
 										EventHandler.cpp \
-										ErrorHandler.cpp)
+										ErrorHandler.cpp \
+										ResponseHandler.cpp)
 
 SRC_CORE_DIR		= core/
 SRC_CORE			= $(addprefix $(SRC_CORE_DIR), \

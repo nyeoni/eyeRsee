@@ -34,6 +34,7 @@ enum e_mode {
     BAN_F,          // 01111111
     BAN_T           // 10000000 -> 1 << 7
 };
+
 }  // namespace ft
 
 #endif  // TYPE_HPP

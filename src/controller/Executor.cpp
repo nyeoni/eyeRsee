@@ -244,8 +244,6 @@ void Executor::user(Client *new_client, params *params) {
     new_client->setServer(server);
     new_client->setRealname(realname);
     new_client->auth[USER] = true;
-
-    // 461 abc USER :Not enough parameters. -> parser
 }
 
 /**
@@ -256,7 +254,7 @@ void Executor::nick(Client *new_client, params *params) {
 
     if (client_controller.find(nickname)) {
         // 433 user2 user1 :Nickname is already in use.
-        std::string cause = new_client->channel() + " " + nickname;
+        std::string cause = new_client->getNickname() + " " + nickname;
         ErrorHandler::handleError(new_client, cause, ERR_NICKNAMEINUSE);
     } else {
         new_client->setNickname(nickname);
@@ -286,10 +284,13 @@ void Executor::nick(int fd, params *params) {
 
 void Executor::quit(Client *client, params *params) {
     std::string msg = dynamic_cast<quit_params *>(params)->msg;
-    if (msg.length() == 0) msg = "<Quit: client gone>";
+    if (msg.length() == 0) msg = "Quit: leaving";
     ChannelController::ChannelList channel_list;
+    std::string response_msg =
+        ResponseHandler::createResponse(client, "QUIT", msg);
+
     // 모든 채널에서 quit && send message
-    broadcast(client->getChannelList(), msg);
+    broadcast(client->getChannelList(), response_msg);
     client_controller.erase(client);
     client_controller.findInSet(channel_list, client);
     channel_controller.eraseClient(channel_list, client);
@@ -316,11 +317,14 @@ void Executor::kick(Client *kicker, params *params) {
     if (channel_controller.hasPermission(channel, kicker)) {
         channel_controller.eraseClient(channel, client);
         client_controller.eraseChannel(client, channel);
-        std::string response_msg = "kick\n";
-
+        std::string response_msg = ResponseHandler::createResponse(
+            client, "KICK", channel_name + " " + nickname);
         broadcast(channel, response_msg);
     } else {
-        // error - hasPermission can generate error message code
+        // 482 nick2 #channel1 :You must be a channel op or higher to kick a
+        // more privileged user.
+        ErrorHandler::handleError(client, nickname + " " + channel_name,
+                                  ERR_CHANOPRIVSNEEDED);
     }
 }
 

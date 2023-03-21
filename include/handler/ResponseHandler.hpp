@@ -91,10 +91,10 @@ class ResponseHandler {
                 return RPL_NOTOPIC_MSG;
             case RPL_TOPIC:
                 return RPL_TOPIC_MSG;
-            case RPL_NAMREPLY:
-                return;
-            case RPL_ENDOFNAMES:
-                return;
+            // case RPL_NAMREPLY:
+            //     return;
+            // case RPL_ENDOFNAMES:
+            //     return;
             default:
                 return "Unknown response code";
         }

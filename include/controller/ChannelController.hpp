@@ -32,7 +32,7 @@ class ChannelController {
     ~ChannelController();
     ChannelController &operator=(const ChannelController &ref);
 
-    Channel *insert(std::string &channel_name);
+    Channel *insert(const std::string &channel_name);
 
     Channel *find(const Channel *channel);
     Channel *find(const std::string &channel_name);

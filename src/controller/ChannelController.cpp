@@ -115,10 +115,13 @@ void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
     }
 }
 
-Channel *ChannelController::insert(std::string &channel_name) {
-    Channel channel;
-    pair p = _channels.insert(std::make_pair(channel_name, channel));
-    return &(p.first->second);
+Channel *ChannelController::insert(const std::string &channel_name) {
+    Channel *new_channel;
+    pair p = _channels.insert(std::make_pair(channel_name, Channel()));
+    new_channel = &(p.first->second);
+    new_channel->setName(channel_name);
+    new_channel->clearMode();
+    return new_channel;
 }
 
 }  // namespace ft

@@ -5,8 +5,8 @@
 
 #include "entity/Channel.hpp"
 #include "entity/Client.hpp"
-#include "handler/ResponseHandler.hpp"
 #include "handler/ErrorHandler.hpp"
+#include "handler/ResponseHandler.hpp"
 
 namespace ft {
 
@@ -22,9 +22,7 @@ Channel *Executor::createChannel(std::string channel_name) {
     return channel_controller.insert(channel_name);
 }
 
-const std::set<int> &Executor::getFdList() const {
-    return _fd_list;
-}
+const std::set<int> &Executor::getFdList() const { return _fd_list; }
 
 void Executor::deleteClient(Client *client) {
     ChannelController::ChannelList channel_list;
@@ -55,8 +53,9 @@ void Executor::connect(Command *command, Client *client, std::string password) {
             nick(client, command->params);
             break;
         default:
-            std::cout << ":eyeRsee.local 451 * JOIN :You have not registered."
-                      << std::endl;
+            // TODO : msg
+            send(client->getFd(),
+                 ":eyeRsee.local 451 * JOIN :You have not registered.\n", 53, 0);
             break;
     }
 }
@@ -227,7 +226,7 @@ void Executor::user(Client *new_client, params *params) {
 }
 
 /**
- * @brief only used in handleConnect
+ * @brief only used in connection registration
  */
 void Executor::nick(Client *new_client, params *params) {
     std::string nickname = dynamic_cast<nick_params *>(params)->nickname;
@@ -372,7 +371,8 @@ void Executor::notice(Client *client, params *params) {
 
     Client *receiver = client_controller.find(p->nickname);
     if (receiver)
-        ResponseHandler::handleResponse(receiver, "NOTICE", client->getNickname(), p->msg);
+        ResponseHandler::handleResponse(receiver, "NOTICE",
+                                        client->getNickname(), p->msg);
     else
         ErrorHandler::handleError(client, p->nickname, ERR_NOSUCHNICK);
 }
@@ -381,7 +381,8 @@ void Executor::pong(Client *client, params *params) {
     //: NAYEON.local PONG NAYEON.local :NAYEON.local
     ping_params *p = dynamic_cast<ping_params *>(params);
 
-    ResponseHandler::handleResponse(client, "PONG", p->servername, p->servername);
+    ResponseHandler::handleResponse(client, "PONG", p->servername,
+                                    p->servername);
 }
 
 }  // namespace ft

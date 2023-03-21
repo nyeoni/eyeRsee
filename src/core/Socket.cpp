@@ -73,7 +73,7 @@ void ListenSocket::createSocket(const int &port) {
 /*                  ConnectSocket                   */
 /****************************************************/
 
-ConnectSocket::ConnectSocket() : SocketBase(-1) {
+ConnectSocket::ConnectSocket() : SocketBase(-1), status(UNREGISTER) {
     recv_buf.reserve(512);
     send_buf.reserve(512);
 }

@@ -42,7 +42,6 @@ class EventHandler {
     // handle functions
     void handleEvent(int event_idx);
     virtual void handleAccept() = 0;
-    virtual void handleConnect(int event_idx) = 0;
     virtual void handleRead(int event_idx) = 0;
     virtual void handleExecute(int event_idx) = 0;
     virtual void handleTimer(int event_idx) = 0;

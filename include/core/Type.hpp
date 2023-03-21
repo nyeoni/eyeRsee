@@ -2,16 +2,9 @@
 #define TYPE_HPP
 
 namespace ft {
-enum e_event {
-    ACCEPT,
-    CONNECT,
-    READ,
-    EXECUTE,
-    TIMER,
-    D_WRITE,
-    D_TIMER,
-    IDLE
-};
+enum e_event { ACCEPT, READ, EXECUTE, TIMER, D_WRITE, D_TIMER, IDLE };
+
+enum e_status { UNREGISTER, REGISTER };
 
 enum e_cmd {
     PASS,

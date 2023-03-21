@@ -60,9 +60,6 @@ void EventHandler::handleEvent(int event_idx) {
         case ACCEPT:
             handleAccept();
             break;
-        case CONNECT:
-            handleConnect(event_idx);
-            break;
         case READ:
             handleRead(event_idx);
             break;

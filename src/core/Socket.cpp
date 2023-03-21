@@ -26,7 +26,7 @@ SocketBase &SocketBase::operator=(const SocketBase &ref) {
     return (*this);
 }
 
-const int SocketBase::getFd() const { return _fd; }
+int SocketBase::getFd() const { return _fd; }
 
 void SocketBase::deleteSocket() {
     // std::cout << "delet?";

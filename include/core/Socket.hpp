@@ -22,7 +22,7 @@ class SocketBase {
     virtual ~SocketBase();
     SocketBase &operator=(const SocketBase &ref);
 
-    const int getFd() const;
+    int getFd() const;
     virtual void createSocket(const int &info) = 0;
     void deleteSocket();
     void setFd(int fd);

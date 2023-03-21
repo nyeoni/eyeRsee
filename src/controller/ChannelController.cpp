@@ -3,7 +3,6 @@
 #include <utility>
 
 #include "entity/Channel.hpp"
-#include "entity/Client.hpp"
 
 namespace ft {
 ChannelController::ChannelController() {}
@@ -30,6 +29,14 @@ Channel *ChannelController::find(const std::string &channel_name) {
     channel_iterator iter = _channels.find(channel_name);
     if (iter == _channels.end()) return NULL;
     return &(iter->second);
+}
+
+void ChannelController::findInSet(ClientList &client_list, Channel *channel) {
+    const ClientList &ops = channel->getOperators();
+    const ClientList &regs = channel->getRegulars();
+
+    client_list.insert(ops.begin(), ops.end());
+    client_list.insert(regs.begin(), regs.end());
 }
 
 void ChannelController::erase(const Channel *channel) {  // const
@@ -116,22 +123,23 @@ void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
  */
 void ChannelController::broadcast(Channel *channel, std::string msg,
                                   Client *client) {
-    Channel::ClientList operators = channel->getOperators();
-    Channel::ClientList regulars = channel->getRegulars();
-    Channel::client_list_iterator iter = operators.begin();
+    //Channel::ClientList operators = channel->getOperators();
+    //Channel::ClientList regulars = channel->getRegulars();
+    //Channel::client_list_iterator iter = operators.begin();
 
-    for (; iter != operators.end(); ++iter) {
-        (*iter)->send_buf.append(msg + "\n");
-        // if (client != NULL && client != *iter) {
-        // }
-    }
-    iter = regulars.begin();
-    for (; iter != regulars.end(); ++iter) {
-        (*iter)->send_buf.append(msg + "\n");
-        // if (client != NULL && client != *iter) {
-        // }
-    }
+    //for (; iter != operators.end(); ++iter) {
+    //    (*iter)->send_buf.append(msg + "\n");
+    //    // if (client != NULL && client != *iter) {
+    //    // }
+    //}
+    //iter = regulars.begin();
+    //for (; iter != regulars.end(); ++iter) {
+    //    (*iter)->send_buf.append(msg + "\n");
+    //    // if (client != NULL && client != *iter) {
+    //    // }
+    //}
 }
+
 Channel *ChannelController::insert(std::string &channel_name) {
     Channel channel;
     pair p = _channels.insert(std::make_pair(channel_name, channel));

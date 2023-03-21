@@ -20,6 +20,8 @@ class ChannelController {
 
     typedef std::set<Channel *> ChannelList;
     typedef std::set<Channel *>::iterator channel_list_iterator;
+    typedef std::set<Client *> ClientList;
+    typedef std::set<Client *>::iterator client_list_iterator;
 
    private:
     Channels _channels;
@@ -34,6 +36,8 @@ class ChannelController {
 
     Channel *find(const Channel *channel);
     Channel *find(const std::string &channel_name);
+
+    void findInSet(ClientList &client_list, Channel *channel);
 
     void erase(const Channel *channel);
     void erase(const std::string &channel_name);

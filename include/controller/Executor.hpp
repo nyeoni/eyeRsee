@@ -36,24 +36,24 @@ class Executor {
     void deleteClient(Client *client);
 
    private:
-    void pong(int fd);
     void nick(int fd, params *params);
     void nick(Client *new_client, params *params);
     void user(Client *new_client, params *params);
     void pass(Client *new_client, params *params, std::string server_password);
 
-    void part(Client *client, params *params);
     void join(Client *client, params *params);
+    void part(Client *client, params *params);
     void mode(Client *client, params *params);
     void topic(Client *client, params *params);
     void invite(Client *invitor, params *params);
     void kick(Client *kicker, params *params);
     void quit(Client *client, params *params);
     void privmsg(Client *client, params *params);
+    void notice(Client *client, params *params);
+    void pong(Client *client, params *params);
 
     void broadcast(Channel *channel, const std::string &msg);
     void broadcast(const ChannelList &channel_list, const std::string &msg);
-    void notice(Client *client, params *params);
 };
 }  // namespace ft
 

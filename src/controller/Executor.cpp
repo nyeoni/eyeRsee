@@ -6,6 +6,7 @@
 #include "entity/Channel.hpp"
 #include "entity/Client.hpp"
 #include "handler/ResponseHandler.hpp"
+#include "handler/ErrorHandler.hpp"
 
 namespace ft {
 
@@ -89,7 +90,7 @@ void Executor::execute(Command *command, Client *client) {
             notice(client, command->params);
             break;
         case PING:
-            pong(client->getFd());
+            pong(client, command->params);
             break;
         default:
             break;
@@ -360,28 +361,23 @@ void Executor::broadcast(const ChannelList &channel_list,
         // if (client != NULL && client != *iter) {
         // }
     }
-    void Executor::notice(Client * client, params * params) {
-        // 127.000.000.001.59022-127.000.000.001.06667: NOTICE c :dfdfdf
-        // 127.000.000.001.06667-127.000.000.001.59379: :b!chloek@127.0.0.1
-        // NOTICE c :dfdfdf
+}
 
-        // 127.000.000.001.59379-127.000.000.001.06667: NOTICE fuck :dd
-        // 127.000.000.001.06667-127.000.000.001.59379: :NAYEON.local 401 c fuck
-        // :No such nick
+void Executor::notice(Client *client, params *params) {
+    notice_params *p = dynamic_cast<notice_params *>(params);
 
-        notice_params *p = dynamic_cast<notice_params *>(params);
+    Client *receiver = client_controller.find(p->nickname);
+    if (receiver)
+        ResponseHandler::handleResponse(receiver, "NOTICE", client->getNickname(), p->msg);
+    else
+        ErrorHandler::handleError(client, p->nickname, ERR_NOSUCHNICK);
+}
 
-        Client *receiver = client_controller.find(p->nickname);
-        if (receiver)
-            ResponseHandler::handleResponse(receiver, "NOTICE",
-                                            client->getNickname(), p->msg);
-        else
-            ResponseHandler::handleResponse(receiver, "NOTICE",
-                                            client->getNickname(), p->msg);
-    }
+void Executor::pong(Client *client, params *params) {
+    //: NAYEON.local PONG NAYEON.local :NAYEON.local
+    ping_params *p = dynamic_cast<ping_params *>(params);
 
-    void Executor::pong(int fd) {
-        //: NAYEON.local PONG NAYEON.local :NAYEON.local
-    }
+    ResponseHandler::handleResponse(client, "PONG", p->servername, p->servername);
+}
 
 }  // namespace ft

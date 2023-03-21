@@ -93,7 +93,7 @@ void EventHandler::registerEvent(int fd, short filt, e_event action,
         if (udata) udata->r_action = action;
     } else {  // EVFILT_TIMER
         if (action != D_TIMER) udata->timer = action;
-        data = 5000;
+        data = 60000;
     }
     EV_SET(&ev, fd, filt, flags, 0, data, static_cast<void *>(udata));
     _change_list.push_back(ev);

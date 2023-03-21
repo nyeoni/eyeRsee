@@ -49,6 +49,8 @@ class Channel {
     // void setOperators(const Client *client);
     void setMode(int mode);
 
+    void clearMode();
+
     // update
     void insertClient(Client *client, bool is_operator);
     void eraseClient(Client *client);

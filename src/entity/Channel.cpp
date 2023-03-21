@@ -5,7 +5,7 @@
 namespace ft {
 
 Channel::Channel() : _mode(0) {}
-Channel::Channel(const std::string &name) : _name(name) {}
+Channel::Channel(const std::string &name) : _name(name), _mode(0) {}
 Channel::Channel(const Channel &copy) {
     if (*this != copy) {
         *this = copy;
@@ -36,6 +36,8 @@ void Channel::setMode(int mode) {
     else
         _mode &= ~(1 << (mode));  // -flag
 }
+
+void Channel::clearMode() { _mode = 0; }
 
 // update
 void Channel::insertClient(Client *client, bool is_operator) {

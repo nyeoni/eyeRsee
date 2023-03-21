@@ -43,69 +43,9 @@ class ErrorHandler {
     static const std::string ERR_BADCHANMASK_MSG;
 
    public:
-    /**
-     * @brief Handle error add error response to send_buf
-     * @param client client source
-     * @param cause cause of error (command or param)
-     * @param code error code
-     */
-    static void handleError(Client *client, std::string cause, e_err_code code) {
-        std::stringstream res_stream;
-        std::string res;
-        std::string msg = getErrorMessage(code);
-
-        res_stream << ":" << servername << " " << code
-                   << " " << client->getNickname() << " " << cause
-                   << " :\"" << msg << "\"";
-        res = res_stream.str();
-        client->send_buf.append(res);
-    }
-    static void handleError(std::exception &e, Client *src) {
-        if (Parser::UnknownCommandException *uce = dynamic_cast<Parser::UnknownCommandException *>(&e))
-            handleError(src, uce->getCause(), ERR_UNKNOWNCOMMAND);
-        else if (Parser::NotEnoughParamsException *nepe = dynamic_cast<Parser::NotEnoughParamsException *>(&e))
-            handleError(src, nepe->getCause(), ERR_NEEDMOREPARAMS);
-        else if (Parser::InvalidChannelNameException *icne = dynamic_cast<Parser::InvalidChannelNameException *>(&e))
-            handleError(src, icne->getCause(), ERR_BADCHANMASK);
-        else if (Parser::InvalidNickNameException *inne = dynamic_cast<Parser::InvalidNickNameException *>(&e))
-            handleError(src, inne->getCause(), ERR_ERRONEUSNICKNAME);
-        else
-            std::cout << "ErrorHandler: Unknown error occurred" << std::endl;
-
-    }
-
-    static std::string getErrorMessage(e_err_code code) {
-        switch (code) {
-            case ERR_UNKNOWNMODE:
-                return ERR_UNKNOWNCOMMAND_MSG;
-            case ERR_NEEDMOREPARAMS:
-                return ERR_NEEDMOREPARAMS_MSG;
-            case ERR_ALREADYREGISTERED:
-                return ERR_ALREADYREGISTERED_MSG;
-            case ERR_NONICKNAMEGIVEN:
-                return ERR_NONICKNAMEGIVEN_MSG;
-            case ERR_ERRONEUSNICKNAME:
-                return ERR_ERRONEUSNICKNAME_MSG;
-            case ERR_NICKNAMEINUSE:
-                return ERR_NICKNAMEINUSE_MSG;
-            case ERR_NOTONCHANNEL:
-                return ERR_NOTONCHANNEL_MSG;
-            case ERR_USERONCHANNEL:
-                return ERR_USERONCHANNEL_MSG;
-            case ERR_INVITEONLYCHAN:
-                return ERR_INVITEONLYCHAN_MSG;
-            case ERR_CHANOPRIVSNEEDED:
-                return ERR_CHANOPRIVSNEEDED_MSG;
-            case ERR_NOSUCHNICK:
-                return ERR_NOSUCHNICK_MSG;
-            case ERR_NOSUCHCHANNEL:
-                return ERR_NOSUCHCHANNEL_MSG;
-            case ERR_BADCHANMASK:
-                return ERR_BADCHANMASK_MSG;
-            default:
-                return "Unknown error code";
-        }
-    }
+    static void handleError(Client *client, std::string cause, e_err_code code);
+    static void handleError(std::exception &e, Client *src);
+    static std::string getErrorMessage(e_err_code code);
 };
 
 const std::string ErrorHandler::servername = "eyeRsee.local";

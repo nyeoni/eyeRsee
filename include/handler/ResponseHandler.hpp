@@ -45,6 +45,21 @@ class ResponseHandler {
         dst->send_buf.append(res);
     }
     static void handleResponse(Client *client, std::string command,
+                               std::string param, std::string msg = "") {
+        std::stringstream res_stream;
+        std::string res;
+
+        res_stream << ":" << client->getNickname() << "!"
+                   << client->getUsername() << "@" << client->getHostname()
+                   << " " << command;
+        if (msg.empty())
+            res_stream << " :" << param;
+        else
+            res_stream << " " << param << " :\"" << msg << "\"" << std::endl;
+        res = res_stream.str();
+        client->send_buf.append(res);
+    }
+    static void handleResponse(Client *client, std::string command,
                                e_res_code res_code) {
         std::stringstream res_stream;
         std::string res;

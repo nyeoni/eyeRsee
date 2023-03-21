@@ -184,7 +184,7 @@ void Server::handleExecute(int event_idx) {
     }
     udata->commands.clear();
 
-    std::set<int> fd_list = _executor.getFdList();
+    const std::set<int> &fd_list = _executor.getFdList();
     std::set<int>::iterator fd = fd_list.begin();
     for (; fd != fd_list.end(); ++fd) {
         registerEvent(*fd, EVFILT_WRITE, EXECUTE, udata);

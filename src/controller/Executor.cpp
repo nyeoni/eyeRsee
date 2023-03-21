@@ -5,8 +5,11 @@
 
 #include "entity/Channel.hpp"
 #include "entity/Client.hpp"
+#include "handler/ResponseHandler.hpp"
+#include "handler/ErrorHandler.hpp"
 
 namespace ft {
+
 Executor::Executor() {}
 
 Executor::Executor(const Executor &copy) { *this = copy; }
@@ -48,7 +51,7 @@ void Executor::connect(Command *command, Client *client, std::string password) {
             nick(client, command->params);
             break;
         default:
-            std::cout << ":NAYEON.local 451 * JOIN :You have not registered."
+            std::cout << ":eyeRsee.local 451 * JOIN :You have not registered."
                       << std::endl;
             break;
     }
@@ -83,15 +86,12 @@ void Executor::execute(Command *command, Client *client) {
         case QUIT:
             quit(client, command->params);
             break;
-            // case NOTICE:
-            //      notice(fd);
-            //     break;
-            // case PING:
-            //      ping(fd);
-            //     break;
-            // case PONG:
-            //      pong(fd);
-            //     break;
+        case NOTICE:
+            notice(client, command->params);
+            break;
+        case PING:
+            pong(client, command->params);
+            break;
         default:
             break;
     }
@@ -253,8 +253,7 @@ void Executor::nick(int fd, params *params) {
 }
 void Executor::quit(Client *client, params *params) {
     std::string msg = dynamic_cast<quit_params *>(params)->msg;
-    if (msg.length() == 0)
-        msg = "<Quit: client gone>";
+    if (msg.length() == 0) msg = "<Quit: client gone>";
     ChannelController::ChannelList channel_list;
     // 모든 채널에서 quit && send message
     broadcast(client->getChannelList(), msg);
@@ -362,6 +361,23 @@ void Executor::broadcast(const ChannelList &channel_list,
         // if (client != NULL && client != *iter) {
         // }
     }
+}
+
+void Executor::notice(Client *client, params *params) {
+    notice_params *p = dynamic_cast<notice_params *>(params);
+
+    Client *receiver = client_controller.find(p->nickname);
+    if (receiver)
+        ResponseHandler::handleResponse(receiver, "NOTICE", client->getNickname(), p->msg);
+    else
+        ErrorHandler::handleError(client, p->nickname, ERR_NOSUCHNICK);
+}
+
+void Executor::pong(Client *client, params *params) {
+    //: NAYEON.local PONG NAYEON.local :NAYEON.local
+    ping_params *p = dynamic_cast<ping_params *>(params);
+
+    ResponseHandler::handleResponse(client, "PONG", p->servername, p->servername);
 }
 
 }  // namespace ft

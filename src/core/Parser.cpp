@@ -147,9 +147,11 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
             if (!isEOF() && getToken())
                 p->nickname = validNickName(token);
         } else {
+            delete p;
             throw NotEnoughParamsException("MODE");
         }
     } else {
+        delete p;
         throw NotEnoughParamsException("MODE");
     }
     params = p;
@@ -160,7 +162,8 @@ void Parser::parseInvite(e_cmd &cmd, params *&params) {
     std::vector<std::string> tokens = split(tokenStream, ' ');
 
     if (tokens.size() != 2) throw NotEnoughParamsException("INVITE");
-
+    p = new invite_params;
+    // TODO fail 시 메모리 해제
     p->nickname = validNickName(tokens[0]);
     p->channel = validChannelName(tokens[1]);
     params = p;
@@ -227,6 +230,7 @@ void Parser::parseNotice(e_cmd &cmd, params *&params) {
     notice_params *p;
 
     if (!isEOF() && getToken()) {
+        p = new notice_params;
         p->nickname = token;
         if (!isEOF() && getToken(MSG)) {
             p->msg = token;
@@ -235,6 +239,7 @@ void Parser::parseNotice(e_cmd &cmd, params *&params) {
             throw NotEnoughParamsException("NOTICE");
         }
     } else {
+        delete p;
         throw NotEnoughParamsException("NOTICE");
     }
     params = p;
@@ -244,8 +249,10 @@ void Parser::parsePing(e_cmd &cmd, params *&params) {
     ping_params *p;
 
     if (!isEOF() && getToken()) {
+        p = new ping_params;
         p->servername = token;
     } else {
+        delete p;
         throw NotEnoughParamsException("PING");
     }
     params = p;

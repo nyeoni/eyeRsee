@@ -9,7 +9,7 @@ Command::~Command() {
     }
 };
 
-Udata::Udata() : r_action(IDLE), w_action(IDLE), status(0), src(NULL) {}
+Udata::Udata() : status(0), src(NULL) {}
 Udata::Udata(const Udata &copy) { *this = copy; }
 Udata::~Udata() {}
 

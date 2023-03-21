@@ -11,6 +11,7 @@
 #include "core/Udata.hpp"
 #include "core/utility.hpp"
 #include "entity/Client.hpp"
+#include "handler/ErrorHandler.hpp"
 #include "handler/ResponseHandler.hpp"
 
 namespace ft {
@@ -26,7 +27,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port<1025 | d_port> 65535) {
+    if (*back || d_port < 1025 | d_port > 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -95,35 +96,39 @@ void Server::handleConnect(int event_idx) {
     ssize_t n;
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
-    Client *new_client = udata->src;
+    ConnectSocket *connect_socket = udata->src;
 
     // read connect_socket
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     buf[n] = 0;
 
-    new_client->recv_buf.append(buf);
+    connect_socket->recv_buf.append(buf);
 
     // multi commands parse
-    std::string line = new_client->readRecvBuf();
+    std::string line = connect_socket->readRecvBuf();
     std::vector<std::string> command_lines = split(line, '\n');
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
         Command *command = new Command;
 
-        _parser.parse(*it, command->type, command->params);
-        udata->commands.push_back(command);
+        try {
+            _parser.parse(*it, command->type, command->params);
+            udata->commands.push_back(command);
+        } catch (std::exception &e) {
+            ErrorHandler::handleError(e, udata->src);
+        }
     }
 
     // connect to clients logic
     // authenticate error
     std::vector<Command *>::iterator iter = udata->commands.begin();
     for (; iter != udata->commands.end(); ++iter) {
-        _executor.connect(*iter, new_client, _env.password);
+        _executor.connect(*iter, udata->src, _env.password);
     }
     udata->commands.clear();
 
     // check is authenticate
-    if (new_client->isAuthenticate()) {
+    if (udata->src->isAuthenticate()) {
         _tmp_garbage.erase(udata);
         send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
         registerEvent(event.ident, EVFILT_READ, READ, udata);
@@ -139,9 +144,8 @@ void Server::handleRead(int event_idx) {
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
     Udata *udata = static_cast<Udata *>(event.udata);
-    Client *connect_socket = udata->src;
+    ConnectSocket *connect_socket = udata->src;
 
-    // read connect_socket
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     if (n == -1) {
         perror("handleRead (recv -1): ");
@@ -154,16 +158,16 @@ void Server::handleRead(int event_idx) {
     // multi commands parse
     std::string line = connect_socket->readRecvBuf();
     std::vector<std::string> command_lines = split(line, '\n');
+
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
         Command *command = new Command;
+
         try {
             _parser.parse(*it, command->type, command->params);
             udata->commands.push_back(command);
         } catch (std::exception &e) {
-            //            ErrorHandler::handleError(e);
-            // ErrorHandler::handler
-            delete command;
+            ErrorHandler::handleError(e, udata->src);
         }
     }
 

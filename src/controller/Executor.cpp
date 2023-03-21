@@ -135,11 +135,12 @@ void Executor::join(Client *client, params *params) {
     std::vector<std::string> channels =
         dynamic_cast<join_params *>(params)->channels;
     std::vector<std::string>::iterator iter = channels.begin();
+    std::string response_msg;
+
     for (; iter != channels.end(); iter++) {
         Channel *channel = channel_controller.find(*iter);
         if (channel == NULL) {  // new channel
             channel = channel_controller.insert(*iter);
-            //                channel_controller.insert(*iter);
             channel_controller.insertClient(channel, client, true);
         } else {
             channel_controller.insertClient(channel, client, false);
@@ -147,6 +148,20 @@ void Executor::join(Client *client, params *params) {
         client_controller.insertChannel(client, channel);
         std::string msg = "join msg\n";
         broadcast(channel, msg);
+
+        // response
+        ResponseHandler::handleResponse(response_msg, client, "JOIN", *iter);
+        // channel_controller.broadcast(channel, response_msg);
+
+        if (channel != NULL) {  // join한 client
+            ResponseHandler::handleResponse(response_msg, client, "JOIN",
+                                            RPL_NAMREPLY);
+            client->send_buf.append(response_msg);
+
+            ResponseHandler::handleResponse(response_msg, client, "JOIN",
+                                            RPL_ENDOFNAMES);
+            client->send_buf.append(response_msg);
+        }
     }
 }
 

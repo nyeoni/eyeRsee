@@ -54,7 +54,7 @@ class ErrorHandler {
         std::string res;
         std::string msg = getErrorMessage(code);
 
-        res_stream << ":" << servername << " " << std::to_string(code)
+        res_stream << ":" << servername << " " << code
                    << " " << client->getNickname() << " " << cause
                    << " :\"" << msg << "\"";
         res = res_stream.str();

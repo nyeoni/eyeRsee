@@ -54,9 +54,6 @@ class ChannelController {
     void eraseClient(ChannelList &channel_list, Client *client);
 
     bool hasPermission(Channel *channel, Client *client);
-
-    void broadcast(Channel *channel, std::string msg = "",
-                   Client *client = NULL);
 };
 
 }  // namespace ft

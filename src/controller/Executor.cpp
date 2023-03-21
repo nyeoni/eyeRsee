@@ -114,7 +114,9 @@ void Executor::part(Client *client, params *params) {
         if (channel) {
             client_controller.eraseChannel(client, channel);
             channel_controller.eraseClient(channel, client);
-            channel_controller.broadcast(channel);
+            // TODO : make response with channel_name
+            std::string msg = "PART\n";
+            broadcast(channel, msg);
         } else {
             // ErrorHandler::handleResponse();
             // ErrorHandler::handleError();
@@ -138,7 +140,8 @@ void Executor::join(Client *client, params *params) {
             channel_controller.insertClient(channel, client, false);
         }
         client_controller.insertChannel(client, channel);
-        channel_controller.broadcast(channel, "join msg");
+        std::string msg = "join msg\n";
+        broadcast(channel, msg);
     }
 }
 
@@ -148,7 +151,8 @@ void Executor::mode(Client *client, params *params) {
     Channel *channel = channel_controller.find(channel_name);
 
     channel_controller.updateMode(mode, channel_name);
-    channel_controller.broadcast(channel);
+    std::string msg = "channel mode change\n";
+    broadcast(channel, msg);
 }
 
 void Executor::topic(Client *client, params *params) {
@@ -158,7 +162,8 @@ void Executor::topic(Client *client, params *params) {
 
     if (channel && client) {
         channel_controller.updateTopic(client, channel, topic);
-        channel_controller.broadcast(channel);
+        std::string msg = "topic\n";
+        broadcast(channel, msg);
     } else {
         // error
     }
@@ -243,13 +248,16 @@ void Executor::nick(int fd, params *params) {
         return;  // throw
     }
     client_controller.updateNickname(client, nickname);
-    client_controller.broadcast(client);
+    std::string msg = "someone nick ";
+    broadcast(client->getChannelList(), msg);
 }
 void Executor::quit(Client *client, params *params) {
     std::string msg = dynamic_cast<quit_params *>(params)->msg;
+    if (msg.length() == 0)
+        msg = "<Quit: client gone>";
     ChannelController::ChannelList channel_list;
     // 모든 채널에서 quit && send message
-    client_controller.broadcast(client, msg);
+    broadcast(client->getChannelList(), msg);
     client_controller.erase(client);
     client_controller.findInSet(channel_list, client);
     channel_controller.eraseClient(channel_list, client);
@@ -275,7 +283,8 @@ void Executor::kick(Client *kicker, params *params) {
     if (channel_controller.hasPermission(channel, kicker)) {
         channel_controller.eraseClient(channel, client);
         client_controller.eraseChannel(client, channel);
-        channel_controller.broadcast(channel);
+        std::string msg = "kick\n";
+        broadcast(channel, msg);
     } else {
         // error - hasPermission can generate error message code
     }
@@ -295,7 +304,8 @@ void Executor::privmsg(Client *client, params *params) {
             if (channel) {
                 if (channel->isOnChannel(client)) {
                     // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
-                    channel_controller.broadcast(channel, msg, client);
+                    std::string msg = "priv msg\n";
+                    broadcast(channel, msg);
                 } else {
                     //  404 You cannot send external  messages to this
                     //  channel
@@ -314,6 +324,43 @@ void Executor::privmsg(Client *client, params *params) {
                 // 401 user3 wow :No such nick
             }
         }
+    }
+}
+
+/**
+ * @brief channel에 가입한 모든 clients에게 broadcast
+ */
+void Executor::broadcast(Channel *channel, const std::string &msg) {
+    ClientList client_list;  // TODO
+    client_list_iterator client_iter;
+
+    channel_controller.findInSet(client_list, channel);
+    client_iter = client_list.begin();
+    for (; client_iter != client_list.end(); ++client_iter) {
+        (*client_iter)->send_buf.append(msg);
+        // if (client != NULL && client != *iter) {
+        // }
+    }
+}
+
+/**
+ * @brief client가 가입한 모든 채널에 broadcast (메시지 중복 X)
+ */
+void Executor::broadcast(const ChannelList &channel_list,
+                         const std::string &msg) {
+    ClientList client_list;  // TODO
+
+    client_list_iterator client_iter;
+    channel_list_iterator channel_iter = channel_list.begin();
+
+    for (; channel_iter != channel_list.end(); ++channel_iter) {
+        channel_controller.findInSet(client_list, *channel_iter);
+    }
+    client_iter = client_list.begin();
+    for (; client_iter != client_list.end(); ++client_iter) {
+        (*client_iter)->send_buf.append(msg);
+        // if (client != NULL && client != *iter) {
+        // }
     }
 }
 

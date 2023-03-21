@@ -115,31 +115,6 @@ void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
     }
 }
 
-/**
- * @brief channel에 가입한 모든 clients에게 broadcast
- *
- * @param msg - 없으면 defulat ""
- * @param client - excluded client, 없으면 default NULL
- */
-void ChannelController::broadcast(Channel *channel, std::string msg,
-                                  Client *client) {
-    //Channel::ClientList operators = channel->getOperators();
-    //Channel::ClientList regulars = channel->getRegulars();
-    //Channel::client_list_iterator iter = operators.begin();
-
-    //for (; iter != operators.end(); ++iter) {
-    //    (*iter)->send_buf.append(msg + "\n");
-    //    // if (client != NULL && client != *iter) {
-    //    // }
-    //}
-    //iter = regulars.begin();
-    //for (; iter != regulars.end(); ++iter) {
-    //    (*iter)->send_buf.append(msg + "\n");
-    //    // if (client != NULL && client != *iter) {
-    //    // }
-    //}
-}
-
 Channel *ChannelController::insert(std::string &channel_name) {
     Channel channel;
     pair p = _channels.insert(std::make_pair(channel_name, channel));

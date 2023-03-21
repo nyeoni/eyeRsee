@@ -49,11 +49,6 @@ class ClientController {
     void insertInviteChannel(Client* client, Channel* channel);
 
     void eraseChannel(Client* client, Channel* channel);
-
-    void broadcast(Client* client, std::string msg = "");
-
-   private:
-    ClientList findReceivers(Client* client);
 };
 
 }  // namespace ft

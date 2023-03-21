@@ -17,6 +17,12 @@ class Executor {
     ChannelController channel_controller;
     ClientController client_controller;
 
+    // TODO : 정리 필요
+    typedef std::set<Channel *> ChannelList;
+    typedef std::set<Client *> ClientList;
+    typedef std::set<Channel *>::iterator channel_list_iterator;
+    typedef std::set<Client *>::iterator client_list_iterator;
+
    public:
     Executor(/* args*/);
     Executor(const Executor &copy);
@@ -42,6 +48,9 @@ class Executor {
     void nick(int fd, params *params);
     void quit(Client *client, params *params);
     void privmsg(Client *client, params *params);
+
+    void broadcast(Channel *channel, const std::string &msg);
+    void broadcast(const ChannelList &channel_list, const std::string &msg);
 };
 }  // namespace ft
 

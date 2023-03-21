@@ -101,10 +101,8 @@ void ChannelController::eraseClient(Channel *channel, Client *client) {
 /**
  * @brief Clear Client to _clientList on all channels
  */
-void ChannelController::eraseClient(Client *client) {
-    Client::ChannelList channel_list = client->getChannelList();
-    Client::channel_list_iterator iter = channel_list.begin();
-
+void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
+    channel_list_iterator iter = channel_list.begin();
     for (; iter != channel_list.end(); ++iter) {
         eraseClient(*iter, client);
     }

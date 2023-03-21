@@ -20,7 +20,10 @@ Channel *Executor::createChannel(std::string channel_name) {
 }
 
 void Executor::deleteClient(Client *client) {
-    channel_controller.eraseClient(client);
+    ChannelController::ChannelList channel_list;
+
+    client_controller.findInSet(channel_list, client);
+    channel_controller.eraseClient(channel_list, client);
     client_controller.erase(client->getFd());
 }
 
@@ -244,10 +247,12 @@ void Executor::nick(int fd, params *params) {
 }
 void Executor::quit(Client *client, params *params) {
     std::string msg = dynamic_cast<quit_params *>(params)->msg;
+    ChannelController::ChannelList channel_list;
     // 모든 채널에서 quit && send message
     client_controller.broadcast(client, msg);
     client_controller.erase(client);
-    channel_controller.eraseClient(client);
+    client_controller.findInSet(channel_list, client);
+    channel_controller.eraseClient(channel_list, client);
 }
 void Executor::kick(Client *kicker, params *params) {
     kick_params *param = dynamic_cast<kick_params *>(params);

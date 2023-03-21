@@ -18,6 +18,9 @@ class ClientController {
     typedef std::pair<client_iterator, bool> pair;
     typedef std::set<Client*> ClientList;
 
+    typedef std::set<Channel*> ChannelList;
+    typedef std::set<Channel*>::iterator channel_list_iterator;
+
    private:
     Clients _clients;
 
@@ -30,6 +33,8 @@ class ClientController {
     Client* find(const int fd);
     Client* find(const Client* client);
     Client* find(const std::string& nickname);
+
+    void findInSet(ChannelList& channel_list, Client* client);
 
     Client* insert(int fd);
 

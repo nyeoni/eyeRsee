@@ -50,6 +50,18 @@ Client *ClientController::find(const std::string &nickname) {
 }
 
 /**
+ * @brief find client and put channel_list
+ *
+ * @param client
+ * @return ClientController::client_iterator
+ */
+void ClientController::findInSet(Client::ChannelList &channel_list,
+                                 Client *client) {
+    const ChannelList joined_channels = client->getChannelList();
+    channel_list.insert(joined_channels.begin(), joined_channels.end());
+}
+
+/**
  * @brief insert client to _clients
  *
  * @param client

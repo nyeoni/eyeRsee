@@ -22,6 +22,10 @@ Channel *Executor::createChannel(std::string channel_name) {
     return channel_controller.insert(channel_name);
 }
 
+const std::set<int> &Executor::getFdList() const {
+    return _fd_list;
+}
+
 void Executor::deleteClient(Client *client) {
     ChannelController::ChannelList channel_list;
 

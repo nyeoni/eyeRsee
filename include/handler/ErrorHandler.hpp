@@ -49,6 +49,6 @@ class ErrorHandler {
     static std::string getErrorMessage(e_err_code code);
 };
 
-}
+}  // namespace ft
 
-#endif //ERRORHANDLER_HPP
+#endif  // ERRORHANDLER_HPP

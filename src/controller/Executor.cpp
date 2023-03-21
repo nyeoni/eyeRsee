@@ -216,6 +216,8 @@ void Executor::pass(Client *new_client, params *params,
 
     if (new_client->auth[PASS]) {
         // already auth
+        ErrorHandler::handleError(new_client, new_client->getNickname(),
+                                  ERR_ALREADYREGISTERED);
         return;
     }
     if (password == server_password)
@@ -223,6 +225,7 @@ void Executor::pass(Client *new_client, params *params,
     else
         new_client->auth[PASS] = false;
 }
+
 void Executor::user(Client *new_client, params *params) {
     user_params *param = dynamic_cast<user_params *>(params);
     std::string username = param->username;
@@ -232,6 +235,8 @@ void Executor::user(Client *new_client, params *params) {
 
     if (new_client->auth[USER]) {
         // 462 abc :You may not reregister.
+        ErrorHandler::handleError(new_client, new_client->getNickname(),
+                                  ERR_ALREADYREGISTERED);
         return;
     }
     new_client->setUsername(username);
@@ -239,6 +244,7 @@ void Executor::user(Client *new_client, params *params) {
     new_client->setServer(server);
     new_client->setRealname(realname);
     new_client->auth[USER] = true;
+
     // 461 abc USER :Not enough parameters. -> parser
 }
 
@@ -250,6 +256,8 @@ void Executor::nick(Client *new_client, params *params) {
 
     if (client_controller.find(nickname)) {
         // 433 user2 user1 :Nickname is already in use.
+        std::string cause = new_client->getNickname() + " " + nickname;
+        ErrorHandler::handleError(new_client, cause, ERR_NICKNAMEINUSE);
     } else {
         new_client->setNickname(nickname);
         new_client->auth[NICK] = true;
@@ -265,12 +273,17 @@ void Executor::nick(int fd, params *params) {
 
     if (client_controller.find(nickname)) {
         // 433 user2 user1 :Nickname is already in use.
-        return;  // throw
+        std::string cause = client->getNickname() + " " + nickname;
+        ErrorHandler::handleError(client, cause, ERR_NICKNAMEINUSE);
+        return;
     }
     client_controller.updateNickname(client, nickname);
-    std::string msg = "someone nick ";
-    broadcast(client->getChannelList(), msg);
+
+    std::string response_msg =
+        ResponseHandler::createResponse(client, "NICK", nickname);
+    broadcast(client->getChannelList(), response_msg);
 }
+
 void Executor::quit(Client *client, params *params) {
     std::string msg = dynamic_cast<quit_params *>(params)->msg;
     if (msg.length() == 0) msg = "<Quit: client gone>";

@@ -44,9 +44,8 @@ class ResponseHandler {
         res = res_stream.str();
         dst->send_buf.append(res);
     }
-
-    static void handleResponse(std::string &response_msg, Client *client,
-                               std::string command, e_res_code res_code) {
+    static void handleResponse(Client *client, std::string command,
+                               e_res_code res_code) {
         std::stringstream res_stream;
         std::string res;
         std::string msg = getMessage(res_code);
@@ -56,6 +55,34 @@ class ResponseHandler {
                    << msg << "\"" << std::endl;
         res = res_stream.str();
         client->send_buf.append(res);
+    }
+
+    // SECTION
+    static std::string createResponse(Client *client, std::string command,
+                                      std::string param, std::string msg = "") {
+        std::stringstream res_stream;
+
+        res_stream << ":" << client->getNickname() << "!"
+                   << client->getUsername() << "@" << client->getHostname()
+                   << " " << command;
+        if (msg.empty())
+            res_stream << " :" << param;
+        else
+            res_stream << " " << param << " :\"" << msg << "\"";
+        return res_stream.str();
+        // client->send_buf.append(res);
+    }
+
+    static std::string createResponse(Client *client, std::string command,
+                                      e_res_code res_code) {
+        std::stringstream res_stream;
+        std::string msg = getMessage(res_code);
+
+        res_stream << ":" << servername << " " << std::to_string(res_code)
+                   << " " << client->getNickname() << " " << command << " :\""
+                   << msg << "\"";
+        return res_stream.str();
+        // client->send_buf.append(res);
     }
 
     static std::string getMessage(e_res_code res_code) {

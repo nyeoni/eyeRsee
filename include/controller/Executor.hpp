@@ -6,7 +6,6 @@
 
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
-// #include "core/Type.hpp"  // ChannelController.hpp 로 이사
 #include "core/Udata.hpp"
 
 namespace ft {
@@ -14,6 +13,8 @@ class Client;
 
 class Executor {
    private:
+    std::set<int> _fd_list;
+
     ChannelController channel_controller;
     ClientController client_controller;
 
@@ -28,6 +29,8 @@ class Executor {
     Executor(const Executor &copy);
     ~Executor();
     Executor &operator=(const Executor &ref);
+
+    const std::set<int> &getFdList() const;
 
     Client *accept(int fd);
     void connect(Command *command, Client *client, std::string password);

@@ -69,9 +69,6 @@ void EventHandler::handleEvent(int event_idx) {
         case EXECUTE:
             handleExecute(event_idx);
             break;
-        case WRITE:
-            handleWrite(event_idx);
-            break;
         case TIMER:
             handleTimer(event_idx);
         default:

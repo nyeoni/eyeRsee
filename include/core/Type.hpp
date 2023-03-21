@@ -7,9 +7,7 @@ enum e_event {
     CONNECT,
     READ,
     EXECUTE,
-    WRITE,
     TIMER,
-    D_READ,
     D_WRITE,
     D_TIMER,
     IDLE

@@ -45,7 +45,6 @@ class EventHandler {
     virtual void handleConnect(int event_idx) = 0;
     virtual void handleRead(int event_idx) = 0;
     virtual void handleExecute(int event_idx) = 0;
-    virtual void handleWrite(int event_idx) = 0;
     virtual void handleTimer(int event_idx) = 0;
 };
 }  // namespace ft

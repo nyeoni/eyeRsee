@@ -146,20 +146,20 @@ void Executor::join(Client *client, params *params) {
             channel_controller.insertClient(channel, client, false);
         }
         client_controller.insertChannel(client, channel);
-        std::string msg = "join msg\n";
-        broadcast(channel, msg);
 
         // response
-        ResponseHandler::handleResponse(response_msg, client, "JOIN", *iter);
-        // channel_controller.broadcast(channel, response_msg);
-
+        std::string response_msg =
+            ResponseHandler::createResponse(client, "JOIN", channel->getName());
+        broadcast(channel, response_msg);
         if (channel != NULL) {  // join한 client
-            ResponseHandler::handleResponse(response_msg, client, "JOIN",
-                                            RPL_NAMREPLY);
+            response_msg += ResponseHandler::createResponse(
+                client, client->getNickname() + " " + channel->getName(),
+                RPL_NAMREPLY);
             client->send_buf.append(response_msg);
 
-            ResponseHandler::handleResponse(response_msg, client, "JOIN",
-                                            RPL_ENDOFNAMES);
+            response_msg += ResponseHandler::createResponse(
+                client, client->getNickname() + " " + channel->getName(),
+                RPL_ENDOFNAMES);
             client->send_buf.append(response_msg);
         }
     }
@@ -256,7 +256,7 @@ void Executor::nick(Client *new_client, params *params) {
 
     if (client_controller.find(nickname)) {
         // 433 user2 user1 :Nickname is already in use.
-        std::string cause = new_client->getNickname() + " " + nickname;
+        std::string cause = new_client->channel() + " " + nickname;
         ErrorHandler::handleError(new_client, cause, ERR_NICKNAMEINUSE);
     } else {
         new_client->setNickname(nickname);
@@ -294,6 +294,7 @@ void Executor::quit(Client *client, params *params) {
     client_controller.findInSet(channel_list, client);
     channel_controller.eraseClient(channel_list, client);
 }
+
 void Executor::kick(Client *kicker, params *params) {
     kick_params *param = dynamic_cast<kick_params *>(params);
     std::string channel_name = param->channel;
@@ -303,20 +304,21 @@ void Executor::kick(Client *kicker, params *params) {
     Channel *channel = channel_controller.find(channel_name);
 
     if (channel == NULL) {
-        //
         //  403 user2 #testchannel :No such channel
-
+        ErrorHandler::handleError(client, channel_name, ERR_NOSUCHCHANNEL);
         return;
     }
     if (client == NULL) {
-        // No such user
+        // 401 user nickname :No such user
+        ErrorHandler::handleError(client, nickname, ERR_NOSUCHNICK);
         return;
     }
     if (channel_controller.hasPermission(channel, kicker)) {
         channel_controller.eraseClient(channel, client);
         client_controller.eraseChannel(client, channel);
-        std::string msg = "kick\n";
-        broadcast(channel, msg);
+        std::string response_msg = "kick\n";
+
+        broadcast(channel, response_msg);
     } else {
         // error - hasPermission can generate error message code
     }

@@ -7,7 +7,6 @@
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
 #include "core/Udata.hpp"
-#include "handler/ResponseHandler.hpp"
 
 namespace ft {
 class Client;

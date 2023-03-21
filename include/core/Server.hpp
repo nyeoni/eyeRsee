@@ -53,7 +53,6 @@ class Server : public EventHandler {
     void handleConnect(int event_idx);
     void handleRead(int event_idx);
     void handleExecute(int event_idx);
-    void handleWrite(int event_idx);
     void handleTimer(int event_idx);
 
     // garbageCollector methods

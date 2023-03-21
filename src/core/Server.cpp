@@ -192,17 +192,6 @@ void Server::handleExecute(int event_idx) {
 
     if (response(event.ident, udata->src->send_buf) == 0)
         registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
-    else
-        registerEvent(event.ident, EVFILT_WRITE, WRITE, udata);
-}
-
-void Server::handleWrite(int event_idx) {
-    Event &event = _ev_list[event_idx];
-    Udata *udata = static_cast<Udata *>(event.udata);
-
-    std::cout << "write # " << event.ident << std::endl;
-    if (response(event.ident, udata->src->send_buf) == 0)
-        registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
 }
 
 void Server::handleTimer(int event_idx) {

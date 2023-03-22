@@ -27,7 +27,8 @@ bool Parser::isSpecial(char c) {
 std::string &Parser::validChannelName(std::string &channel) {
     // chstring any string except for SPACE, BELL, NUL, CR, LF and comma(',')
     if (channel.size() > 200) throw InvalidChannelNameException(channel);
-    for (int i = 0; i < channel.length(); i++) {
+    if (channel[0] != '#') throw InvalidChannelNameException(channel);
+    for (int i = 1; i < channel.length(); i++) {
         if (!isascii(channel[i]) || isspace(channel[i]) || channel[i] == ',')
             throw InvalidChannelNameException(channel);
     }
@@ -78,7 +79,7 @@ void Parser::parseUser(e_cmd &cmd, params *&params) {
     user_params *p;
     std::vector<std::string> tokens = split(tokenStream, ' ');
 
-    if (tokens.size() != 4) throw std::logic_error("Argument must be 4");
+    if (tokens.size() != 4) throw NotEnoughParamsException("USER");
     p = new user_params;
     p->username = tokens[0];
     p->hostname = tokens[1];
@@ -91,7 +92,7 @@ void Parser::parseNick(e_cmd &cmd, params *&params) {
     nick_params *p;
 
     std::vector<std::string> tokens = split(tokenStream, ' ');
-    if (tokens.size() != 1) throw std::logic_error("Nick parse error");
+    if (tokens.size() != 1) throw NotEnoughParamsException("NICK");
     p = new nick_params;
     p->nickname = validNickName(tokens[0]);
     params = p;
@@ -155,7 +156,6 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
                 p->mode = TOPIC_PRIV_F;
 
         } else {
-            // TODO mode 씸을 수 있는지
             delete p;
             throw NotEnoughParamsException("MODE");
         }
@@ -299,7 +299,7 @@ Command *Parser::parse(const std::string &command_line) {
         parseNotice(command->type, command->params);
     } else if (token == "PING") {
         parsePing(command->type, command->params);
-    } else if (token == "CAP") {
+    } else if (token == "CAP" || token == "WHO") {
         delete command;
         return NULL;
     } else {
@@ -325,7 +325,9 @@ std::vector<Command *> Parser::parse(Client *src) {
         try {
             command = parse(*it);
             if (command != NULL) commands.push_back(command);
-        } catch (std::exception &e) {
+        } catch (SyntaxException &e) {
+            if (e.getCause() == "MODE") continue;
+
             delete command;
             ErrorHandler::handleError(e, src);
         }

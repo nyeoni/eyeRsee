@@ -501,8 +501,7 @@ void Executor::pong(Client *client, params *params) {
     //: NAYEON.local PONG NAYEON.local :NAYEON.local
     ping_params *p = dynamic_cast<ping_params *>(params);
 
-    ResponseHandler::handleResponse(client, "PONG", p->servername,
-                                    p->servername);
+    ResponseHandler::handlePongResponse(client);
 }
 
 }  // namespace ft

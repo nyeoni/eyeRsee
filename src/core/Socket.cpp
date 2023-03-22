@@ -104,13 +104,18 @@ std::string ConnectSocket::readRecvBuf() {
     found = recv_buf.find_last_of("\r\n");
     if (found != std::string::npos) {
         delimiter = CRLF;
+
+        line = recv_buf.substr(0, found);
+        recv_buf = recv_buf.substr(found + 1);
     } else {
         found = recv_buf.find_last_of('\n');
-        delimiter = LF;
-    }
+        if (found != std::string::npos) {
+            delimiter = LF;
 
-    line = recv_buf.substr(0, found);
-    recv_buf = recv_buf.substr(found + 1);
+            line = recv_buf.substr(0, found);
+            recv_buf = recv_buf.substr(found + 1);
+        }
+    }
     return (line);
 }
 

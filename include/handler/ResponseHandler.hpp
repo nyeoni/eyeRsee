@@ -85,10 +85,14 @@ class ResponseHandler {
         res = res_stream.str();
         client->send_buf.append(res);
     }
+    static void handlePongResponse(Client *client) {
+        const std::string res = ":" + servername + " PONG " + servername + " :" + servername;
+        client->send_buf.append(res);
+    }
     static void handleConnectResponse(Client *client) {
         const std::string prefix = client->getNickname() + "!" +
-                                   client->getUsername() + "@" +
-                                   client->getHostname();
+            client->getUsername() + "@" +
+            client->getHostname();
         // TODO date
         std::string res_comment[4] = {prefix, "", "",
                                       "eyeRsee.local 1.0 o oit"};

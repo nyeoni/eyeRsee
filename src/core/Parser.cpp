@@ -57,7 +57,7 @@ void Parser::parseQuit(e_cmd &cmd, params *&params) {
     quit_params *p;
     if (getToken(MSG)) {
         p = new quit_params;
-        p->msg = token;
+        p->msg = "\"" + token + "\"";
     }
     params = p;
 }
@@ -188,7 +188,7 @@ void Parser::parseKick(e_cmd &cmd, params *&params) {
         if (!isEOF() && getToken()) {
             p->user = token;
             if (getToken(MSG) != EOF) {
-                p->comment = token;
+                p->comment = "\"" + token + "\"";
             }
         } else {
             delete p;
@@ -224,7 +224,7 @@ void Parser::parsePrivmsg(e_cmd &cmd, params *&params) {
         std::vector<std::string> receivers = split(token, ',');
         p->receivers = receivers;
         if (!isEOF() && getToken(MSG)) {
-            p->msg = token;
+            p->msg = "\"" + token + "\"";
         } else {
             delete p;
             throw NotEnoughParamsException("PRIVMSG");
@@ -242,7 +242,7 @@ void Parser::parseNotice(e_cmd &cmd, params *&params) {
         p = new notice_params;
         p->nickname = token;
         if (!isEOF() && getToken(MSG)) {
-            p->msg = token;
+            p->msg = "\"" + token + "\"";
         } else {
             delete p;
             throw NotEnoughParamsException("NOTICE");

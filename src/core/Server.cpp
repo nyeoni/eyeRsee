@@ -75,14 +75,17 @@ void Server::handleAccept() {
     std::cout << "Accept" << std::endl;
     Client *new_client;
     Udata *udata;
+    int connected_fd;
 
     new_client = _executor.accept(_listen_socket.getFd());
 
     udata = new Udata;
     udata->src = new_client;
+    connected_fd = new_client->getFd();
+    _udata_list.insert(std::make_pair(connected_fd, udata));
 
-    registerEvent(new_client->getFd(), EVFILT_READ, READ, udata);
-    registerEvent(new_client->getFd(), EVFILT_TIMER, TIMER, udata);
+    registerEvent(connected_fd, EVFILT_READ, READ, udata);
+    registerEvent(connected_fd, EVFILT_TIMER, TIMER, udata);
 }
 
 void Server::handleRead(int event_idx) {
@@ -154,8 +157,10 @@ void Server::handleExecute(int event_idx) {
     const std::set<int> &fd_list = _executor.getFdList();
     std::set<int>::iterator fd = fd_list.begin();
     for (; fd != fd_list.end(); ++fd) {
-        registerEvent(*fd, EVFILT_WRITE, EXECUTE, udata);
+        registerEvent(*fd, EVFILT_WRITE, EXECUTE,
+                      _udata_list.find(*fd)->second);
     }
+    _executor.clearFdLIst();
 
     if (response(event.ident, udata->src->send_buf) == 0)
         registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
@@ -189,9 +194,11 @@ void Server::handleClose() {
     std::set<Udata *>::iterator iter = _garbage.begin();
     for (; iter != _garbage.end(); ++iter) {
         Client *client = (*iter)->src;
-        std::cout << "New client # " << client->getFd() << " gone" << std::endl;
+        int connected_fd = client->getFd();
+        std::cout << "New client # " << connected_fd << " gone" << std::endl;
         client->deleteSocket();
         _executor.deleteClient(client);
+        _udata_list.erase(connected_fd);
         delete (*iter);
     }
     _garbage.clear();

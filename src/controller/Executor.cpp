@@ -23,6 +23,7 @@ Channel *Executor::createChannel(std::string channel_name) {
 }
 
 const std::set<int> &Executor::getFdList() const { return _fd_list; }
+void Executor::clearFdLIst() { _fd_list.clear(); }
 
 void Executor::deleteClient(Client *client) {
     ChannelController::ChannelList channel_list;
@@ -55,7 +56,8 @@ void Executor::connect(Command *command, Client *client, std::string password) {
         default:
             // TODO : msg
             send(client->getFd(),
-                 ":eyeRsee.local 451 * JOIN :You have not registered.\n", 53, 0);
+                 ":eyeRsee.local 451 * JOIN :You have not registered.\n", 53,
+                 0);
             break;
     }
 }
@@ -370,10 +372,11 @@ void Executor::notice(Client *client, params *params) {
     notice_params *p = dynamic_cast<notice_params *>(params);
 
     Client *receiver = client_controller.find(p->nickname);
-    if (receiver)
+    if (receiver) {
         ResponseHandler::handleResponse(receiver, "NOTICE",
                                         client->getNickname(), p->msg);
-    else
+        _fd_list.insert(receiver->getFd());
+    } else
         ErrorHandler::handleError(client, p->nickname, ERR_NOSUCHNICK);
 }
 

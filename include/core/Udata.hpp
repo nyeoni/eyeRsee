@@ -74,7 +74,6 @@ struct Command {
 };
 
 struct Udata {
-    int status;
     std::vector<Command *> commands;
     Client *src;
 

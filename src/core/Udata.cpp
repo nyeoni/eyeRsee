@@ -9,12 +9,11 @@ Command::~Command() {
     }
 };
 
-Udata::Udata() : status(0), src(NULL) {}
+Udata::Udata() : src(NULL) {}
 Udata::Udata(const Udata &copy) { *this = copy; }
 Udata::~Udata() {}
 
 Udata &Udata::operator=(const Udata &ref) {
-    status = ref.status;
     commands = ref.commands;
     src = ref.src;
 

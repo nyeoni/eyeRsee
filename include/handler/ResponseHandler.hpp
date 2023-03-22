@@ -11,6 +11,7 @@ namespace ft {
 enum e_res_code {
     RPL_NOTOPIC = 331,
     RPL_TOPIC = 332,
+    RPL_INVITING = 341,
     RPL_NAMREPLY = 353,
     RPL_ENDOFNAMES = 366,
 };
@@ -78,7 +79,7 @@ class ResponseHandler {
         if (msg.empty())
             res_stream << " :" << param;
         else
-            res_stream << " " << param << " :\"" << msg << "\"";
+            res_stream << " " << param << " :\"" << msg << "\"" << std::endl;
         return res_stream.str();
         // client->send_buf.append(res);
     }
@@ -90,7 +91,7 @@ class ResponseHandler {
 
         res_stream << ":" << servername << " " << std::to_string(res_code)
                    << " " << client->getNickname() << " " << command << " :\""
-                   << msg << "\"";
+                   << msg << "\"" << std::endl;
         return res_stream.str();
         // client->send_buf.append(res);
     }

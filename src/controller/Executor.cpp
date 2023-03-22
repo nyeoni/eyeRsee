@@ -109,8 +109,8 @@ void Executor::execute(Command *command, Client *client) {
  * @param channels 여러 개의 channel
  */
 void Executor::part(Client *client, params *params) {
-    std::vector<std::string> channels =
-        dynamic_cast<part_params *>(params)->channels;
+    part_params *param = dynamic_cast<part_params *>(params);
+    std::vector<std::string> channels = param->channels;
     std::vector<std::string>::iterator iter = channels.begin();
     Channel *channel;
 
@@ -132,13 +132,14 @@ void Executor::part(Client *client, params *params) {
 }
 
 void Executor::join(Client *client, params *params) {
-    std::vector<std::string> channels =
-        dynamic_cast<join_params *>(params)->channels;
+    join_params *param = dynamic_cast<join_params *>(params);
+    std::vector<std::string> channels = param->channels;
     std::vector<std::string>::iterator iter = channels.begin();
+    Channel *channel;
     std::string response_msg;
 
     for (; iter != channels.end(); iter++) {
-        Channel *channel = channel_controller.find(*iter);
+        channel = channel_controller.find(*iter);
         if (channel == NULL) {  // new channel & operator Client
             channel = channel_controller.insert(*iter);
             channel_controller.insertClient(channel, client, true);
@@ -148,7 +149,7 @@ void Executor::join(Client *client, params *params) {
         client_controller.insertChannel(client, channel);
 
         // response
-        std::string response_msg =
+        response_msg =
             ResponseHandler::createResponse(client, "JOIN", channel->getName());
         broadcast(channel, response_msg);
         if (channel != NULL) {  // join한 client
@@ -162,13 +163,15 @@ void Executor::join(Client *client, params *params) {
                 RPL_ENDOFNAMES);
             client->send_buf.append(response_msg);
         }
+        response_msg.clear();
     }
 }
 
 void Executor::mode(Client *client, params *params) {
     const static std::string mode_str[] = {"-o", "+o", "-i", "+i", "-t", "+t"};
-    std::string channel_name = dynamic_cast<mode_params *>(params)->channel;
-    e_mode mode = dynamic_cast<mode_params *>(params)->mode;
+    mode_params *param = dynamic_cast<mode_params *>(params);
+    std::string channel_name = param->channel;
+    e_mode mode = param->mode;
     Channel *channel = channel_controller.find(channel_name);
 
     // privlleage
@@ -213,25 +216,42 @@ void Executor::topic(Client *client, params *params) {
 }
 
 void Executor::invite(Client *invitor, params *params) {
-    std::string nickname = dynamic_cast<invite_params *>(params)->nickname;
-    std::string channel_name = dynamic_cast<invite_params *>(params)->channel;
+    invite_params *param = dynamic_cast<invite_params *>(params);
+    std::string nickname = param->nickname;
+    std::string channel_name = param->channel;
     Client *client = client_controller.find(nickname);
     Channel *channel = channel_controller.find(channel_name);
+    std::string response_msg;
 
+    //  403 user2 #testchannel :No such channel
     if (channel == NULL) {
-        //  403 user2 #testchannel :No such channel
-        ErrorHandler::handleError(client, channel_name, ERR_NOSUCHCHANNEL);
+        ErrorHandler::handleError(invitor, channel_name, ERR_NOSUCHCHANNEL);
         return;
     }
+    // 401 nick2 hi :No such nick
     if (client == NULL) {
-        // No such user
+        ErrorHandler::handleError(invitor, nickname, ERR_NOSUCHNICK);
         return;
     }
-    if (channel_controller.hasPermission(channel, invitor))
-        client_controller.insertInviteChannel(client, channel);
-    else {
-        // error - hasPermission can generate error message code
+    // 442 nick2 #channel :You're not on that channel!
+    if (channel_controller.isOnChannel(channel, invitor)) {
+        ErrorHandler::handleError(invitor, channel_name, ERR_NOTONCHANNEL);
+        return;
     }
+    // 482 nick2 #channel :You must be a channel op or higher to send an invite.
+    if (!channel_controller.isInviteMode(channel) &&
+        channel_controller.isOperator(channel, invitor)) {
+        ErrorHandler::handleError(invitor, channel_name, ERR_CHANOPRIVSNEEDED);
+        return;
+    }
+
+    client_controller.insertInviteChannel(client, channel);
+    response_msg =
+        ResponseHandler::createResponse(invitor, "INVITE", RPL_INVITING);
+    broadcast(channel, response_msg, invitor);
+    response_msg =
+        ResponseHandler::createResponse(invitor, "INVITE", RPL_INVITING);
+    invitor->send_buf.append(response_msg);
 }
 
 void Executor::pass(Client *new_client, params *params,
@@ -400,17 +420,17 @@ void Executor::privmsg(Client *client, params *params) {
 /**
  * @brief channel에 가입한 모든 clients에게 broadcast
  */
-void Executor::broadcast(Channel *channel, const std::string &msg) {
+void Executor::broadcast(Channel *channel, const std::string &msg,
+                         Client *excluded) {
     ClientList client_list;  // TODO
     client_list_iterator client_iter;
 
     channel_controller.findInSet(client_list, channel);
     client_iter = client_list.begin();
     for (; client_iter != client_list.end(); ++client_iter) {
-        (*client_iter)->send_buf.append(msg);
-
-        // if (client != NULL && client != *iter) {
-        // }
+        if (excluded != NULL && excluded != *client_iter) {
+            (*client_iter)->send_buf.append(msg);
+        }
     }
 }
 

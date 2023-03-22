@@ -60,7 +60,13 @@ bool ChannelController::updateMode(int mode, Channel *channel, Client *client) {
     else if (mode == OPER_T)
         return updateRole(channel, client, OPERATOR);
 
-    if (channel->getMode() == mode) return false;
+    if (mode == INVITE_ONLY_F || mode == INVITE_ONLY_T) {
+        if (isInviteMode(channel) == false) return false;
+    }
+
+    if (mode == TOPIC_PRIV_F || mode == TOPIC_PRIV_T) {
+        if (isTopicMode(channel) == false) return false;
+    }
 
     channel->setMode(mode);
     return true;
@@ -79,7 +85,7 @@ void ChannelController::updateTopic(Channel *channel, Client *client,
  *
  * @param role - role to update (operator || regular)
  *
- * @return true - attemping to to update to the different mode
+ * @return true - attemping to update to the different mode
  * @return false - attemping to update to the same mode
  */
 bool ChannelController::updateRole(Channel *channel, Client *client,

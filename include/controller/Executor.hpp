@@ -56,7 +56,8 @@ class Executor {
     void notice(Client *client, params *params);
     void pong(Client *client, params *params);
 
-    void broadcast(Channel *channel, const std::string &msg);
+    void broadcast(Channel *channel, const std::string &msg,
+                   Client *excluded = NULL);
     void broadcast(const ChannelList &channel_list, const std::string &msg);
 };
 }  // namespace ft

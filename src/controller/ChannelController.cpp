@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "core/Type.hpp"
 #include "entity/Channel.hpp"
 
 namespace ft {
@@ -47,59 +48,97 @@ void ChannelController::erase(const std::string &channel_name) {
     _channels.erase(channel_name);
 }
 
-void ChannelController::updateMode(int mode, Channel *channel) {
+/**
+ * @return true - attemping to to update to the different mode
+ * @return false - attemping to update to the same mode
+ * @note mode == OPER_F || mode == OPER_T => client is not NULL
+ * TODO int mode -> e_mode mode
+ */
+bool ChannelController::updateMode(int mode, Channel *channel, Client *client) {
+    if (mode == OPER_F)
+        return updateRole(channel, client, REGULAR);
+    else if (mode == OPER_T)
+        return updateRole(channel, client, OPERATOR);
+
+    if (mode == INVITE_ONLY_F || mode == INVITE_ONLY_T) {
+        if (isInviteMode(channel) == false) return false;
+    }
+
+    if (mode == TOPIC_PRIV_F || mode == TOPIC_PRIV_T) {
+        if (isTopicMode(channel) == false) return false;
+    }
+
     channel->setMode(mode);
-}
-void ChannelController::updateMode(int mode, const std::string &channel_name) {
-    Channel *target = find(channel_name);
-    if (target) return target->setMode(mode);
+    return true;
 }
 
-void ChannelController::updateTopic(Client *client, Channel *channel,
+void ChannelController::updateTopic(Channel *channel, Client *client,
                                     const std::string &topic) {
-    // permission denid - not on channel, not an operator
-    // success
-    if (!channel->isOnChannel(client)) {
-        // error not on channel
-        return;
-    }
-    if (channel->isTopicMode()) {
-        if (channel->isOperator(client))
-            channel->setTopic(topic);
-        else {
-            // not an operator
-        }
-    } else {
-        channel->setTopic(topic);
-    }
+    // there are no difference from previous topic
+    if (channel->getTopic() == topic) return;
+
+    channel->setTopic(topic);
 }
 
-bool ChannelController::hasPermission(Channel *channel, Client *client) {
-    if (channel->isOperator(client)) {
-        // client->insertIChannel();
+/**
+ * @brief update Channel::_operators and Channel::_regulars
+ *
+ * @param role - role to update (operator || regular)
+ *
+ * @return true - attemping to update to the different mode
+ * @return false - attemping to update to the same mode
+ */
+bool ChannelController::updateRole(Channel *channel, Client *client,
+                                   e_role role) {
+    // update to regular (operator -> regular)
+    if (role == REGULAR && isOperator(channel, client) == true) {
+        insertRegular(channel, client);
+        eraseOperator(channel, client);
         return true;
-    } else if (channel->isRegular(client)) {
-        // #name You must be a channel op or higher to send an invite.
-    } else {
-        // you are not on channel
     }
-    // channel->insertClient(client, true);
+
+    // update to operator (regular -> operator)
+    if (role == OPERATOR && isOperator(channel, client) == false) {
+        insertOperator(channel, client);
+        eraseRegular(channel, client);
+        return true;
+    }
+
+    // there are no change
     return false;
+}
+
+bool ChannelController::isOnChannel(Channel *channel, Client *client) {
+    return (isOperator(channel, client) || isRegular(channel, client));
+}
+
+bool ChannelController::isOperator(Channel *channel, Client *client) {
+    std::set<Client *> operators = channel->getOperators();
+
+    return operators.find(client) != operators.end() ? true : false;
+}
+
+bool ChannelController::isRegular(Channel *channel, Client *client) {
+    std::set<Client *> regulars = channel->getRegulars();
+
+    return regulars.find(client) != regulars.end() ? true : false;
 }
 
 /**
  * @brief insert Client to Channel's _clientList
  */
 void ChannelController::insertClient(Channel *channel, Client *client,
-                                     bool is_operator) {
-    channel->insertClient(client, is_operator);
+                                     e_role role) {
+    role == OPERATOR ? channel->insertOperator(client)
+                     : channel->insertRegular(client);
 }
 
 /**
  * @brief erase Client to Channel's _clientList
  */
 void ChannelController::eraseClient(Channel *channel, Client *client) {
-    channel->eraseClient(client);
+    isOperator(channel, client) ? channel->eraseOperator(client)
+                                : channel->eraseRegular(client);
     if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
         erase(channel);
     }
@@ -122,6 +161,34 @@ Channel *ChannelController::insert(const std::string &channel_name) {
     new_channel->setName(channel_name);
     new_channel->clearMode();
     return new_channel;
+}
+
+bool ChannelController::isInviteMode(Channel *channel) {
+    return (channel->getMode() & (INVITE_ONLY_T - 1));
+}
+
+bool ChannelController::isTopicMode(Channel *channel) {
+    return (channel->getMode() & (TOPIC_PRIV_T - 1));
+}
+
+bool ChannelController::isBanMode(Channel *channel) {
+    return (channel->getMode() & (BAN_T - 1));
+}
+
+// private functions
+void ChannelController::insertOperator(Channel *channel, Client *client) {
+    channel->insertOperator(client);
+}
+
+void ChannelController::insertRegular(Channel *channel, Client *client) {
+    channel->insertRegular(client);
+}
+void ChannelController::eraseOperator(Channel *channel, Client *client) {
+    channel->eraseOperator(client);
+}
+
+void ChannelController::eraseRegular(Channel *channel, Client *client) {
+    channel->eraseRegular(client);
 }
 
 }  // namespace ft

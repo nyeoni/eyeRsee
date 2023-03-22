@@ -5,6 +5,8 @@
 #include <set>
 #include <string>
 
+#include "core/Type.hpp"
+
 namespace ft {
 
 class Channel;
@@ -42,18 +44,31 @@ class ChannelController {
     void erase(const Channel *channel);
     void erase(const std::string &channel_name);
 
-    void updateMode(int mode, Channel *channel);
-    void updateMode(int mode, const std::string &channel_name);
-    void updateTopic(Client *client, Channel *channel,
+    bool updateMode(int mode, Channel *channel, Client *Client = NULL);
+    void updateTopic(Channel *channel, Client *client,
                      const std::string &topic);
 
-    void insertClient(Channel *channel, Client *client, bool is_operator);
+    void insertClient(Channel *channel, Client *client, e_role role);
 
     void eraseClient(Channel *channel, Client *client);
-
     void eraseClient(ChannelList &channel_list, Client *client);
 
-    bool hasPermission(Channel *channel, Client *client);
+    bool isOnChannel(Channel *channel, Client *client);
+    bool isOperator(Channel *channel, Client *client);
+    bool isRegular(Channel *channel, Client *client);
+
+    bool isInviteMode(Channel *channel);
+    bool isTopicMode(Channel *channel);
+    bool isBanMode(Channel *channel);
+
+   private:
+    bool updateRole(Channel *channel, Client *client, e_role role);
+
+    void insertOperator(Channel *channel, Client *client);
+    void insertRegular(Channel *channel, Client *client);
+
+    void eraseOperator(Channel *channel, Client *client);
+    void eraseRegular(Channel *channel, Client *client);
 };
 
 }  // namespace ft

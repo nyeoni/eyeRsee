@@ -95,6 +95,27 @@ void ConnectSocket::createSocket(const int &listen_fd) {
               << ':' << ntohs(in.sin_port) << std::endl;
 }
 
+// getter
+const std::string &ConnectSocket::getNickname() const { return _nickname; }
+const std::string &ConnectSocket::getUsername() const { return _username; }
+const std::string &ConnectSocket::getHostname() const { return _hostname; }
+const std::string &ConnectSocket::getRealname() const { return _realname; }
+
+// setter
+void ConnectSocket::setNickname(const std::string &nickname) {
+    _nickname = nickname;
+}
+void ConnectSocket::setUsername(const std::string &username) {
+    _username = username;
+}
+void ConnectSocket::setHostname(const std::string &hostname) {
+    _hostname = hostname;
+}
+void ConnectSocket::setServer(const std::string &server) { _server = server; }
+void ConnectSocket::setRealname(const std::string &realname) {
+    _realname = realname;
+}
+
 bool ConnectSocket::isAuthenticate() { return auth[0] && auth[1] && auth[2]; }
 
 std::string ConnectSocket::readRecvBuf() {

@@ -41,7 +41,15 @@ class ConnectSocket : public SocketBase {
     e_delimiter delimiter;
     std::string recv_buf;
     std::string send_buf;
+
+    e_status status;
     bool auth[3];
+
+    std::string _nickname;
+    std::string _username;
+    std::string _hostname;
+    std::string _server;
+    std::string _realname;
 
    protected:
    public:
@@ -51,8 +59,23 @@ class ConnectSocket : public SocketBase {
 
     ConnectSocket &operator=(const ConnectSocket &ref);
 
-    bool isAuthenticate();
     void createSocket(const int &listen_fd);
+
+    // getter
+    const std::string &getNickname() const;
+    const std::string &getUsername() const;
+    const std::string &getHostname() const;
+    const std::string &getRealname() const;
+
+    // setter
+    void setNickname(const std::string &nickname);
+    void setUsername(const std::string &username);
+    void setHostname(const std::string &hostname);
+    void setServer(const std::string &server);
+    void setRealname(const std::string &realname);
+
+    bool isAuthenticate();
+
     std::string readRecvBuf();
 };
 

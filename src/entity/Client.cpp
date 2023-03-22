@@ -3,8 +3,6 @@
 namespace ft {
 Client::Client() {}
 
-Client::Client(const std::string &nickname) : _nickname(nickname) {}
-
 Client::Client(const Client &copy) { *this = copy; }
 
 Client::~Client() {
@@ -17,17 +15,6 @@ Client &Client::operator=(const Client &ref) { return (*this); }
 const Client::ChannelList &Client::getChannelList() const {
     return _channel_list;
 }
-const std::string &Client::getNickname() const { return _nickname; }
-const std::string &Client::getUsername() const { return _username; }
-const std::string &Client::getHostname() const { return _hostname; }
-const std::string &Client::getRealname() const { return _realname; }
-
-// setter
-void Client::setNickname(const std::string &nickname) { _nickname = nickname; }
-void Client::setUsername(const std::string &username) { _username = username; }
-void Client::setHostname(const std::string &hostname) { _hostname = hostname; }
-void Client::setServer(const std::string &server) { _server = server; }
-void Client::setRealname(const std::string &realname) { _realname = realname; }
 
 // update
 void Client::insertChannel(Channel *channel) { _channel_list.insert(channel); }

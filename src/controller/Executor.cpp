@@ -180,30 +180,36 @@ void Executor::mode(Client *client, params *params) {
 }
 
 void Executor::topic(Client *client, params *params) {
-    std::string channel_name = dynamic_cast<topic_params *>(params)->channel;
-    std::string topic = dynamic_cast<topic_params *>(params)->topic;
+    topic_params *param = dynamic_cast<topic_params *>(params);
+    std::string channel_name = param->channel;
+    std::string topic = param->topic;
     Channel *channel = channel_controller.find(channel_name);
 
+    // 403 nick2 hi : No such channel
     if (channel == NULL) {
-        // 403 nick2 hi : No such channel
         ErrorHandler::handleError(client, channel_name, ERR_NOSUCHCHANNEL);
         return;
     }
 
-    // isTopicMode()
-    if (channel_controller.isTopicMode(channel)) {
-        //
+    // 442 nick2 #channel :You're not on that channel!
+    if (channel_controller.isOnChannel(channel, client)) {
+        ErrorHandler::handleError(client, channel_name, ERR_NOTONCHANNEL);
+        return;
     }
 
-    if (channel_controller.hasPermission(channel, client)) {
-        //
+    // 482 nick2 #channel :You must be a channel op or higher to change the
+    // topic.
+    if (!channel_controller.isTopicMode(channel) &&
+        channel_controller.isOperator(channel, client)) {
+        ErrorHandler::handleError(client, channel_name, ERR_CHANOPRIVSNEEDED);
+        return;
     }
 
-    if (channel) {
-        channel_controller.updateTopic(client, channel, topic);
-        std::string msg = "topic\n";
-        broadcast(channel, msg);
-    }
+    // :nick2!hannah@127.0.0.1 TOPIC #channel :topic message
+    channel_controller.updateTopic(client, channel, topic);
+    std::string response_msg =
+        ResponseHandler::createResponse(client, "TOPIC", channel_name, topic);
+    broadcast(channel, response_msg);
 }
 
 void Executor::invite(Client *invitor, params *params) {

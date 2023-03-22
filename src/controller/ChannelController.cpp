@@ -59,17 +59,10 @@ void ChannelController::updateMode(int mode, const std::string &channel_name) {
 
 void ChannelController::updateTopic(Client *client, Channel *channel,
                                     const std::string &topic) {
+    // there are no difference from previous topic
     if (channel->getTopic() == topic) return;
 
-    if (isTopicMode(channel)) {
-        if (isOperator(channel, client))
-            channel->setTopic(topic);
-        else {
-            // not an operator
-        }
-    } else {
-        channel->setTopic(topic);
-    }
+    channel->setTopic(topic);
 }
 
 /**

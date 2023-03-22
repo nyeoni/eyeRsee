@@ -37,7 +37,6 @@ class ListenSocket : public SocketBase {
 enum e_delimiter { CRLF, LF };
 class ConnectSocket : public SocketBase {
    public:
-    e_status status;
     e_delimiter delimiter;
     std::string recv_buf;
     std::string send_buf;

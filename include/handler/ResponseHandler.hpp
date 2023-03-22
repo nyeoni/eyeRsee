@@ -1,11 +1,9 @@
 #ifndef RESPONSEHANDLER_HPP
 #define RESPONSEHANDLER_HPP
 
-#include <iomanip>
-#include <sstream>
 #include <string>
 
-#include "entity/Client.hpp"
+#include "core/Socket.hpp"
 
 #define WELCOME_PROMPT \
     "\n\
@@ -44,121 +42,39 @@ class ResponseHandler {
     static const std::string RPL_TOPIC_MSG;
 
    public:
-    static void handleResponse(Client *src, Client *dst, std::string command,
-                               std::string param, std::string msg = "") {
-        std::stringstream res_stream;
-        std::string res;
+    static void handleResponse(ConnectSocket *src, const std::string &command,
+                               e_res_code res_code);
+    static void handleResponse(ConnectSocket *src, ConnectSocket *dst,
+                               const std::string &command,
+                               const std::string &param,
+                               const std::string &msg = "");
 
-        res_stream << ":" << src->getNickname() << "!" << src->getUsername()
-                   << "@" << src->getHostname() << " " << command;
-        if (msg.empty())
-            res_stream << " :" << param;
-        else
-            res_stream << " " << param << " :\"" << msg << "\"" << std::endl;
-        res = res_stream.str();
-        dst->send_buf.append(res);
-    }
-    static void handleResponse(Client *client, std::string command,
-                               std::string param, std::string msg = "") {
-        std::stringstream res_stream;
-        std::string res;
+    static void handleResponse(ConnectSocket *src, const std::string &command,
+                               const std::string &param,
+                               const std::string &msg = "");
 
-        res_stream << ":" << param << "!"
-                   << client->getUsername() << "@" << client->getHostname()
-                   << " " << command;
-        if (msg.empty())
-            res_stream << " :" << client->getNickname();
-        else
-            res_stream << " " << param << ":" << msg << std::endl;
-        res = res_stream.str();
-        client->send_buf.append(res);
+    static void handlePongResponse(ConnectSocket *src) {
+        const std::string res =
+            ":" + servername + " PONG " + servername + " :" + servername;
+        src->send_buf.append(res);
     }
-    static void handleResponse(Client *client, std::string command,
-                               e_res_code res_code) {
-        std::stringstream res_stream;
-        std::string res;
-        std::string msg = getMessage(res_code);
 
-        res_stream << ":" << servername << " " << res_code << " "
-                   << client->getNickname() << " " << command << ":\"" << msg
-                   << "\"" << std::endl;
-        res = res_stream.str();
-        client->send_buf.append(res);
-    }
-    static void handlePongResponse(Client *client) {
-        const std::string res = ":" + servername + " PONG " + servername + " :" + servername;
-        client->send_buf.append(res);
-    }
-    static void handleConnectResponse(Client *client) {
-        const std::string prefix = client->getNickname() + "!" +
-            client->getUsername() + "@" +
-            client->getHostname();
-        // TODO date
-        std::string res_comment[4] = {prefix, "", "",
-                                      "eyeRsee.local 1.0 o oit"};
-        for (int i = 0; i < 4; i++) {
-            std::string res;
-            e_res_code res_code = static_cast<e_res_code>(i + 1);
-            if (i == 3)
-                res = createResponse(client, res_comment[i], res_code, "");
-            else
-                res = createResponse(client, "", static_cast<e_res_code>(i + 1),
-                                     res_comment[i]);
-            client->send_buf.append(res);
-        }
-        client->send_buf.append(WELCOME_PROMPT);
-    }
-    static std::string createResponse(Client *client, std::string command,
-                                      std::string param, std::string msg = "") {
-        std::stringstream res_stream;
+    // SECTION
+    static std::string createResponse(ConnectSocket *src,
+                                      const std::string &command,
+                                      const std::string &param,
+                                      const std::string &msg = "");
 
-        res_stream << ":" << client->getNickname() << "!"
-                   << client->getUsername() << "@" << client->getHostname()
-                   << " " << command;
-        if (msg.empty())
-            res_stream << " :" << param << std::endl;
-        else
-            res_stream << " " << param << " :\"" << msg << "\"" << std::endl;
-        return res_stream.str();
-    }
-    static std::string createResponse(Client *client, std::string command,
+    static std::string createResponse(ConnectSocket *src,
+                                      const std::string &command,
                                       e_res_code res_code,
-                                      std::string comment = "") {
-        std::stringstream res_stream;
-        std::string msg = getMessage(res_code);
+                                      const std::string &comment = "");
 
-        if (command != "") command += " ";
-        res_stream.fill('0');
-        res_stream << ":" << servername << " " << std::setw(3) << res_code
-                   << " " << client->getNickname() << " " << command << ":"
-                   << msg << " " << comment << std::endl;
-        return res_stream.str();
-    }
+    static void handleConnectResponse(ConnectSocket *src);
 
    private:
-    static std::string getMessage(e_res_code res_code) {
-        switch (res_code) {
-            case RPL_WELCOME:
-                return RPL_WELCOME_MSG;
-            case RPL_YOURHOST:
-                return RPL_YOURHOST_MSG;
-            case RPL_CREATED:
-                return RPL_CREATED_MSG;
-            case RPL_MYINFO:
-                return RPL_MYINFO_MSG;
-            case RPL_NOTOPIC:
-                return RPL_NOTOPIC_MSG;
-            case RPL_TOPIC:
-                return RPL_TOPIC_MSG;
-                // case RPL_NAMREPLY:
-                //     return;
-                // case RPL_ENDOFNAMES:
-                //     return;
-            default:
-                return "Unknown response code";
-        }
-    }
-};
+    static std::string getMessage(e_res_code res_code);
+};  // namespace ft
 
 }  // namespace ft
 

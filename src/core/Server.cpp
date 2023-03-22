@@ -129,7 +129,6 @@ void Server::handleRead(int event_idx) {
     //    response(connect_socket->getFd(), connect_socket->send_buf);
     //}
 }
-}
 
 void Server::handleExecute(int event_idx) {
     std::cout << "==== Execute ====" << std::endl;

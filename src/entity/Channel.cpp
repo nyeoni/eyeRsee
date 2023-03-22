@@ -38,13 +38,21 @@ void Channel::setMode(int mode) {
 void Channel::clearMode() { _mode = 0; }
 
 // update
-void Channel::insertClient(Client *client, bool is_operator) {
-    is_operator ? _operators.insert(client) : _regulars.insert(client);
-}
+// void Channel::insertClient(Client *client, bool is_operator) {
+//     is_operator ? _operators.insert(client) : _regulars.insert(client);
+// }
 
-void Channel::eraseClient(Client *client, bool is_operator) {
-    is_operator ? _operators.erase(client) : _regulars.erase(client);
-}
+void Channel::insertOperator(Client *client) { _operators.insert(client); }
+
+void Channel::insertRegular(Client *client) { _regulars.insert(client); }
+
+// void Channel::eraseClient(Client *client, bool is_operator) {
+//     is_operator ? _operators.erase(client) : _regulars.erase(client);
+// }
+
+void Channel::eraseOperator(Client *client) { _operators.erase(client); }
+
+void Channel::eraseRegular(Client *client) { _regulars.erase(client); }
 
 bool Channel::operator==(const Channel &other) const {
     return (_name == other._name);

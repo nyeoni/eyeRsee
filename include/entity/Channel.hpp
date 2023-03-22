@@ -4,8 +4,6 @@
 #include <set>
 #include <string>
 
-// #include <entity/Client.hpp>
-
 namespace ft {
 
 class Client;
@@ -45,15 +43,16 @@ class Channel {
 
     void setName(const std::string &name);
     void setTopic(const std::string &topic);
-    // void setRegulars(const Client *client);
-    // void setOperators(const Client *client);
     void setMode(int mode);
 
     void clearMode();
 
     // update
-    void insertClient(Client *client, bool is_operator);
-    void eraseClient(Client *client, bool is_operator);
+    void insertOperator(Client *client);
+    void insertRegular(Client *client);
+
+    void eraseOperator(Client *client);
+    void eraseRegular(Client *client);
 
     bool operator==(const Channel &other) const;
     bool operator!=(const Channel &other) const;

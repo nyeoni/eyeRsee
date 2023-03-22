@@ -35,6 +35,8 @@ enum e_mode {
     BAN_T           // 10000000 -> 1 << 7
 };
 
+enum e_role { OPERATOR = 0, REGULAR };
+
 }  // namespace ft
 
 #endif  // TYPE_HPP

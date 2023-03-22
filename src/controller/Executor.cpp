@@ -126,7 +126,6 @@ void Executor::part(Client *client, params *params) {
         } else {
             // 403 nick3 #bye :No such channel
             ErrorHandler::handleError(client, *iter, ERR_NOSUCHCHANNEL);
-            return;
         }
     }
 }
@@ -142,9 +141,9 @@ void Executor::join(Client *client, params *params) {
         channel = channel_controller.find(*iter);
         if (channel == NULL) {  // new channel & operator Client
             channel = channel_controller.insert(*iter);
-            channel_controller.insertClient(channel, client, true);
+            channel_controller.insertClient(channel, client, OPERATOR);
         } else {  // regular Client
-            channel_controller.insertClient(channel, client, false);
+            channel_controller.insertClient(channel, client, REGULAR);
         }
         client_controller.insertChannel(client, channel);
 
@@ -173,12 +172,40 @@ void Executor::mode(Client *client, params *params) {
     std::string channel_name = param->channel;
     e_mode mode = param->mode;
     Channel *channel = channel_controller.find(channel_name);
+    std::string response_msg;
 
-    // privlleage
-    // channel
-    channel_controller.updateMode(mode, channel_name);
-    std::string response_msg = ResponseHandler::createResponse(
-        client, "MODE", channel_name, mode_str[mode]);
+    // 403 No such channel
+    if (channel == NULL) {
+        ErrorHandler::handleError(client, channel_name, ERR_NOSUCHCHANNEL);
+        return;
+    }
+    // 442 Not on channel
+    if (channel_controller.isOnChannel(channel, client)) {
+        ErrorHandler::handleError(client, channel_name, ERR_NOTONCHANNEL);
+        return;
+    }
+    // 482 permission
+    if (channel_controller.isOperator(channel, client)) {
+        ErrorHandler::handleError(client, channel_name, ERR_CHANOPRIVSNEEDED);
+        return;
+    }
+
+    if (mode == OPER_F || mode == OPER_T) {  // +o, -o
+        Client *client = client_controller.find(param->nickname);
+        if (client == NULL) {
+            // 401 no such nickname
+            ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
+            return;
+        }
+        if (channel_controller.updateMode(mode, channel, client) == false)
+            return;
+    } else {  // +i, -i, +t, -t
+        if (channel_controller.updateMode(mode, channel) == false) return;
+    }
+
+    // response
+    response_msg = ResponseHandler::createResponse(client, "MODE", channel_name,
+                                                   mode_str[mode]);
     broadcast(channel, response_msg);
 }
 
@@ -209,7 +236,7 @@ void Executor::topic(Client *client, params *params) {
     }
 
     // :nick2!hannah@127.0.0.1 TOPIC #channel :topic message
-    channel_controller.updateTopic(client, channel, topic);
+    channel_controller.updateTopic(channel, client, topic);
     std::string response_msg =
         ResponseHandler::createResponse(client, "TOPIC", channel_name, topic);
     broadcast(channel, response_msg);
@@ -328,10 +355,11 @@ void Executor::nick(int fd, params *params) {
 
 void Executor::quit(Client *client, params *params) {
     std::string msg = dynamic_cast<quit_params *>(params)->msg;
-    if (msg.length() == 0) msg = "Quit: leaving";
     ChannelController::ChannelList channel_list;
-    std::string response_msg =
-        ResponseHandler::createResponse(client, "QUIT", msg);
+    std::string response_msg;
+
+    if (msg.length() == 0) msg = "Quit: leaving";
+    response_msg = ResponseHandler::createResponse(client, "QUIT", msg);
 
     // 모든 채널에서 quit && send message
     broadcast(client->getChannelList(), response_msg);
@@ -348,37 +376,40 @@ void Executor::kick(Client *kicker, params *params) {
     Client *client = client_controller.find(nickname);
     Channel *channel = channel_controller.find(channel_name);
 
+    //  403 user2 #testchannel :No such channel
     if (channel == NULL) {
-        //  403 user2 #testchannel :No such channel
-        ErrorHandler::handleError(client, channel_name, ERR_NOSUCHCHANNEL);
+        ErrorHandler::handleError(kicker, channel_name, ERR_NOSUCHCHANNEL);
         return;
     }
+    // 401 user nickname :No such user
     if (client == NULL) {
-        // 401 user nickname :No such user
-        ErrorHandler::handleError(client, nickname, ERR_NOSUCHNICK);
+        ErrorHandler::handleError(kicker, nickname, ERR_NOSUCHNICK);
         return;
     }
-    if (channel_controller.hasPermission(channel, kicker)) {
-        channel_controller.eraseClient(channel, client);
-        client_controller.eraseChannel(client, channel);
-        std::string response_msg = ResponseHandler::createResponse(
-            client, "KICK", channel_name + " " + nickname);
-        broadcast(channel, response_msg);
-        //
-    } else {
-        // 482 nick2 #channel1 :You must be a channel op or higher to kick a
-        // more privileged user.
-        ErrorHandler::handleError(client, nickname + " " + channel_name,
-                                  ERR_CHANOPRIVSNEEDED);
+    // 442 not on channel
+    if (channel_controller.isOnChannel(channel, kicker) == false) {
+        ErrorHandler::handleError(kicker, channel_name, ERR_NOTONCHANNEL);
+        return;
     }
+    // 482 not channel operator
+    if (channel_controller.isOperator(channel, kicker) == false) {
+        ErrorHandler::handleError(kicker, channel_name, ERR_CHANOPRIVSNEEDED);
+        return;
+    }
+
+    // response
+    channel_controller.eraseClient(channel, client);
+    client_controller.eraseChannel(client, channel);
+    std::string response_msg = ResponseHandler::createResponse(
+        client, "KICK", channel_name + " " + nickname);
+    broadcast(channel, response_msg);
 }
 
 void Executor::privmsg(Client *client, params *params) {
-    std::string name;
-    std::vector<std::string> receivers =
-        dynamic_cast<privmsg_params *>(params)->receivers;
-    std::string msg = dynamic_cast<privmsg_params *>(params)->msg;
+    privmsg_params *param = dynamic_cast<privmsg_params *>(params);
+    std::vector<std::string> receivers = param->receivers;
     std::vector<std::string>::iterator iter = receivers.begin();
+    std::string name;
 
     for (; iter != receivers.end(); ++iter) {
         if (iter->front() == '#') {  // channel
@@ -388,7 +419,7 @@ void Executor::privmsg(Client *client, params *params) {
                 if (channel_controller.isOnChannel(channel, client)) {
                     // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
                     std::string response_msg = ResponseHandler::createResponse(
-                        client, "PRIVMSG", name, msg);
+                        client, "PRIVMSG", name, param->msg);
                     broadcast(channel, response_msg);
                 } else {
                     //  404 You cannot send external  messages to this
@@ -406,7 +437,7 @@ void Executor::privmsg(Client *client, params *params) {
             Client *receiver = client_controller.find(name);
             if (receiver) {
                 std::string response_msg = ResponseHandler::createResponse(
-                    client, "PRIVMSG", name, msg);
+                    client, "PRIVMSG", name, param->msg);
                 receiver->send_buf.append(response_msg);
             } else {
                 // 401 user3 wow :No such nick
@@ -440,7 +471,6 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
 void Executor::broadcast(const ChannelList &channel_list,
                          const std::string &msg) {
     ClientList client_list;  // TODO
-
     client_list_iterator client_iter;
     channel_list_iterator channel_iter = channel_list.begin();
 
@@ -450,21 +480,19 @@ void Executor::broadcast(const ChannelList &channel_list,
     client_iter = client_list.begin();
     for (; client_iter != client_list.end(); ++client_iter) {
         (*client_iter)->send_buf.append(msg);
-        // if (client != NULL && client != *iter) {
-        // }
     }
 }
 
 void Executor::notice(Client *client, params *params) {
-    notice_params *p = dynamic_cast<notice_params *>(params);
+    notice_params *param = dynamic_cast<notice_params *>(params);
+    Client *receiver = client_controller.find(param->nickname);
 
-    Client *receiver = client_controller.find(p->nickname);
     if (receiver) {
         ResponseHandler::handleResponse(receiver, "NOTICE",
-                                        client->getNickname(), p->msg);
+                                        client->getNickname(), param->msg);
         _fd_list.insert(receiver->getFd());
     } else
-        ErrorHandler::handleError(client, p->nickname, ERR_NOSUCHNICK);
+        ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
 }
 
 void Executor::pong(Client *client, params *params) {

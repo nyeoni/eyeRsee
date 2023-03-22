@@ -48,12 +48,17 @@ class ChannelController {
                      const std::string &topic);
 
     void insertClient(Channel *channel, Client *client, bool is_operator);
-
     void eraseClient(Channel *channel, Client *client);
-
     void eraseClient(ChannelList &channel_list, Client *client);
 
-    bool hasPermission(Channel *channel, Client *client);
+    int hasPermission(Channel *channel, Client *client);
+    bool isOnChannel(Channel *channel, Client *client);
+    bool isOperator(Channel *channel, Client *client);
+    bool isRegular(Channel *channel, Client *client);
+
+    bool isInviteMode(Channel *channel);
+    bool isTopicMode(Channel *channel);
+    bool isBanMode(Channel *channel);
 };
 
 }  // namespace ft

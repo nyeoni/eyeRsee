@@ -139,10 +139,10 @@ void Executor::join(Client *client, params *params) {
 
     for (; iter != channels.end(); iter++) {
         Channel *channel = channel_controller.find(*iter);
-        if (channel == NULL) {  // new channel
+        if (channel == NULL) {  // new channel & operator Client
             channel = channel_controller.insert(*iter);
             channel_controller.insertClient(channel, client, true);
-        } else {
+        } else {  // regular Client
             channel_controller.insertClient(channel, client, false);
         }
         client_controller.insertChannel(client, channel);
@@ -184,12 +184,25 @@ void Executor::topic(Client *client, params *params) {
     std::string topic = dynamic_cast<topic_params *>(params)->topic;
     Channel *channel = channel_controller.find(channel_name);
 
-    if (channel && client) {
+    if (channel == NULL) {
+        // 403 nick2 hi : No such channel
+        ErrorHandler::handleError(client, channel_name, ERR_NOSUCHCHANNEL);
+        return;
+    }
+
+    // isTopicMode()
+    if (channel_controller.isTopicMode(channel)) {
+        //
+    }
+
+    if (channel_controller.hasPermission(channel, client)) {
+        //
+    }
+
+    if (channel) {
         channel_controller.updateTopic(client, channel, topic);
         std::string msg = "topic\n";
         broadcast(channel, msg);
-    } else {
-        // error
     }
 }
 
@@ -346,7 +359,7 @@ void Executor::privmsg(Client *client, params *params) {
             name = (*iter).at(1);
             Channel *channel = channel_controller.find(name);
             if (channel) {
-                if (channel->isOnChannel(client)) {
+                if (channel_controller.isOnChannel(channel, client)) {
                     // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
                     std::string response_msg = ResponseHandler::createResponse(
                         client, "PRIVMSG", name, msg);

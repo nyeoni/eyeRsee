@@ -95,6 +95,7 @@ class ResponseHandler {
         // client->send_buf.append(res);
     }
 
+   private:
     static std::string getMessage(e_res_code res_code) {
         switch (res_code) {
             case RPL_NOTOPIC:

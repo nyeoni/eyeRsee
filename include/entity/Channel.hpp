@@ -53,16 +53,7 @@ class Channel {
 
     // update
     void insertClient(Client *client, bool is_operator);
-    void eraseClient(Client *client);
-    // void updateClientList(Client *client, bool is_insert);
-
-    bool isOnChannel(Client *client);
-    bool isOperator(Client *client);
-    bool isRegular(Client *client);
-
-    bool isInviteMode();
-    bool isTopicMode();
-    bool isBanMode();
+    void eraseClient(Client *client, bool is_operator);
 
     bool operator==(const Channel &other) const;
     bool operator!=(const Channel &other) const;

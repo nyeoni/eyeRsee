@@ -48,6 +48,8 @@ class ErrorHandler {
    public:
     static void handleError(Client *client, std::string cause, e_err_code code);
     static void handleError(std::exception &e, Client *src);
+
+   private:
     static std::string getErrorMessage(e_err_code code);
 };
 

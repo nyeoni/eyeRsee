@@ -6,9 +6,11 @@
 
 #include <iostream>
 
+#include "core/Command.hpp"
 #include "core/Type.hpp"
-#include "core/Udata.hpp"
+#include "core/utility.hpp"
 #include "entity/Client.hpp"
+#include "handler/ErrorHandler.hpp"
 #include "handler/ResponseHandler.hpp"
 
 namespace ft {
@@ -24,7 +26,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -72,18 +74,14 @@ void Server::run() {
 void Server::handleAccept() {
     std::cout << "Accept" << std::endl;
     Client *new_client;
-    Udata *udata;
     int connected_fd;
 
     new_client = _executor.accept(_listen_socket.getFd());
 
-    udata = new Udata;
-    udata->src = new_client;
     connected_fd = new_client->getFd();
-    _udata_list.insert(std::make_pair(connected_fd, udata));
 
-    registerEvent(connected_fd, EVFILT_READ, READ, udata);
-//    registerEvent(connected_fd, EVFILT_TIMER, TIMER, udata);
+    registerEvent(connected_fd, EVFILT_READ, READ, new_client);
+    registerEvent(connected_fd, EVFILT_TIMER, TIMER, new_client);
 }
 
 void Server::handleRead(int event_idx) {
@@ -92,12 +90,13 @@ void Server::handleRead(int event_idx) {
     char buf[BUF_SIZE];
     ssize_t n = 0;
     Event event = _ev_list[event_idx];
-    Udata *udata = static_cast<Udata *>(event.udata);
-    ConnectSocket *connect_socket = udata->src;
+    Client *client =
+        static_cast<Client *>(event.udata);  // TODO : connect socket
+    ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
 
     n = recv(event.ident, &buf, BUF_SIZE, 0);
     if (n == -1) {
-        _garbage.insert(udata);
+        _garbage.insert(client);
         return;
     }
     buf[n] = 0;
@@ -105,75 +104,78 @@ void Server::handleRead(int event_idx) {
     connect_socket->recv_buf.append(buf);
 
     // parse commandlines in connect_sockets
-    udata->commands = _parser.parse(udata->src);
+    connect_socket->commands = _parser.parse(client);
 
-    if (udata->src->status == REGISTER) {
-        if (!udata->commands.empty()) {
-            registerEvent(event.ident, EVFILT_WRITE, EXECUTE, udata);
+    if (connect_socket->status == REGISTER) {
+        if (!connect_socket->commands.empty()) {
+            registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
         }
-    } else if (udata->src->status == UNREGISTER) {
-        std::vector<Command *>::iterator iter = udata->commands.begin();
-        for (; iter != udata->commands.end(); ++iter) {
-            _executor.connect(*iter, udata->src, _env.password);
-        }
-        udata->commands.clear();
-
-        // check is authenticate
-        if (connect_socket->isAuthenticate()) {
-            std::cout << "Register Success!" << std::endl;
-            connect_socket->status = REGISTER;
-            _tmp_garbage.erase(udata);
-
-            ResponseHandler::handleConnectResponse(udata->src);
-            // TODO check
-            response(connect_socket->getFd(), connect_socket->send_buf);
+    } else {  // connect_socket->status == UNREGISTER
+        std::vector<Command *>::iterator iter =
+            connect_socket->commands.begin();
+        for (; iter != connect_socket->commands.end(); ++iter) {
+            _executor.connect(*iter, client, _env.password);
         }
     }
+    connect_socket->commands.clear();
+    // check is authenticate
+    // if (connect_socket->isAuthenticate()) {
+    //    std::cout << "Register Success!" << std::endl;
+    //    connect_socket->status = REGISTER;
+    //    _tmp_garbage.erase(client);
+
+    //    ResponseHandler::handleConnectResponse(client);
+    //    // TODO check
+    //    response(connect_socket->getFd(), connect_socket->send_buf);
+    //}
+}
 }
 
 void Server::handleExecute(int event_idx) {
     std::cout << "==== Execute ====" << std::endl;
 
     Event &event = _ev_list[event_idx];
+    Client *client =
+        static_cast<Client *>(event.udata);  // TODO : connect socket
+    ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
 
-    Udata *udata = static_cast<Udata *>(event.udata);
-    Client *client = udata->src;
-
-    std::vector<Command *>::iterator iter = udata->commands.begin();
-    for (; iter != udata->commands.end(); ++iter) {
+    std::vector<Command *>::iterator iter = connect_socket->commands.begin();
+    for (; iter != connect_socket->commands.end(); ++iter) {
         _executor.execute(*iter, client);
     }
-    udata->commands.clear();
+    connect_socket->commands.clear();
 
-    const std::set<int> &fd_list = _executor.getFdList();
-    std::set<int>::iterator fd = fd_list.begin();
-    for (; fd != fd_list.end(); ++fd) {
-        registerEvent(*fd, EVFILT_WRITE, EXECUTE,
-                      _udata_list.find(*fd)->second);
+    const std::set<Client *> &client_list = _executor.getClientList();
+    std::set<Client *>::iterator receiver_iter = client_list.begin();
+    for (; receiver_iter != client_list.end(); ++receiver_iter) {
+        registerEvent((*receiver_iter)->getFd(), EVFILT_WRITE, EXECUTE,
+                      *receiver_iter);
     }
-    _executor.clearFdLIst();
+    _executor.clearClientList();
 
-    if (response(event.ident, udata->src->send_buf) == 0)
+    if (response(event.ident, connect_socket->send_buf) == 0)
         registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
 }
 
 void Server::handleTimer(int event_idx) {
     Event &event = _ev_list[event_idx];
-    Udata *udata = static_cast<Udata *>(event.udata);
-    ConnectSocket *socket = udata->src;
+    // find(event.ident) // TODO : timer access freed memory
+    Client *client =
+        static_cast<Client *>(event.udata);  // TODO : connect socket
+    ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
 
     registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
-    if (socket->isAuthenticate()) {
+    if (connect_socket->isAuthenticate()) {
         return;
     }
-    _tmp_garbage.insert(udata);
+    _tmp_garbage.insert(client);
 }
 void Server::handleTimeout() {
-    std::set<Udata *>::iterator iter = _tmp_garbage.begin();
+    std::set<Client *>::iterator iter = _tmp_garbage.begin();
 
     for (; iter != _tmp_garbage.end(); ++iter) {
         _garbage.insert(*iter);
-        send((*iter)->src->getFd(), "Timeout\n", 9, 0);
+        send((*iter)->getFd(), "Timeout\n", 9, 0);
     }
     iter = _garbage.begin();
     for (; iter != _garbage.end(); ++iter) {
@@ -182,15 +184,12 @@ void Server::handleTimeout() {
 }
 
 void Server::handleClose() {
-    std::set<Udata *>::iterator iter = _garbage.begin();
+    std::set<Client *>::iterator iter = _garbage.begin();
     for (; iter != _garbage.end(); ++iter) {
-        Client *client = (*iter)->src;
-        int connected_fd = client->getFd();
+        int connected_fd = (*iter)->getFd();
         std::cout << "New client # " << connected_fd << " gone" << std::endl;
-        client->deleteSocket();
-        _executor.deleteClient(client);
-        _udata_list.erase(connected_fd);
-        delete (*iter);
+        (*iter)->deleteSocket();
+        _executor.deleteClient(*iter);
     }
     _garbage.clear();
 }

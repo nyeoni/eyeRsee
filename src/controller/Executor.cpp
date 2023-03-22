@@ -21,8 +21,8 @@ Channel *Executor::createChannel(std::string channel_name) {
     return channel_controller.insert(channel_name);
 }
 
-const std::set<int> &Executor::getFdList() const { return _fd_list; }
-void Executor::clearFdLIst() { _fd_list.clear(); }
+const std::set<Client *> &Executor::getClientList() const { return _client_list; }
+void Executor::clearClientList() { _client_list.clear(); }
 
 void Executor::deleteClient(Client *client) {
     ChannelController::ChannelList channel_list;
@@ -440,7 +440,7 @@ void Executor::privmsg(Client *client, params *params) {
                 std::string response_msg = ResponseHandler::createResponse(
                     client, "PRIVMSG", name, param->msg);
                 receiver->send_buf.append(response_msg);
-                _fd_list.insert(receiver->getFd());
+                _client_list.insert(receiver);
             } else {
                 // 401 user3 wow :No such nick
                 ErrorHandler::handleError(client, name, ERR_NOSUCHNICK);
@@ -463,7 +463,7 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
     for (; client_iter != client_list.end(); ++client_iter) {
         if (excluded != NULL && excluded != *client_iter) {
             (*client_iter)->send_buf.append(msg);
-            _fd_list.insert((*client_iter)->getFd());
+            _client_list.insert(*client_iter);
         }
     }
 }
@@ -483,7 +483,7 @@ void Executor::broadcast(const ChannelList &channel_list,
     client_iter = client_list.begin();
     for (; client_iter != client_list.end(); ++client_iter) {
         (*client_iter)->send_buf.append(msg);
-        _fd_list.insert((*client_iter)->getFd());
+        _client_list.insert(*client_iter);
     }
 }
 
@@ -494,7 +494,7 @@ void Executor::notice(Client *client, params *params) {
     if (receiver) {
         ResponseHandler::handleResponse(receiver, "NOTICE",
                                         client->getNickname(), param->msg);
-        _fd_list.insert(receiver->getFd());
+        _client_list.insert(receiver);
     } else
         ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
 }

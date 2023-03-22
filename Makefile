@@ -39,7 +39,7 @@ SRC_CORE_DIR		= core/
 SRC_CORE			= $(addprefix $(SRC_CORE_DIR), \
 										Server.cpp \
 										Parser.cpp \
-										Udata.cpp \
+										Command.cpp \
 										utility.cpp \
 										Socket.cpp)
 

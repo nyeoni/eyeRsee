@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "core/Udata.hpp"
+#include "core/Command.hpp"
 
 #define BUF_SIZE 512
 
@@ -50,6 +50,8 @@ class ConnectSocket : public SocketBase {
     std::string _hostname;
     std::string _server;
     std::string _realname;
+
+    std::vector<Command *> commands;
 
    protected:
    public:

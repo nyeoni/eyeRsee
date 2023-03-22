@@ -90,10 +90,16 @@ class ResponseHandler {
                                    client->getUsername() + "@" +
                                    client->getHostname();
         // TODO date
-        std::string res_comment[4] = {prefix, "", "", ""};
+        std::string res_comment[4] = {prefix, "", "",
+                                      "eyeRsee.local 1.0 o oit"};
         for (int i = 0; i < 4; i++) {
-            std::string res = createResponse(
-                client, "", static_cast<e_res_code>(i + 1), res_comment[i]);
+            std::string res;
+            e_res_code res_code = static_cast<e_res_code>(i + 1);
+            if (i == 3)
+                res = createResponse(client, res_comment[i], res_code, "");
+            else
+                res = createResponse(client, "", static_cast<e_res_code>(i + 1),
+                                     res_comment[i]);
             client->send_buf.append(res);
         }
         client->send_buf.append(WELCOME_PROMPT);
@@ -117,6 +123,7 @@ class ResponseHandler {
         std::stringstream res_stream;
         std::string msg = getMessage(res_code);
 
+        if (command != "") command += " ";
         res_stream.fill('0');
         res_stream << ":" << servername << " " << std::setw(3) << res_code
                    << " " << client->getNickname() << " " << command << ":"

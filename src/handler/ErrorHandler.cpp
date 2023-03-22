@@ -75,7 +75,7 @@ std::string ErrorHandler::getErrorMessage(e_err_code code) {
     }
 }
 
-const std::string ErrorHandler::servername = "localhost";
+const std::string ErrorHandler::servername = "eyeRsee.local";
 
 const std::string ErrorHandler::ERR_UNKNOWNCOMMAND_MSG = "Unknown command";
 const std::string ErrorHandler::ERR_NEEDMOREPARAMS_MSG =

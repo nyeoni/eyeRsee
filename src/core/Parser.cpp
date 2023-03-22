@@ -134,7 +134,7 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
 
     if (!isEOF() && getToken()) {
         p = new mode_params;
-        p->channel = validChannelName(token);
+        p->channel = token;
         if (!isEOF() && getToken()) {
             if (token == "+o" || token == "o") {
                 p->mode = OPER_T;
@@ -326,8 +326,6 @@ std::vector<Command *> Parser::parse(Client *src) {
             command = parse(*it);
             if (command != NULL) commands.push_back(command);
         } catch (SyntaxException &e) {
-            if (e.getCause() == "MODE") continue;
-
             delete command;
             ErrorHandler::handleError(e, src);
         }

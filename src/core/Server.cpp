@@ -83,7 +83,7 @@ void Server::handleAccept() {
     _udata_list.insert(std::make_pair(connected_fd, udata));
 
     registerEvent(connected_fd, EVFILT_READ, READ, udata);
-    registerEvent(connected_fd, EVFILT_TIMER, TIMER, udata);
+//    registerEvent(connected_fd, EVFILT_TIMER, TIMER, udata);
 }
 
 void Server::handleRead(int event_idx) {
@@ -132,7 +132,7 @@ void Server::handleRead(int event_idx) {
 }
 
 void Server::handleExecute(int event_idx) {
-    std::cout << "==== Execute ====" << event_idx << std::endl;
+    std::cout << "==== Execute ====" << std::endl;
 
     Event &event = _ev_list[event_idx];
 

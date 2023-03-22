@@ -55,17 +55,16 @@ void ListenSocket::createSocket(const int &port) {
     sin.sin_port = htons(port);
     int i = 0;
     // 임시
-    while (bind(_fd, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
-        sin.sin_port = htons(port + ++i);
-    }
-    std::cout << "listening port : " << port + i << std::endl;
+//    while (bind(_fd, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
+//        sin.sin_port = htons(port + ++i);
+//    }
+//    std::cout << "listening port : " << port + i << std::endl;
 
-    // if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
-    //     throw std::logic_error("bind error");                         //
-    //     CHECK
-    if (listen(_fd, 42) < 0) throw std::logic_error("listen error");  // CHECK
+    if (bind(_fd, (struct sockaddr *) &sin, sizeof(sin)) < 0)
+        throw std::logic_error("bind error");
+    if (listen(_fd, 42) < 0) throw std::logic_error("listen error");
 
-    // setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
+    setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
     setNonBlock();
 }
 

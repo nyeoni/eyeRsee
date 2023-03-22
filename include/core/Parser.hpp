@@ -42,7 +42,8 @@ class Parser {
     void parseNotice(e_cmd &cmd, params *&params);
     void parsePing(e_cmd &cmd, params *&params);
 
-    void parse(const std::string &command_line, e_cmd &cmd, params *&params);
+    Command *parse(const std::string &command_line);
+    std::vector<Command *> parse(Client *src);
 
     class SyntaxException : public std::exception {
        protected:

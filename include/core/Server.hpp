@@ -5,20 +5,9 @@
 #include <vector>
 
 #include "Parser.hpp"
-#include "controller/Executor.hpp"
 #include "core/Socket.hpp"
+#include "controller/Executor.hpp"
 #include "handler/EventHandler.hpp"
-
-#define WELCOME_PROMPT "\n\
-\n\
-███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗███████╗\n\
-██╔════╝╚██╗ ██╔╝██╔════╝██╔══██╗██╔════╝██╔════╝██╔════╝\n\
-█████╗   ╚████╔╝ █████╗  ██████╔╝███████╗█████╗  █████╗\n\
-██╔══╝    ╚██╔╝  ██╔══╝  ██╔══██╗╚════██║██╔══╝  ██╔══╝\n\
-███████╗   ██║   ███████╗██║  ██║███████║███████╗███████╗\n\
-╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝\n\
-\n\
-WELCOME TO \033[0;36meyeRsee\033[0m SERVER by KIMx3\n"
 
 namespace ft {
 

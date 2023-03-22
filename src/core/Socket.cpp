@@ -55,7 +55,7 @@ void ListenSocket::createSocket(const int &port) {
     sin.sin_port = htons(port);
     int i = 0;
     // 임시
-    while (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+    while (bind(_fd, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
         sin.sin_port = htons(port + ++i);
     }
     std::cout << "listening port : " << port + i << std::endl;
@@ -88,7 +88,7 @@ void ConnectSocket::createSocket(const int &listen_fd) {
     struct sockaddr_in in = {};
     socklen_t in_len = sizeof(in);
 
-    _fd = accept(listen_fd, (struct sockaddr *)&in, &in_len);
+    _fd = accept(listen_fd, (struct sockaddr *) &in, &in_len);
     setNonBlock();
     // TODO : password
     // recv(connect_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)
@@ -100,7 +100,15 @@ bool ConnectSocket::isAuthenticate() { return auth[0] && auth[1] && auth[2]; }
 
 std::string ConnectSocket::readRecvBuf() {
     std::string line;
-    std::string::size_type found = recv_buf.find_last_of('\n');
+    std::string::size_type found;
+
+    found = recv_buf.find_last_of("\r\n");
+    if (found != std::string::npos) {
+        delimiter = CRLF;
+    } else {
+        found = recv_buf.find_last_of('\n');
+        delimiter = LF;
+    }
 
     line = recv_buf.substr(0, found);
     recv_buf = recv_buf.substr(found + 1);

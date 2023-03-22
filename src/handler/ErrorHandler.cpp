@@ -18,23 +18,23 @@ void ErrorHandler::handleError(Client *client, std::string cause,
     std::string msg = getErrorMessage(code);
 
     res_stream << ":" << servername << " " << code << " "
-               << client->getNickname() << " " << cause << " :\"" << msg << "\""
+               << client->getNickname() << " " << cause << " :" << msg
                << std::endl;
     res = res_stream.str();
     client->send_buf.append(res);
 }
 void ErrorHandler::handleError(std::exception &e, Client *src) {
     if (Parser::UnknownCommandException *uce =
-            dynamic_cast<Parser::UnknownCommandException *>(&e))
+        dynamic_cast<Parser::UnknownCommandException *>(&e))
         handleError(src, uce->getCause(), ERR_UNKNOWNCOMMAND);
     else if (Parser::NotEnoughParamsException *nepe =
-                 dynamic_cast<Parser::NotEnoughParamsException *>(&e))
+        dynamic_cast<Parser::NotEnoughParamsException *>(&e))
         handleError(src, nepe->getCause(), ERR_NEEDMOREPARAMS);
     else if (Parser::InvalidChannelNameException *icne =
-                 dynamic_cast<Parser::InvalidChannelNameException *>(&e))
+        dynamic_cast<Parser::InvalidChannelNameException *>(&e))
         handleError(src, icne->getCause(), ERR_BADCHANMASK);
     else if (Parser::InvalidNickNameException *inne =
-                 dynamic_cast<Parser::InvalidNickNameException *>(&e))
+        dynamic_cast<Parser::InvalidNickNameException *>(&e))
         handleError(src, inne->getCause(), ERR_ERRONEUSNICKNAME);
     else
         std::cout << "ErrorHandler: Unknown error occurred" << std::endl;
@@ -75,7 +75,7 @@ std::string ErrorHandler::getErrorMessage(e_err_code code) {
     }
 }
 
-const std::string ErrorHandler::servername = "eyeRsee.local";
+const std::string ErrorHandler::servername = "localhost";
 
 const std::string ErrorHandler::ERR_UNKNOWNCOMMAND_MSG = "Unknown command";
 const std::string ErrorHandler::ERR_NEEDMOREPARAMS_MSG =

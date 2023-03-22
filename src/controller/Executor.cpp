@@ -1,6 +1,5 @@
 #include "controller/Executor.hpp"
 
-#include <iostream>
 #include <utility>
 
 #include "entity/Channel.hpp"
@@ -315,6 +314,9 @@ void Executor::user(Client *new_client, params *params) {
     new_client->setServer(server);
     new_client->setRealname(realname);
     new_client->auth[USER] = true;
+    // response
+    // USER guest tolmoon tolsun :Ronnie Reagan
+    // :testnick USER guest tolmoon tolsun :Ronnie Reagan
 }
 
 /**

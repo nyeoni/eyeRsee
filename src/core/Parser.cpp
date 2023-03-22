@@ -1,5 +1,9 @@
 #include "core/Parser.hpp"
 
+#include "core/Socket.hpp"
+#include "entity/Client.hpp"
+#include "handler/ErrorHandler.hpp"
+
 namespace ft {
 
 int Parser::getToken(int flag = TOKEN) {
@@ -151,6 +155,7 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
                 p->mode = TOPIC_PRIV_F;
 
         } else {
+            // TODO mode 씸을 수 있는지
             delete p;
             throw NotEnoughParamsException("MODE");
         }
@@ -262,41 +267,70 @@ void Parser::parsePing(e_cmd &cmd, params *&params) {
     params = p;
 }
 
-void Parser::parse(const std::string &command_line, e_cmd &cmd,
-                   params *&params) {
+Command *Parser::parse(const std::string &command_line) {
+    tokenStream.clear();
     tokenStream.str(command_line);
     getToken();
 
+    Command *command = new Command;
     if (token == "QUIT") {
-        parseQuit(cmd, params);
+        parseQuit(command->type, command->params);
     } else if (token == "PASS") {
-        parsePass(cmd, params);
+        parsePass(command->type, command->params);
     } else if (token == "USER") {
-        parseUser(cmd, params);
+        parseUser(command->type, command->params);
     } else if (token == "NICK") {
-        parseNick(cmd, params);
+        parseNick(command->type, command->params);
     } else if (token == "JOIN") {
-        parseJoin(cmd, params);
+        parseJoin(command->type, command->params);
     } else if (token == "PART") {
-        parsePart(cmd, params);
+        parsePart(command->type, command->params);
     } else if (token == "MODE") {
-        parseMode(cmd, params);
+        parseMode(command->type, command->params);
     } else if (token == "INVITE") {
-        parseInvite(cmd, params);
+        parseInvite(command->type, command->params);
     } else if (token == "KICK") {
-        parseKick(cmd, params);
+        parseKick(command->type, command->params);
     } else if (token == "TOPIC") {
-        parseTopic(cmd, params);
+        parseTopic(command->type, command->params);
     } else if (token == "PRIVMSG") {
-        parsePrivmsg(cmd, params);
+        parsePrivmsg(command->type, command->params);
     } else if (token == "NOTICE") {
-        parseNotice(cmd, params);
+        parseNotice(command->type, command->params);
     } else if (token == "PING") {
-        parsePing(cmd, params);
+        parsePing(command->type, command->params);
+    } else if (token == "CAP") {
+        delete command;
+        return NULL;
     } else {
         throw UnknownCommandException(token);
     }
-    tokenStream.clear();
+    return command;
+}
+std::vector<Command *> Parser::parse(Client *src) {
+    std::string line;
+    std::vector<Command *> commands;
+    std::vector<std::string> command_lines;
+
+    line = src->readRecvBuf();
+
+    if (src->delimiter == CRLF)
+        command_lines = split(line, "\r\n");
+    else
+        command_lines = split(line, '\n');
+
+    std::vector<std::string>::iterator it;
+    for (it = command_lines.begin(); it != command_lines.end(); it++) {
+        Command *command;
+        try {
+            command = parse(*it);
+            if (command != NULL) commands.push_back(command);
+        } catch (std::exception &e) {
+            delete command;
+            ErrorHandler::handleError(e, src);
+        }
+    }
+    return commands;
 }
 
 Parser::SyntaxException::SyntaxException(const std::string &cause)

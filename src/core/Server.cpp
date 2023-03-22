@@ -5,12 +5,10 @@
 #include <unistd.h>  // close
 
 #include <iostream>
-#include <sstream>
 
 #include "core/Type.hpp"
 #include "core/Udata.hpp"
-#include "core/utility.hpp"
-#include "handler/ErrorHandler.hpp"
+#include "entity/Client.hpp"
 #include "handler/ResponseHandler.hpp"
 
 namespace ft {
@@ -26,7 +24,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port<1025 | d_port> 65535) {
+    if (*back || d_port < 1025 | d_port > 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -106,25 +104,13 @@ void Server::handleRead(int event_idx) {
 
     connect_socket->recv_buf.append(buf);
 
-    // multi commands parse
-    std::string line = connect_socket->readRecvBuf();
-    std::vector<std::string> command_lines = split(line, '\n');
-
-    std::vector<std::string>::iterator it;
-    for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command *command = new Command;
-
-        try {
-            _parser.parse(*it, command->type, command->params);
-            udata->commands.push_back(command);
-        } catch (std::exception &e) {
-            ErrorHandler::handleError(e, udata->src);
-        }
-    }
+    // parse commandlines in connect_sockets
+    udata->commands = _parser.parse(udata->src);
 
     if (udata->src->status == REGISTER) {
-        if (command_lines.size())
+        if (!udata->commands.empty()) {
             registerEvent(event.ident, EVFILT_WRITE, EXECUTE, udata);
+        }
     } else if (udata->src->status == UNREGISTER) {
         std::vector<Command *>::iterator iter = udata->commands.begin();
         for (; iter != udata->commands.end(); ++iter) {
@@ -134,17 +120,22 @@ void Server::handleRead(int event_idx) {
 
         // check is authenticate
         if (connect_socket->isAuthenticate()) {
+            std::cout << "Register Success!" << std::endl;
             connect_socket->status = REGISTER;
             _tmp_garbage.erase(udata);
-            send(event.ident, WELCOME_PROMPT, strlen(WELCOME_PROMPT), 0);
+
+            ResponseHandler::handleConnectResponse(udata->src);
+            // TODO check
+            response(connect_socket->getFd(), connect_socket->send_buf);
         }
     }
-    // registerRead
 }
 
 void Server::handleExecute(int event_idx) {
-    std::cout << "execute " << event_idx << std::endl;
+    std::cout << "==== Execute ====" << event_idx << std::endl;
+
     Event &event = _ev_list[event_idx];
+
     Udata *udata = static_cast<Udata *>(event.udata);
     Client *client = udata->src;
 

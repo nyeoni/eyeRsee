@@ -48,16 +48,25 @@ void ChannelController::erase(const std::string &channel_name) {
     _channels.erase(channel_name);
 }
 
-void ChannelController::updateMode(int mode, Channel *channel) {
+/**
+ * @return true - attemping to to update to the different mode
+ * @return false - attemping to update to the same mode
+ * @note mode == OPER_F || mode == OPER_T => client is not NULL
+ * TODO int mode -> e_mode mode
+ */
+bool ChannelController::updateMode(int mode, Channel *channel, Client *client) {
+    if (mode == OPER_F)
+        return updateRole(channel, client, REGULAR);
+    else if (mode == OPER_T)
+        return updateRole(channel, client, OPERATOR);
+
+    if (channel->getMode() == mode) return false;
+
     channel->setMode(mode);
+    return true;
 }
 
-void ChannelController::updateMode(int mode, const std::string &channel_name) {
-    Channel *target = find(channel_name);
-    if (target) return target->setMode(mode);
-}
-
-void ChannelController::updateTopic(Client *client, Channel *channel,
+void ChannelController::updateTopic(Channel *channel, Client *client,
                                     const std::string &topic) {
     // there are no difference from previous topic
     if (channel->getTopic() == topic) return;
@@ -66,20 +75,31 @@ void ChannelController::updateTopic(Client *client, Channel *channel,
 }
 
 /**
- * @return int - numeric replie
+ * @brief update Channel::_operators and Channel::_regulars
+ *
+ * @param role - role to update (operator || regular)
+ *
+ * @return true - attemping to to update to the different mode
+ * @return false - attemping to update to the same mode
  */
-int ChannelController::hasPermission(Channel *channel, Client *client) {
-    if (isOperator(channel, client)) {
-        // client->insertIChannel();
-        return 1;
+bool ChannelController::updateRole(Channel *channel, Client *client,
+                                   e_role role) {
+    // update to regular (operator -> regular)
+    if (role == REGULAR && isOperator(channel, client) == true) {
+        insertRegular(channel, client);
+        eraseOperator(channel, client);
+        return true;
     }
-    if (isRegular(channel, client)) {
-        // #name You must be a channel op or higher to send an invite.
-        return 2;
+
+    // update to operator (regular -> operator)
+    if (role == OPERATOR && isOperator(channel, client) == false) {
+        insertOperator(channel, client);
+        eraseRegular(channel, client);
+        return true;
     }
-    // you are not on channel
-    // channel->insertClient(client, true);
-    return 0;
+
+    // there are no change
+    return false;
 }
 
 bool ChannelController::isOnChannel(Channel *channel, Client *client) {
@@ -102,16 +122,17 @@ bool ChannelController::isRegular(Channel *channel, Client *client) {
  * @brief insert Client to Channel's _clientList
  */
 void ChannelController::insertClient(Channel *channel, Client *client,
-                                     bool is_operator) {
-    channel->insertClient(client, is_operator);
+                                     e_role role) {
+    role == OPERATOR ? channel->insertOperator(client)
+                     : channel->insertRegular(client);
 }
 
 /**
  * @brief erase Client to Channel's _clientList
  */
 void ChannelController::eraseClient(Channel *channel, Client *client) {
-    isOperator(channel, client) ? channel->eraseClient(client, true)
-                                : channel->eraseClient(client, false);
+    isOperator(channel, client) ? channel->eraseOperator(client)
+                                : channel->eraseRegular(client);
     if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
         erase(channel);
     }
@@ -146,6 +167,22 @@ bool ChannelController::isTopicMode(Channel *channel) {
 
 bool ChannelController::isBanMode(Channel *channel) {
     return (channel->getMode() & (BAN_T - 1));
+}
+
+// private functions
+void ChannelController::insertOperator(Channel *channel, Client *client) {
+    channel->insertOperator(client);
+}
+
+void ChannelController::insertRegular(Channel *channel, Client *client) {
+    channel->insertRegular(client);
+}
+void ChannelController::eraseOperator(Channel *channel, Client *client) {
+    channel->eraseOperator(client);
+}
+
+void ChannelController::eraseRegular(Channel *channel, Client *client) {
+    channel->eraseRegular(client);
 }
 
 }  // namespace ft

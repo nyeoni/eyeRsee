@@ -56,20 +56,24 @@ class Parser {
     };
     class UnknownCommandException : public SyntaxException {
        public:
-        UnknownCommandException(std::string cause) : SyntaxException(cause) {};
+        UnknownCommandException(const std::string &cause) : SyntaxException(cause) {};
 
     };
     class NotEnoughParamsException : public SyntaxException {
        public:
-        NotEnoughParamsException(std::string cause) : SyntaxException(cause) {};
+        NotEnoughParamsException(const std::string &cause) : SyntaxException(cause) {};
     };
     class InvalidChannelNameException : public SyntaxException {
        public:
-        InvalidChannelNameException(std::string cause) : SyntaxException(cause) {};
+        InvalidChannelNameException(const std::string &cause) : SyntaxException(cause) {};
     };
     class InvalidNickNameException : public SyntaxException {
        public:
-        InvalidNickNameException(std::string cause) : SyntaxException(cause) {};
+        InvalidNickNameException(const std::string &cause) : SyntaxException(cause) {};
+    };
+    class ModeUserException : public SyntaxException {
+       public:
+        ModeUserException(const std::string &cause) : SyntaxException(cause) {};
     };
 };
 

@@ -135,6 +135,8 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
     if (!isEOF() && getToken()) {
         p = new mode_params;
         p->channel = token;
+        if (token[0] != '#')
+            throw ModeUserException("MODE");
         if (!isEOF() && getToken()) {
             if (token == "+o" || token == "o") {
                 p->mode = OPER_T;

@@ -262,6 +262,7 @@ void Parser::parse(const std::string &command_line, e_cmd &cmd, params *&params)
     tokenStream.str(command_line);
     getToken();
 
+
     if (token == "QUIT") {
         parseQuit(cmd, params);
     } else if (token == "PASS") {

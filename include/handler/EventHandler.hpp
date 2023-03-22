@@ -3,6 +3,7 @@
 
 #include <sys/event.h>
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -20,11 +21,12 @@ class EventHandler {
     int _kq_fd;
     int _change_cnt;
 
-    std::set<Udata *> _tmp_garbage;  // timeout
-    std::set<Udata *> _garbage;      // client gone
-
     Event _ev_list[_max_event];
     EventList _change_list;
+
+    std::map<int, Udata *> _udata_list;
+    std::set<Udata *> _tmp_garbage;  // timeout
+    std::set<Udata *> _garbage;      // client gone
 
    public:
     EventHandler();
@@ -42,7 +44,6 @@ class EventHandler {
     // handle functions
     void handleEvent(int event_idx);
     virtual void handleAccept() = 0;
-    virtual void handleConnect(int event_idx) = 0;
     virtual void handleRead(int event_idx) = 0;
     virtual void handleExecute(int event_idx) = 0;
     virtual void handleTimer(int event_idx) = 0;

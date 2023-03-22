@@ -31,6 +31,7 @@ class Executor {
     Executor &operator=(const Executor &ref);
 
     const std::set<int> &getFdList() const;
+    void clearFdLIst();
 
     Client *accept(int fd);
     void connect(Command *command, Client *client, std::string password);

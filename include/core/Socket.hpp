@@ -36,6 +36,7 @@ class ListenSocket : public SocketBase {
 
 class ConnectSocket : public SocketBase {
    public:
+    e_status status;
     std::string recv_buf;
     std::string send_buf;
     bool auth[3];

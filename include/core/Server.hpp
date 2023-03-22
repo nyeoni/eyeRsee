@@ -50,7 +50,6 @@ class Server : public EventHandler {
 
     // handler methods
     void handleAccept();
-    void handleConnect(int event_idx);
     void handleRead(int event_idx);
     void handleExecute(int event_idx);
     void handleTimer(int event_idx);

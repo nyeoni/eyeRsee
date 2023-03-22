@@ -44,11 +44,11 @@ void EventHandler::handleEvent(int event_idx) {
     Udata *udata = static_cast<Udata *>(event.udata);
     e_event action = IDLE;
     if (event.filter == EVFILT_READ)
-        udata ? action = udata->r_action : action = ACCEPT;
+        udata ? action = READ : action = ACCEPT;
     else if (event.filter == EVFILT_WRITE && udata)
-        action = udata->w_action;
+        action = EXECUTE;
     else if (event.filter == EVFILT_TIMER && udata)
-        action = udata->timer;
+        action = TIMER;
 
     if (event.flags & EV_EOF) {
         _tmp_garbage.erase(udata);
@@ -60,9 +60,6 @@ void EventHandler::handleEvent(int event_idx) {
         case ACCEPT:
             handleAccept();
             break;
-        case CONNECT:
-            handleConnect(event_idx);
-            break;
         case READ:
             handleRead(event_idx);
             break;
@@ -72,8 +69,10 @@ void EventHandler::handleEvent(int event_idx) {
         case TIMER:
             handleTimer(event_idx);
         default:
-            std::cout << "client #" << _ev_list[event_idx].ident
-                      << " (unknown event occured)" << std::endl;
+            std::cout << "client #" << event.ident << "EV_FILT(" << event.filter
+                      << "), "
+                      << "EV_FLAGS(" << event.flags << ""
+                      << ")" << std::endl;
             break;
     }
 }
@@ -84,12 +83,7 @@ void EventHandler::registerEvent(int fd, short filt, e_event action,
     u_short flags = action != D_WRITE && action != D_TIMER ? EV_ADD : EV_DELETE;
     int64_t data = 0;
 
-    if (filt == EVFILT_WRITE) {
-        if (action != D_WRITE) udata->w_action = action;
-    } else if (filt == EVFILT_READ) {
-        if (udata) udata->r_action = action;
-    } else {  // EVFILT_TIMER
-        if (action != D_TIMER) udata->timer = action;
+    if (filt == EVFILT_TIMER && action != D_TIMER) {
         data = 60000;
     }
     EV_SET(&ev, fd, filt, flags, 0, data, static_cast<void *>(udata));

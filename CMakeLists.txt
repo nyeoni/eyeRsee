@@ -26,7 +26,7 @@ add_executable(ft_irc src/main/main.cpp)
 # Include containers hpp files
 target_link_libraries(ft_irc PUBLIC ft_irc_lib)
 # Set ft_containers_lib compile option
-set_target_properties(ft_irc PROPERTIES INTERFACE_LINK_LIBRARIES -Wall -Wextra -Werror -std=c++98 -g3)
-#set_target_properties(ft_irc PROPERTIES INTERFACE_LINK_LIBRARIES -std=c++98)
+#set_target_properties(ft_irc PROPERTIES INTERFACE_LINK_LIBRARIES -Wall -Wextra -Werror -std=c++98 -g3)
+set_target_properties(ft_irc PROPERTIES INTERFACE_LINK_LIBRARIES -std=c++98 -g3 -fsanitize=address)
 
 add_subdirectory(test)

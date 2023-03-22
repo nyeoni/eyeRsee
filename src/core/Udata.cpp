@@ -2,7 +2,7 @@
 
 namespace ft {
 
-Command::Command() : type(UNKNOWN), params(NULL){};
+Command::Command() : type(UNKNOWN), params(NULL) {};
 Command::~Command() {
     if (params) {
         delete params;

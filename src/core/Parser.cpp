@@ -269,12 +269,11 @@ void Parser::parsePing(e_cmd &cmd, params *&params) {
     params = p;
 }
 
-Command *Parser::parse(const std::string &command_line) {
+Command *Parser::parse(const std::string &command_line, Command *&command) {
     tokenStream.clear();
     tokenStream.str(command_line);
     getToken();
 
-    Command *command = new Command;
     if (token == "QUIT") {
         parseQuit(command->type, command->params);
     } else if (token == "PASS") {
@@ -323,9 +322,9 @@ std::vector<Command *> Parser::parse(Client *src) {
 
     std::vector<std::string>::iterator it;
     for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command *command;
+        Command *command = new Command;
         try {
-            command = parse(*it);
+            parse(*it, command);
             if (command != NULL) commands.push_back(command);
         } catch (SyntaxException &e) {
             delete command;

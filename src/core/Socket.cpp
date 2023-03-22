@@ -105,7 +105,7 @@ std::string ConnectSocket::readRecvBuf() {
     if (found != std::string::npos) {
         delimiter = CRLF;
 
-        line = recv_buf.substr(0, found);
+        line = recv_buf.substr(0, found - 1);
         recv_buf = recv_buf.substr(found + 1);
     } else {
         found = recv_buf.find_last_of('\n');

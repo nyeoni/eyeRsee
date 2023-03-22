@@ -63,11 +63,11 @@ class ResponseHandler {
         std::stringstream res_stream;
         std::string res;
 
-        res_stream << ":" << client->getNickname() << "!"
+        res_stream << ":" << param << "!"
                    << client->getUsername() << "@" << client->getHostname()
                    << " " << command;
         if (msg.empty())
-            res_stream << " :" << param;
+            res_stream << " :" << client->getNickname();
         else
             res_stream << " " << param << ":" << msg << std::endl;
         res = res_stream.str();

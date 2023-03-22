@@ -414,8 +414,8 @@ void Executor::privmsg(Client *client, params *params) {
     std::string name;
 
     for (; iter != receivers.end(); ++iter) {
+        name = *iter;
         if (iter->front() == '#') {  // channel
-            name = (*iter).at(1);
             Channel *channel = channel_controller.find(name);
             if (channel) {
                 if (channel_controller.isOnChannel(channel, client)) {
@@ -435,12 +435,12 @@ void Executor::privmsg(Client *client, params *params) {
                 return;
             }
         } else {  // user
-            name = *iter;
             Client *receiver = client_controller.find(name);
             if (receiver) {
                 std::string response_msg = ResponseHandler::createResponse(
                     client, "PRIVMSG", name, param->msg);
                 receiver->send_buf.append(response_msg);
+                _fd_list.insert(receiver->getFd());
             } else {
                 // 401 user3 wow :No such nick
                 ErrorHandler::handleError(client, name, ERR_NOSUCHNICK);
@@ -463,6 +463,7 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
     for (; client_iter != client_list.end(); ++client_iter) {
         if (excluded != NULL && excluded != *client_iter) {
             (*client_iter)->send_buf.append(msg);
+            _fd_list.insert((*client_iter)->getFd());
         }
     }
 }
@@ -482,6 +483,7 @@ void Executor::broadcast(const ChannelList &channel_list,
     client_iter = client_list.begin();
     for (; client_iter != client_list.end(); ++client_iter) {
         (*client_iter)->send_buf.append(msg);
+        _fd_list.insert((*client_iter)->getFd());
     }
 }
 

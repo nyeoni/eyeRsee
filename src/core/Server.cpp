@@ -26,7 +26,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port<1025 | d_port> 65535) {
+    if (*back || d_port < 1025 | d_port > 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -87,19 +87,16 @@ void Server::handleAccept() {
 void Server::handleRead(int event_idx) {
     std::cout << "==== Read ====" << std::endl;
     Event event = _ev_list[event_idx];
-    Client *client =
-        static_cast<Client *>(event.udata);  // TODO : connect socket
+    Client *client = static_cast<Client *>(event.udata);
     ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
 
-    if (parse(event.ident, client) <= 0) return;
+    parse(event.ident, client);
 
     std::queue<Command *> &commands = client->commands;
-
     if (connect_socket->status == REGISTER) {
         registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
         return;
     }
-
     while (commands.size() && connect_socket->status == UNREGISTER) {
         _executor.connect(commands.front(), client, _env.password);
         commands.pop();

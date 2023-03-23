@@ -17,10 +17,12 @@ void ErrorHandler::handleError(ConnectSocket *src, std::string cause,
                                e_err_code code) {
     std::stringstream res_stream;
     std::string res;
+    std::string nickname =
+        src->getNickname().empty() ? "*" : src->getNickname();
     std::string msg = getErrorMessage(code);
 
-    res_stream << ":" << servername << " " << code << " " << src->getNickname()
-               << " " << cause << " :" << msg << std::endl;
+    res_stream << ":" << servername << " " << code << " " << nickname << " "
+               << cause << " :" << msg << std::endl;
     res = res_stream.str();
     src->send_buf.append(res);
 }
@@ -47,6 +49,8 @@ std::string ErrorHandler::getErrorMessage(e_err_code code) {
             return ERR_UNKNOWNCOMMAND_MSG;
         case ERR_NEEDMOREPARAMS:
             return ERR_NEEDMOREPARAMS_MSG;
+        case ERR_PASSWDMISMATCH:
+            return ERR_PASSWDMISMATCH_MSG;
         case ERR_ALREADYREGISTERED:
             return ERR_ALREADYREGISTERED_MSG;
         case ERR_NONICKNAMEGIVEN:

@@ -44,7 +44,7 @@ void ResponseHandler::handleResponse(ConnectSocket *src,
     if (msg.empty())
         res_stream << " :" << param << std::endl;
     else
-        res_stream << " " << param << ":" << msg << std::endl;
+        res_stream << " " << param << " :" << msg << std::endl;
     res = res_stream.str();
     src->send_buf.append(res);
 }

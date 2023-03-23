@@ -1,5 +1,7 @@
 #include "handler/ErrorHandler.hpp"
 
+#include <iostream>  // CHECK
+
 #include "core/Parser.hpp"
 #include "core/Socket.hpp"
 

@@ -44,12 +44,11 @@ class ResponseHandler {
    public:
     static void handleResponse(ConnectSocket *src, const std::string &command,
                                e_res_code res_code);
-    static void handleResponse(ConnectSocket *src, ConnectSocket *dst,
-                               const std::string &command,
+    static void handleResponse(ConnectSocket *src, const std::string &command,
                                const std::string &param,
                                const std::string &msg = "");
-
-    static void handleResponse(ConnectSocket *src, const std::string &command,
+    static void handleResponse(ConnectSocket *src, ConnectSocket *dst,
+                               const std::string &command,
                                const std::string &param,
                                const std::string &msg = "");
 

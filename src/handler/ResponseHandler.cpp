@@ -42,9 +42,9 @@ void ResponseHandler::handleResponse(ConnectSocket *src,
     res_stream << ":" << src->getNickname() << "!" << src->getUsername() << "@"
                << src->getHostname() << " " << command;
     if (msg.empty())
-        res_stream << " :" << param;
+        res_stream << " :" << src->getNickname();
     else
-        res_stream << " " << param << " :\"" << msg << "\"" << std::endl;
+        res_stream << " " << param << ":" << msg << std::endl;
     res = res_stream.str();
     src->send_buf.append(res);
 }
@@ -53,20 +53,17 @@ void ResponseHandler::handleResponse(ConnectSocket *src, ConnectSocket *dst,
                                      const std::string &command,
                                      const std::string &param,
                                      const std::string &msg) {
-    //        127.000.000.001.60452-127.000.000.001.06667: PRIVMSG #room
-    //        :hihi 127.000.000.001.06667-127.000.000.001.60454:
-    //        :b!chloek@127.0.0.1 PRIVMSG #room :hihi
     std::stringstream res_stream;
     std::string res;
 
-    res_stream << ":" << src->getNickname() << "!" << src->getUsername() << "@"
+    res_stream << ":" << param << "!" << src->getUsername() << "@"
                << src->getHostname() << " " << command;
     if (msg.empty())
-        res_stream << " :" << param;
+        res_stream << " :" << src->getNickname();
     else
-        res_stream << " " << param << " :\"" << msg << "\"" << std::endl;
+        res_stream << " " << param << ":" << msg << std::endl;
     res = res_stream.str();
-    dst->send_buf.append(res);
+    src->send_buf.append(res);
 }
 
 std::string ResponseHandler::createResponse(ConnectSocket *src,
@@ -78,9 +75,9 @@ std::string ResponseHandler::createResponse(ConnectSocket *src,
     res_stream << ":" << src->getNickname() << "!" << src->getUsername() << "@"
                << src->getHostname() << " " << command;
     if (msg.empty())
-        res_stream << " :" << param << "\n";  // endl
+        res_stream << " :" << param << std::endl;
     else
-        res_stream << " " << param << " :\"" << msg << "\"\n";  // endl
+        res_stream << " " << param << " :\"" << msg << "\"" << std::endl;
     return res_stream.str();
     // src->send_buf.append(res);
 }
@@ -101,7 +98,6 @@ std::string ResponseHandler::createResponse(ConnectSocket *src,
     return res_stream.str();
     // src->send_buf.append(res);
 }
-
 std::string ResponseHandler::getMessage(e_res_code res_code) {
     switch (res_code) {
         case RPL_WELCOME:

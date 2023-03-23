@@ -344,6 +344,7 @@ void Executor::nick(int fd, params *params) {
     std::string nickname = dynamic_cast<nick_params *>(params)->nickname;
     Client *client = client_controller.find(fd);
 
+    if (client->getNickname() == nickname) return;
     if (client_controller.find(nickname)) {
         std::string cause = client->getNickname() + " " + nickname;
         ErrorHandler::handleError(client, cause, ERR_NICKNAMEINUSE);
@@ -352,7 +353,8 @@ void Executor::nick(int fd, params *params) {
     if (client->getChannelList().empty()) {
         ResponseHandler::handleResponse(client, "NICK", nickname);
     } else {
-        std::string response_msg = ResponseHandler::createResponse(client, "NICK", nickname);
+        std::string response_msg =
+            ResponseHandler::createResponse(client, "NICK", nickname);
         broadcast(client->getChannelList(), response_msg);
     }
     client_controller.updateNickname(client, nickname);

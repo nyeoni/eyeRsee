@@ -73,16 +73,6 @@ struct Command {
     ~Command();
 };
 
-struct Udata {
-    std::vector<Command *> commands;
-    Client *src;
-
-    Udata();
-    Udata(const Udata &copy);
-    ~Udata();
-    Udata &operator=(const Udata &ref);
-};
-
 }  // namespace ft
 
 #endif

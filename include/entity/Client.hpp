@@ -17,35 +17,17 @@ class Client : public ConnectSocket {
 
    private:
     // typedef typename std::set<Channel *>::iterator channel_iterator;
-    //    int fd;				// CHECK
-    std::string _nickname;  // identifier
-    std::string _username;
-    std::string _hostname;
-    std::string _server;
-    std::string _realname;
     ChannelList _channel_list;    // channel list
     ChannelList _i_channel_list;  // invite channel list
 
    public:
     Client(/* args*/);
-    Client(const std::string &nickname);
     Client(const Client &copy);
     ~Client();
     Client &operator=(const Client &ref);
 
     // getter
     const ChannelList &getChannelList() const;
-    const std::string &getNickname() const;
-    const std::string &getUsername() const;
-    const std::string &getHostname() const;
-    const std::string &getRealname() const;
-
-    // setter
-    void setNickname(const std::string &nickname);
-    void setUsername(const std::string &username);
-    void setHostname(const std::string &hostname);
-    void setServer(const std::string &server);
-    void setRealname(const std::string &realname);
 
     // update
     void insertChannel(Channel *channel);

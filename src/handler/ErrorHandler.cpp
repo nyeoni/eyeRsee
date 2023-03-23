@@ -1,29 +1,30 @@
 #include "handler/ErrorHandler.hpp"
 
+#include <iostream>  // CHECK
+
 #include "core/Parser.hpp"
-#include "entity/Client.hpp"
+#include "core/Socket.hpp"
 
 namespace ft {
 
 /**
  * @brief Handle error add error response to send_buf
- * @param client client source
+ * @param connect_socket source
  * @param cause cause of error (command or param)
  * @param code error code
  */
-void ErrorHandler::handleError(Client *client, std::string cause,
+void ErrorHandler::handleError(ConnectSocket *src, std::string cause,
                                e_err_code code) {
     std::stringstream res_stream;
     std::string res;
     std::string msg = getErrorMessage(code);
 
-    res_stream << ":" << servername << " " << code << " "
-               << client->getNickname() << " " << cause << " :\"" << msg << "\""
-               << std::endl;
+    res_stream << ":" << servername << " " << code << " " << src->getNickname()
+               << " " << cause << " :\"" << msg << "\"" << std::endl;
     res = res_stream.str();
-    client->send_buf.append(res);
+    src->send_buf.append(res);
 }
-void ErrorHandler::handleError(std::exception &e, Client *src) {
+void ErrorHandler::handleError(std::exception &e, ConnectSocket *src) {
     if (Parser::UnknownCommandException *uce =
             dynamic_cast<Parser::UnknownCommandException *>(&e))
         handleError(src, uce->getCause(), ERR_UNKNOWNCOMMAND);

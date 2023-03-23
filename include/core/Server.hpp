@@ -9,17 +9,6 @@
 #include "core/Socket.hpp"
 #include "handler/EventHandler.hpp"
 
-#define WELCOME_PROMPT "\n\
-\n\
-███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗███████╗\n\
-██╔════╝╚██╗ ██╔╝██╔════╝██╔══██╗██╔════╝██╔════╝██╔════╝\n\
-█████╗   ╚████╔╝ █████╗  ██████╔╝███████╗█████╗  █████╗\n\
-██╔══╝    ╚██╔╝  ██╔══╝  ██╔══██╗╚════██║██╔══╝  ██╔══╝\n\
-███████╗   ██║   ███████╗██║  ██║███████║███████╗███████╗\n\
-╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝\n\
-\n\
-WELCOME TO \033[0;36meyeRsee\033[0m SERVER by KIMx3\n"
-
 namespace ft {
 
 struct Env {
@@ -58,6 +47,7 @@ class Server : public EventHandler {
     void handleTimeout();
     void handleClose();
 
+    int parse(int fd, Client *client);
     int response(int fd, std::string &send_buf);
 };
 

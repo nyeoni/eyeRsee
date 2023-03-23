@@ -5,7 +5,7 @@
 
 namespace ft {
 
-class Client;
+class ConnectSocket;
 
 enum e_err_code {
     ERR_NOSUCHNICK = 401,
@@ -46,8 +46,8 @@ class ErrorHandler {
     static const std::string ERR_CANNOTSENDTOCHAN_MSG;
 
    public:
-    static void handleError(Client *client, std::string cause, e_err_code code);
-    static void handleError(std::exception &e, Client *src);
+    static void handleError(ConnectSocket *src, std::string cause, e_err_code code);
+    static void handleError(std::exception &e, ConnectSocket *src);
 
    private:
     static std::string getErrorMessage(e_err_code code);

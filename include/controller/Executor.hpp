@@ -6,14 +6,14 @@
 
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
-#include "core/Udata.hpp"
+#include "core/Command.hpp"
 
 namespace ft {
 class Client;
 
 class Executor {
    private:
-    std::set<int> _fd_list;
+    std::set<Client *> _client_list;
 
     ChannelController channel_controller;
     ClientController client_controller;
@@ -30,8 +30,8 @@ class Executor {
     ~Executor();
     Executor &operator=(const Executor &ref);
 
-    const std::set<int> &getFdList() const;
-    void clearFdLIst();
+    const std::set<Client *> &getClientList() const;
+    void clearClientList();
 
     Client *accept(int fd);
     void connect(Command *command, Client *client, std::string password);

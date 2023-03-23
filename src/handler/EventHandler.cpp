@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "core/Type.hpp"
-#include "core/Udata.hpp"
+#include "core/Command.hpp"
 
 namespace ft {
 EventHandler::EventHandler() : _change_cnt(0) {
@@ -40,19 +40,19 @@ void EventHandler::garbageCollector() {
  * Handle events of detected by monitorEvent
  */
 void EventHandler::handleEvent(int event_idx) {
-    Event event = _ev_list[event_idx];
-    Udata *udata = static_cast<Udata *>(event.udata);
+    Event &event = _ev_list[event_idx];
+    Client *client = static_cast<Client *>(event.udata);
     e_event action = IDLE;
     if (event.filter == EVFILT_READ)
-        udata ? action = READ : action = ACCEPT;
-    else if (event.filter == EVFILT_WRITE && udata)
+        client ? action = READ : action = ACCEPT;
+    else if (event.filter == EVFILT_WRITE && client)
         action = EXECUTE;
-    else if (event.filter == EVFILT_TIMER && udata)
+    else if (event.filter == EVFILT_TIMER && client)
         action = TIMER;
 
     if (event.flags & EV_EOF) {
-        _tmp_garbage.erase(udata);
-        _garbage.insert(udata);
+        _tmp_garbage.erase(client);
+        _garbage.insert(client);
         std::cout << "# " << event.ident << " EOF" << std::endl;
         return;
     }
@@ -78,7 +78,7 @@ void EventHandler::handleEvent(int event_idx) {
 }
 
 void EventHandler::registerEvent(int fd, short filt, e_event action,
-                                 Udata *udata) {
+                                 Client *udata) {
     Event ev = {};
     u_short flags = action != D_WRITE && action != D_TIMER ? EV_ADD : EV_DELETE;
     int64_t data = 0;

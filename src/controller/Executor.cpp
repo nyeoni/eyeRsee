@@ -1,6 +1,5 @@
 #include "controller/Executor.hpp"
 
-#include <iostream>
 #include <utility>
 
 #include "entity/Channel.hpp"
@@ -22,8 +21,10 @@ Channel *Executor::createChannel(std::string channel_name) {
     return channel_controller.insert(channel_name);
 }
 
-const std::set<int> &Executor::getFdList() const { return _fd_list; }
-void Executor::clearFdLIst() { _fd_list.clear(); }
+const std::set<Client *> &Executor::getClientList() const {
+    return _client_list;
+}
+void Executor::clearClientList() { _client_list.clear(); }
 
 void Executor::deleteClient(Client *client) {
     ChannelController::ChannelList channel_list;
@@ -117,12 +118,11 @@ void Executor::part(Client *client, params *params) {
     for (; iter != channels.end(); ++iter) {
         channel = channel_controller.find(*iter);
         if (channel) {
-            client_controller.eraseChannel(client, channel);
-            channel_controller.eraseClient(channel, client);
-
             std::string response_msg = ResponseHandler::createResponse(
                 client, "PART", channel->getName());
             broadcast(channel, response_msg);
+            client_controller.eraseChannel(client, channel);
+            channel_controller.eraseClient(channel, client);
         } else {
             // 403 nick3 #bye :No such channel
             ErrorHandler::handleError(client, *iter, ERR_NOSUCHCHANNEL);
@@ -315,6 +315,9 @@ void Executor::user(Client *new_client, params *params) {
     new_client->setServer(server);
     new_client->setRealname(realname);
     new_client->auth[USER] = true;
+    // response
+    // USER guest tolmoon tolsun :Ronnie Reagan
+    // :testnick USER guest tolmoon tolsun :Ronnie Reagan
 }
 
 /**
@@ -412,8 +415,8 @@ void Executor::privmsg(Client *client, params *params) {
     std::string name;
 
     for (; iter != receivers.end(); ++iter) {
+        name = *iter;
         if (iter->front() == '#') {  // channel
-            name = (*iter).at(1);
             Channel *channel = channel_controller.find(name);
             if (channel) {
                 if (channel_controller.isOnChannel(channel, client)) {
@@ -433,12 +436,12 @@ void Executor::privmsg(Client *client, params *params) {
                 return;
             }
         } else {  // user
-            name = *iter;
             Client *receiver = client_controller.find(name);
             if (receiver) {
                 std::string response_msg = ResponseHandler::createResponse(
                     client, "PRIVMSG", name, param->msg);
                 receiver->send_buf.append(response_msg);
+                _client_list.insert(receiver);
             } else {
                 // 401 user3 wow :No such nick
                 ErrorHandler::handleError(client, name, ERR_NOSUCHNICK);
@@ -458,10 +461,10 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
 
     channel_controller.findInSet(client_list, channel);
     client_iter = client_list.begin();
+    if (excluded) client_list.erase(excluded);
     for (; client_iter != client_list.end(); ++client_iter) {
-        if (excluded != NULL && excluded != *client_iter) {
-            (*client_iter)->send_buf.append(msg);
-        }
+        (*client_iter)->send_buf.append(msg);
+        _client_list.insert(*client_iter);
     }
 }
 
@@ -480,6 +483,7 @@ void Executor::broadcast(const ChannelList &channel_list,
     client_iter = client_list.begin();
     for (; client_iter != client_list.end(); ++client_iter) {
         (*client_iter)->send_buf.append(msg);
+        _client_list.insert(*client_iter);
     }
 }
 
@@ -490,7 +494,7 @@ void Executor::notice(Client *client, params *params) {
     if (receiver) {
         ResponseHandler::handleResponse(receiver, "NOTICE",
                                         client->getNickname(), param->msg);
-        _fd_list.insert(receiver->getFd());
+        _client_list.insert(receiver);
     } else
         ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
 }
@@ -499,8 +503,7 @@ void Executor::pong(Client *client, params *params) {
     //: NAYEON.local PONG NAYEON.local :NAYEON.local
     ping_params *p = dynamic_cast<ping_params *>(params);
 
-    ResponseHandler::handleResponse(client, "PONG", p->servername,
-                                    p->servername);
+    ResponseHandler::handlePongResponse(client);
 }
 
 }  // namespace ft

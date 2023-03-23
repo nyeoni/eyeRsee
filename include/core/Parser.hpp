@@ -1,15 +1,17 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include <iostream>
+#include <queue>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "core/Type.hpp"
-#include "core/Udata.hpp"
-#include "core/utility.hpp"
 namespace ft {
+
+class ConnectSocket;
+class Command;
+class params;
 
 class Parser {
    private:
@@ -42,11 +44,13 @@ class Parser {
     void parseNotice(e_cmd &cmd, params *&params);
     void parsePing(e_cmd &cmd, params *&params);
 
-    void parse(const std::string &command_line, e_cmd &cmd, params *&params);
+    Command *parse(const std::string &command_line, Command *&command);
+    std::queue<Command *> parse(ConnectSocket *src);
 
     class SyntaxException : public std::exception {
        protected:
         std::string _cause;
+
        public:
         SyntaxException(const std::string &cause);
         ~SyntaxException() throw();
@@ -55,20 +59,27 @@ class Parser {
     };
     class UnknownCommandException : public SyntaxException {
        public:
-        UnknownCommandException(std::string cause) : SyntaxException(cause) {};
-
+        UnknownCommandException(const std::string &cause)
+            : SyntaxException(cause){};
     };
     class NotEnoughParamsException : public SyntaxException {
        public:
-        NotEnoughParamsException(std::string cause) : SyntaxException(cause) {};
+        NotEnoughParamsException(const std::string &cause)
+            : SyntaxException(cause){};
     };
     class InvalidChannelNameException : public SyntaxException {
        public:
-        InvalidChannelNameException(std::string cause) : SyntaxException(cause) {};
+        InvalidChannelNameException(const std::string &cause)
+            : SyntaxException(cause){};
     };
     class InvalidNickNameException : public SyntaxException {
        public:
-        InvalidNickNameException(std::string cause) : SyntaxException(cause) {};
+        InvalidNickNameException(const std::string &cause)
+            : SyntaxException(cause){};
+    };
+    class ModeUserException : public SyntaxException {
+       public:
+        ModeUserException(const std::string &cause) : SyntaxException(cause){};
     };
 };
 

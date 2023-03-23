@@ -88,23 +88,29 @@ TEST(string_test, istringstream_test) {
 TEST(string_test, commands_parsing_test) {
     std::string buf = "PASS 1234\nNICK nickname\nUSER username hostname servername realname";
 
-    std::vector<std::string> command_lines;
-    std::string::size_type sp = 0;
-    std::string::size_type ep = buf.find('\n');
-    SHOW(ep);
-    while (ep != std::string::npos) {
-        std::string command_line = buf.substr(sp, ep - sp);
-        command_lines.push_back(command_line);
-        sp = ep + 1;
+    std::size_t pos = buf.find("12");
+    std::string tmp = buf.substr(pos);
 
-        ep = buf.find('\n', sp);
-        SHOW(ep);
-    }
+    SHOW(pos);
+    SHOW(tmp);
 
-    for (std::string c : command_lines) {
-        std::cout << "cmd: " << c << std::endl;
-        std::cout << "===" << std::endl;
-    }
+//    std::vector<std::string> command_lines;
+//    std::string::size_type sp = 0;
+//    std::string::size_type ep = buf.find('\n');
+//    SHOW(ep);
+//    while (ep != std::string::npos) {
+//        std::string command_line = buf.substr(sp, ep - sp);
+//        command_lines.push_back(command_line);
+//        sp = ep + 1;
+//
+//        ep = buf.find('\n', sp);
+//        SHOW(ep);
+//    }
+//
+//    for (std::string c : command_lines) {
+//        std::cout << "cmd: " << c << std::endl;
+//        std::cout << "===" << std::endl;
+//    }
 }
 
 TEST(string_test, stringstream_test) {

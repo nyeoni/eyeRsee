@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-#include "core/Udata.hpp"
+#include "core/Command.hpp"
 
 namespace ft {
 
@@ -24,16 +24,15 @@ class EventHandler {
     Event _ev_list[_max_event];
     EventList _change_list;
 
-    std::map<int, Udata *> _udata_list;
-    std::set<Udata *> _tmp_garbage;  // timeout
-    std::set<Udata *> _garbage;      // client gone
+    std::set<Client *> _tmp_garbage;  // timeout
+    std::set<Client *> _garbage;      // client gone
 
    public:
     EventHandler();
     EventHandler(const EventHandler &copy);
     virtual ~EventHandler();
 
-    void registerEvent(int fd, short filt, e_event action, Udata *udata);
+    void registerEvent(int fd, short filt, e_event action, Client *udata); // TODO : connect socket
 
     int monitorEvent();
 

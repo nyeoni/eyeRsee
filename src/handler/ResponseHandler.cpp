@@ -26,7 +26,7 @@ void ResponseHandler::handleResponse(ConnectSocket *src,
     std::string msg = getMessage(res_code);
 
     res_stream << ":" << servername << " " << res_code << " "
-               << src->getNickname() << " " << command << ":\"" << msg << "\""
+               << src->getNickname() << " " << command << ":" << msg
                << std::endl;
     res = res_stream.str();
     src->send_buf.append(res);
@@ -77,7 +77,7 @@ std::string ResponseHandler::createResponse(ConnectSocket *src,
     if (msg.empty())
         res_stream << " :" << param << std::endl;
     else
-        res_stream << " " << param << " :\"" << msg << "\"" << std::endl;
+        res_stream << " " << param << " :" << msg << std::endl;
     return res_stream.str();
     // src->send_buf.append(res);
 }
@@ -123,7 +123,7 @@ std::string ResponseHandler::getMessage(e_res_code res_code) {
 
 void ResponseHandler::handleConnectResponse(ConnectSocket *src) {
     const std::string prefix = src->getNickname() + "!" + src->getUsername() +
-                               "@" + src->getHostname();
+        "@" + src->getHostname();
     // TODO date
     std::string res_comment[4] = {prefix, "", "", "eyeRsee.local 1.0 o oit"};
     for (int i = 0; i < 4; i++) {

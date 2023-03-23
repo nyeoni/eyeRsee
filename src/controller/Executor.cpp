@@ -21,7 +21,9 @@ Channel *Executor::createChannel(std::string channel_name) {
     return channel_controller.insert(channel_name);
 }
 
-const std::set<Client *> &Executor::getClientList() const { return _client_list; }
+const std::set<Client *> &Executor::getClientList() const {
+    return _client_list;
+}
 void Executor::clearClientList() { _client_list.clear(); }
 
 void Executor::deleteClient(Client *client) {
@@ -116,12 +118,11 @@ void Executor::part(Client *client, params *params) {
     for (; iter != channels.end(); ++iter) {
         channel = channel_controller.find(*iter);
         if (channel) {
-            client_controller.eraseChannel(client, channel);
-            channel_controller.eraseClient(channel, client);
-
             std::string response_msg = ResponseHandler::createResponse(
                 client, "PART", channel->getName());
             broadcast(channel, response_msg);
+            client_controller.eraseChannel(client, channel);
+            channel_controller.eraseClient(channel, client);
         } else {
             // 403 nick3 #bye :No such channel
             ErrorHandler::handleError(client, *iter, ERR_NOSUCHCHANNEL);
@@ -460,11 +461,10 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
 
     channel_controller.findInSet(client_list, channel);
     client_iter = client_list.begin();
+    if (excluded) client_list.erase(excluded);
     for (; client_iter != client_list.end(); ++client_iter) {
-        if (excluded != NULL && excluded != *client_iter) {
-            (*client_iter)->send_buf.append(msg);
-            _client_list.insert(*client_iter);
-        }
+        (*client_iter)->send_buf.append(msg);
+        _client_list.insert(*client_iter);
     }
 }
 

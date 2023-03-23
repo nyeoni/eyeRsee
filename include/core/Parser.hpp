@@ -60,26 +60,26 @@ class Parser {
     class UnknownCommandException : public SyntaxException {
        public:
         UnknownCommandException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
     class NotEnoughParamsException : public SyntaxException {
        public:
         NotEnoughParamsException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
     class InvalidChannelNameException : public SyntaxException {
        public:
         InvalidChannelNameException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
     class InvalidNickNameException : public SyntaxException {
        public:
         InvalidNickNameException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
-    class ModeUserException : public SyntaxException {
+    class UnHandledModeException : public SyntaxException {
        public:
-        ModeUserException(const std::string &cause) : SyntaxException(cause){};
+        UnHandledModeException(const std::string &cause) : SyntaxException(cause) {};
     };
 };
 

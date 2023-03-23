@@ -137,7 +137,7 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
         p = new mode_params;
         p->channel = token;
         if (token[0] != '#')
-            throw ModeUserException("MODE");
+            throw UnHandledModeException("MODE");
         if (!isEOF() && getToken()) {
             if (token == "+o" || token == "o") {
                 p->mode = OPER_T;
@@ -157,10 +157,11 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
                 p->mode = TOPIC_PRIV_T;
             else if (token == "-t")
                 p->mode = TOPIC_PRIV_F;
-
+            else
+                throw UnHandledModeException("MODE");
         } else {
             delete p;
-            throw NotEnoughParamsException("MODE");
+            throw UnHandledModeException("MODE");
         }
     } else {
         delete p;

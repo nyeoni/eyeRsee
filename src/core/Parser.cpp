@@ -245,7 +245,7 @@ void Parser::parseNotice(e_cmd &cmd, params *&params) {
         p = new notice_params;
         p->nickname = token;
         if (!isEOF() && getToken(MSG) && token[0] == ':') {
-            p->msg = "\"" + token.substr(1) + "\"";;
+            p->msg = token.substr(1);
         } else {
             delete p;
             throw NotEnoughParamsException("NOTICE");

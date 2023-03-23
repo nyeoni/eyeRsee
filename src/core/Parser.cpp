@@ -1,7 +1,8 @@
 #include "core/Parser.hpp"
 
+#include "core/Command.hpp"
 #include "core/Socket.hpp"
-#include "entity/Client.hpp"
+#include "core/utility.hpp"
 #include "handler/ErrorHandler.hpp"
 
 namespace ft {
@@ -302,13 +303,13 @@ Command *Parser::parse(const std::string &command_line, Command *&command) {
         parsePing(command->type, command->params);
     } else if (token == "CAP" || token == "WHO") {
         delete command;
-        return NULL;
+        command = NULL;
     } else {
         throw UnknownCommandException(token);
     }
     return command;
 }
-std::vector<Command *> Parser::parse(Client *src) {
+std::vector<Command *> Parser::parse(ConnectSocket *src) {
     std::string line;
     std::vector<Command *> commands;
     std::vector<std::string> command_lines;

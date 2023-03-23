@@ -1,15 +1,16 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "core/Type.hpp"
-#include "core/Command.hpp"
-#include "core/utility.hpp"
 namespace ft {
+
+class ConnectSocket;
+class Command;
+class params;
 
 class Parser {
    private:
@@ -43,7 +44,7 @@ class Parser {
     void parsePing(e_cmd &cmd, params *&params);
 
     Command *parse(const std::string &command_line, Command *&command);
-    std::vector<Command *> parse(Client *src);
+    std::vector<Command *> parse(ConnectSocket *src);
 
     class SyntaxException : public std::exception {
        protected:

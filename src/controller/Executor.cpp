@@ -428,7 +428,7 @@ void Executor::privmsg(Client *client, params *params) {
                     // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
                     std::string response_msg = ResponseHandler::createResponse(
                         client, "PRIVMSG", name, param->msg);
-                    broadcast(channel, response_msg);
+                    broadcast(channel, response_msg, client);
                 } else {
                     //  404 You cannot send external  messages to this
                     ErrorHandler::handleError(client, name,
@@ -465,8 +465,8 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
     std::set<Client *>::iterator iter;
 
     channel_controller.findInSet(receivers, channel);
-    iter = receivers.begin();
     if (excluded) receivers.erase(excluded);
+    iter = receivers.begin();
     for (; iter != receivers.end(); ++iter) {
         (*iter)->send_buf.append(msg);
         _client_list.insert(*iter);

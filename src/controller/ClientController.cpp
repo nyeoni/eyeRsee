@@ -103,14 +103,12 @@ void ClientController::erase(int fd) {
     }
 }
 
-int ClientController::updateClient(int fd, Client *client, e_status status) {
-    if (status == REGISTER) {
-        if (!find(fd)) return -1;
-    } else if (status == TIMEOUT) {
-        Client *target = find(fd);
-        if (!target || target != client || client->getStatus() == REGISTER)
-            return -1;
-    }
+int ClientController::udatateClientStatus(int fd, Client *client,
+                                          e_status status) {
+    Client *target = find(fd);
+
+    if (!target || target != client) return -1;
+    if (status == TIMEOUT && client->getStatus() == REGISTER) return -1;
     client->setStatus(status);
     return 0;
 }

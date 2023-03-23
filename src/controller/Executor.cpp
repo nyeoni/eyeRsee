@@ -26,9 +26,9 @@ const std::set<Client *> &Executor::getClientList() const {
 }
 void Executor::clearClientList() { _client_list.clear(); }
 
-int Executor::updateClient(int fd, Client *client, e_status status) {
+int Executor::udatateClientStatus(int fd, Client *client, e_status status) {
     // TODO : refactor, isAthenticate
-    return (client_controller.updateClient(fd, client, status));
+    return (client_controller.udatateClientStatus(fd, client, status));
 }
 
 void Executor::deleteClient(Client *client) {
@@ -384,7 +384,7 @@ void Executor::quit(Client *client, params *params) {
 
     // 모든 채널에서 quit && send message
     broadcast(client->getChannelList(), response_msg);
-    client_controller.updateClient(client->getFd(), client, TERMINATE);
+    client_controller.udatateClientStatus(client->getFd(), client, TERMINATE);
 }
 
 void Executor::kick(Client *kicker, params *params) {

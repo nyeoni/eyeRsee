@@ -26,7 +26,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -100,10 +100,9 @@ void Server::handleRead(int event_idx) {
     while (commands.size()) {
         _executor.connect(commands.front(), client, _env.password);
         commands.pop();
-        if (connect_socket->isAuthenticate()) {
+        if (_executor.udatateClientStatus(event.ident, client, REGISTER) == 0) {
             std::cout << "Register Success!" << std::endl;
             _tmp_garbage.erase(client);
-            _executor.updateClient(event.ident, client, REGISTER);
             ResponseHandler::handleConnectResponse(client);
             response(connect_socket->getFd(), connect_socket->send_buf);
             break;
@@ -132,7 +131,7 @@ void Server::handleExecute(int event_idx) {
     const std::set<Client *> &client_list = _executor.getClientList();
     std::set<Client *>::iterator receiver_iter = client_list.begin();
     for (; receiver_iter != client_list.end(); ++receiver_iter) {
-        if ((*receiver_iter)->getStatus() == TERMINATE){
+        if ((*receiver_iter)->getStatus() == TERMINATE) {
             _tmp_garbage.erase(*receiver_iter);
             _garbage.insert(*receiver_iter);
         } else
@@ -152,7 +151,7 @@ void Server::handleTimer(int event_idx) {
         static_cast<Client *>(event.udata);  // TODO : connect socket
 
     registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
-    if (_executor.updateClient(event.ident, client, TIMEOUT) == 0)
+    if (_executor.udatateClientStatus(event.ident, client, TIMEOUT) == 0)
         _tmp_garbage.insert(client);
 }
 void Server::handleTimeout() {

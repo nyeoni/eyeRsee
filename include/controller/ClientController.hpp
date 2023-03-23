@@ -44,7 +44,7 @@ class ClientController {
     void erase(const std::string& nickname);
     void erase(int fd);
 
-    int updateClient(int fd, Client* client, e_status status);
+    int udatateClientStatus(int fd, Client* client, e_status status);
 
     void updateNickname(int fd, const std::string& nickname);
     void updateNickname(Client* client, const std::string& nickname);

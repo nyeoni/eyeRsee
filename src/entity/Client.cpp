@@ -1,7 +1,7 @@
 #include "entity/Client.hpp"
 
 namespace ft {
-Client::Client() {}
+Client::Client() : ConnectSocket() {}
 
 Client::Client(const Client &copy) { *this = copy; }
 

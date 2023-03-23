@@ -6,6 +6,8 @@
 #include <string>
 #include <utility>
 
+#include "core/Type.hpp"
+
 namespace ft {
 
 class Client;
@@ -41,6 +43,8 @@ class ClientController {
     void erase(const Client* client);
     void erase(const std::string& nickname);
     void erase(int fd);
+
+    int updateClient(int fd, Client* client, e_status status);
 
     void updateNickname(int fd, const std::string& nickname);
     void updateNickname(Client* client, const std::string& nickname);

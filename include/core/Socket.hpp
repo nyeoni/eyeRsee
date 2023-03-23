@@ -42,8 +42,12 @@ class ConnectSocket : public SocketBase {
     std::string recv_buf;
     std::string send_buf;
 
-    e_status status;
     bool auth[3];
+
+    std::queue<Command *> commands;
+
+   protected:
+    e_status _status;
 
     std::string _nickname;
     std::string _username;
@@ -51,9 +55,6 @@ class ConnectSocket : public SocketBase {
     std::string _servername;
     std::string _realname;
 
-    std::queue<Command *> commands;
-
-   protected:
    public:
     ConnectSocket();
     ConnectSocket(const ConnectSocket &copy);
@@ -64,6 +65,7 @@ class ConnectSocket : public SocketBase {
     void createSocket(const int &listen_fd);
 
     // getter
+    e_status getStatus() const;
     const std::string &getNickname() const;
     const std::string &getUsername() const;
     const std::string &getHostname() const;
@@ -71,6 +73,8 @@ class ConnectSocket : public SocketBase {
     const std::string &getRealname() const;
 
     // setter
+    void setStatus(e_status status);
+    // TODO : setAuth
     void setNickname(const std::string &nickname);
     void setUsername(const std::string &username);
     void setHostname(const std::string &hostname);

@@ -4,7 +4,7 @@
 namespace ft {
 enum e_event { ACCEPT, READ, EXECUTE, TIMER, D_WRITE, D_TIMER, IDLE };
 
-enum e_status { UNREGISTER, REGISTER };
+enum e_status { UNREGISTER, REGISTER, TIMEOUT, TERMINATE };
 
 enum e_cmd {
     PASS,

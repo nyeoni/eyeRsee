@@ -37,6 +37,8 @@ class Executor {
     void connect(Command *command, Client *client, std::string password);
     void execute(Command *command, Client *client);
     Channel *createChannel(std::string channel_name);
+
+    int updateClient(int fd, Client *client, e_status status);
     void deleteClient(Client *client);
 
    private:

@@ -146,4 +146,17 @@ void ClientController::eraseChannel(Client *client, Channel *channel) {
     client->eraseChannel(channel);
 }
 
+// make client list to vector<string>
+std::vector<std::string> ClientController::clientToString(
+    ClientList client_list) {
+    std::vector<std::string> res;
+    ClientList::iterator iter = client_list.begin();
+
+    res.reserve(client_list.size());
+    for (; iter != client_list.end(); ++iter) {
+        res.push_back((*iter)->getNickname());
+    }
+    return res;
+}
+
 }  // namespace ft

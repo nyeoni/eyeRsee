@@ -20,6 +20,15 @@ ChannelController &ChannelController::operator=(const ChannelController &ref) {
     return (*this);
 }
 
+Channel *ChannelController::insert(const std::string &channel_name) {
+    Channel *new_channel;
+    pair p = _channels.insert(std::make_pair(channel_name, Channel()));
+    new_channel = &(p.first->second);
+    new_channel->setName(channel_name);
+    new_channel->clearMode();
+    return new_channel;
+}
+
 Channel *ChannelController::find(const Channel *channel) {
     channel_iterator iter = _channels.find(channel->getName());
     if (iter == _channels.end()) return NULL;
@@ -80,6 +89,74 @@ void ChannelController::updateTopic(Channel *channel, Client *client,
     channel->setTopic(topic);
 }
 
+const std::set<Client *> &ChannelController::getOperators(
+    const Channel *channel) const {
+    return channel->getOperators();
+}
+
+const std::set<Client *> &ChannelController::getRegulars(
+    const Channel *channel) const {
+    return channel->getRegulars();
+}
+
+bool ChannelController::isOnChannel(Channel *channel, Client *client) {
+    return (isOperator(channel, client) || isRegular(channel, client));
+}
+
+bool ChannelController::isOperator(Channel *channel, Client *client) {
+    std::set<Client *> operators = channel->getOperators();
+
+    return operators.find(client) != operators.end() ? true : false;
+}
+
+bool ChannelController::isRegular(Channel *channel, Client *client) {
+    std::set<Client *> regulars = channel->getRegulars();
+
+    return regulars.find(client) != regulars.end() ? true : false;
+}
+
+void ChannelController::insertOperator(Channel *channel, Client *client) {
+    channel->insertOperator(client);
+}
+
+void ChannelController::insertRegular(Channel *channel, Client *client) {
+    channel->insertRegular(client);
+}
+
+/**
+ * @brief erase Client to Channel's _clientList
+ */
+void ChannelController::eraseClient(Channel *channel, Client *client) {
+    isOperator(channel, client) ? channel->eraseOperator(client)
+                                : channel->eraseRegular(client);
+    if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
+        erase(channel);
+    }
+}
+
+/**
+ * @brief Clear Client to _clientList on all channels
+ */
+void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
+    channel_list_iterator iter = channel_list.begin();
+    for (; iter != channel_list.end(); ++iter) {
+        eraseClient(*iter, client);
+    }
+}
+
+bool ChannelController::isInviteMode(const Channel *channel) {
+    return (channel->getMode() & (INVITE_ONLY_T - 1));
+}
+
+bool ChannelController::isTopicMode(const Channel *channel) {
+    return (channel->getMode() & (TOPIC_PRIV_T - 1));
+}
+
+bool ChannelController::isBanMode(const Channel *channel) {
+    return (channel->getMode() & (BAN_T - 1));
+}
+
+// private functions
 /**
  * @brief update Channel::_operators and Channel::_regulars
  *
@@ -108,81 +185,6 @@ bool ChannelController::updateRole(Channel *channel, Client *client,
     return false;
 }
 
-bool ChannelController::isOnChannel(Channel *channel, Client *client) {
-    return (isOperator(channel, client) || isRegular(channel, client));
-}
-
-bool ChannelController::isOperator(Channel *channel, Client *client) {
-    std::set<Client *> operators = channel->getOperators();
-
-    return operators.find(client) != operators.end() ? true : false;
-}
-
-bool ChannelController::isRegular(Channel *channel, Client *client) {
-    std::set<Client *> regulars = channel->getRegulars();
-
-    return regulars.find(client) != regulars.end() ? true : false;
-}
-
-/**
- * @brief insert Client to Channel's _clientList
- */
-void ChannelController::insertClient(Channel *channel, Client *client,
-                                     e_role role) {
-    role == OPERATOR ? channel->insertOperator(client)
-                     : channel->insertRegular(client);
-}
-
-/**
- * @brief erase Client to Channel's _clientList
- */
-void ChannelController::eraseClient(Channel *channel, Client *client) {
-    isOperator(channel, client) ? channel->eraseOperator(client)
-                                : channel->eraseRegular(client);
-    if (channel->getOperators().size() + channel->getRegulars().size() == 0) {
-        erase(channel);
-    }
-}
-
-/**
- * @brief Clear Client to _clientList on all channels
- */
-void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
-    channel_list_iterator iter = channel_list.begin();
-    for (; iter != channel_list.end(); ++iter) {
-        eraseClient(*iter, client);
-    }
-}
-
-Channel *ChannelController::insert(const std::string &channel_name) {
-    Channel *new_channel;
-    pair p = _channels.insert(std::make_pair(channel_name, Channel()));
-    new_channel = &(p.first->second);
-    new_channel->setName(channel_name);
-    new_channel->clearMode();
-    return new_channel;
-}
-
-bool ChannelController::isInviteMode(Channel *channel) {
-    return (channel->getMode() & (INVITE_ONLY_T - 1));
-}
-
-bool ChannelController::isTopicMode(Channel *channel) {
-    return (channel->getMode() & (TOPIC_PRIV_T - 1));
-}
-
-bool ChannelController::isBanMode(Channel *channel) {
-    return (channel->getMode() & (BAN_T - 1));
-}
-
-// private functions
-void ChannelController::insertOperator(Channel *channel, Client *client) {
-    channel->insertOperator(client);
-}
-
-void ChannelController::insertRegular(Channel *channel, Client *client) {
-    channel->insertRegular(client);
-}
 void ChannelController::eraseOperator(Channel *channel, Client *client) {
     channel->eraseOperator(client);
 }

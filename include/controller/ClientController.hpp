@@ -49,6 +49,9 @@ class ClientController {
     void insertInviteChannel(Client* client, Channel* channel);
 
     void eraseChannel(Client* client, Channel* channel);
+
+    // make client list to vector<string>
+    std::vector<std::string> clientToString(ClientList client_list);
 };
 
 }  // namespace ft

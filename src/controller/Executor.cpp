@@ -141,9 +141,9 @@ void Executor::join(Client *client, params *params) {
         channel = channel_controller.find(*iter);
         if (channel == NULL) {  // new channel & operator Client
             channel = channel_controller.insert(*iter);
-            channel_controller.insertClient(channel, client, OPERATOR);
+            channel_controller.insertOperator(channel, client);
         } else {  // regular Client
-            channel_controller.insertClient(channel, client, REGULAR);
+            channel_controller.insertRegular(channel, client);
         }
         client_controller.insertChannel(client, channel);
 
@@ -152,17 +152,20 @@ void Executor::join(Client *client, params *params) {
             ResponseHandler::createResponse(client, "JOIN", channel->getName());
         broadcast(channel, response_msg);
         if (channel != NULL) {  // join한 client
-            response_msg += ResponseHandler::createResponse(
-                client, client->getNickname() + " " + channel->getName(),
-                RPL_NAMREPLY);
-            client->send_buf.append(response_msg);
+            std::vector<std::string> operators =
+                client_controller.clientToString(
+                    channel_controller.getOperators(channel));
 
-            response_msg += ResponseHandler::createResponse(
-                client, client->getNickname() + " " + channel->getName(),
-                RPL_ENDOFNAMES);
+            std::vector<std::string> regulars =
+                client_controller.clientToString(
+                    channel_controller.getRegulars(channel));
+
+            response_msg = ResponseHandler::createJoinReponse(
+                *iter, client->getNickname(), operators, regulars);
+
             client->send_buf.append(response_msg);
         }
-        response_msg.clear();
+        // response_msg.clear();
     }
 }
 
@@ -455,15 +458,15 @@ void Executor::privmsg(Client *client, params *params) {
  */
 void Executor::broadcast(Channel *channel, const std::string &msg,
                          Client *excluded) {
-    ClientList client_list;  // TODO
-    client_list_iterator client_iter;
+    std::set<Client *> receivers;  // TODO
+    std::set<Client *>::iterator iter;
 
-    channel_controller.findInSet(client_list, channel);
-    client_iter = client_list.begin();
-    if (excluded) client_list.erase(excluded);
-    for (; client_iter != client_list.end(); ++client_iter) {
-        (*client_iter)->send_buf.append(msg);
-        _client_list.insert(*client_iter);
+    channel_controller.findInSet(receivers, channel);
+    iter = receivers.begin();
+    if (excluded) receivers.erase(excluded);
+    for (; iter != receivers.end(); ++iter) {
+        (*iter)->send_buf.append(msg);
+        _client_list.insert(*iter);
     }
 }
 

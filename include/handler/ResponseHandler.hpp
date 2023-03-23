@@ -2,6 +2,7 @@
 #define RESPONSEHANDLER_HPP
 
 #include <string>
+#include <vector>
 
 #include "core/Socket.hpp"
 
@@ -40,6 +41,9 @@ class ResponseHandler {
 
     static const std::string RPL_NOTOPIC_MSG;
     static const std::string RPL_TOPIC_MSG;
+    // static const std::string RPL_INVITING_MSG;
+    // static const std::string RPL_NAMREPLY_MSG;
+    static const std::string RPL_ENDOFNAMES_MSG;
 
    public:
     static void handleResponse(ConnectSocket *src, const std::string &command,
@@ -59,6 +63,11 @@ class ResponseHandler {
                                       const std::string &command,
                                       e_res_code res_code,
                                       const std::string &comment = "");
+
+    static std::string createJoinReponse(const std::string &channel_name,
+                                         const std::string &nickname,
+                                         std::vector<std::string> &operators,
+                                         std::vector<std::string> &regulars);
 
     static void handleConnectResponse(ConnectSocket *src);
 

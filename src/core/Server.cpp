@@ -86,48 +86,35 @@ void Server::handleAccept() {
 
 void Server::handleRead(int event_idx) {
     std::cout << "==== Read ====" << std::endl;
-
-    char buf[BUF_SIZE];
-    ssize_t n = 0;
     Event event = _ev_list[event_idx];
     Client *client =
         static_cast<Client *>(event.udata);  // TODO : connect socket
     ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
 
-    n = recv(event.ident, &buf, BUF_SIZE, 0);
-    if (n == -1) {
-        _garbage.insert(client);
-        return;
-    }
-    buf[n] = 0;
+    if (parse(event.ident, client) <= 0) return;
 
-    connect_socket->recv_buf.append(buf);
-
-    // parse commandlines in connect_sockets
-    connect_socket->commands = _parser.parse(client);
+    std::queue<Command *> &commands = client->commands;
 
     if (connect_socket->status == REGISTER) {
-        if (!connect_socket->commands.empty()) {
-            registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
-        }
-    } else {  // connect_socket->status == UNREGISTER
-        std::vector<Command *>::iterator iter =
-            connect_socket->commands.begin();
-        for (; iter != connect_socket->commands.end(); ++iter) {
-            _executor.connect(*iter, client, _env.password);
+        registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
+        return;
+    }
+
+    while (commands.size() && connect_socket->status == UNREGISTER) {
+        _executor.connect(commands.front(), client, _env.password);
+        commands.pop();
+        if (connect_socket->isAuthenticate()) {
+            std::cout << "Register Success!" << std::endl;
+            _tmp_garbage.erase(client);
+            connect_socket->status = REGISTER;
+            ResponseHandler::handleConnectResponse(client);
+            response(connect_socket->getFd(), connect_socket->send_buf);
         }
     }
-    connect_socket->commands.clear();
-    // check is authenticate
-    // if (connect_socket->isAuthenticate()) {
-    //    std::cout << "Register Success!" << std::endl;
-    //    connect_socket->status = REGISTER;
-    //    _tmp_garbage.erase(client);
-
-    //    ResponseHandler::handleConnectResponse(client);
-    //    // TODO check
-    //    response(connect_socket->getFd(), connect_socket->send_buf);
-    //}
+    if (connect_socket->send_buf.length())
+        response(connect_socket->getFd(), connect_socket->send_buf);
+    if (!commands.empty())
+        registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
 }
 
 void Server::handleExecute(int event_idx) {
@@ -137,12 +124,14 @@ void Server::handleExecute(int event_idx) {
     Client *client =
         static_cast<Client *>(event.udata);  // TODO : connect socket
     ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
+    std::queue<Command *> &commands = connect_socket->commands;
 
-    std::vector<Command *>::iterator iter = connect_socket->commands.begin();
-    for (; iter != connect_socket->commands.end(); ++iter) {
-        _executor.execute(*iter, client);
+    while (commands.size()) {
+        _executor.execute(commands.front(), client);
+        commands.pop();
     }
-    connect_socket->commands.clear();
+    if (connect_socket->send_buf.length())
+        response(connect_socket->getFd(), connect_socket->send_buf);
 
     const std::set<Client *> &client_list = _executor.getClientList();
     std::set<Client *>::iterator receiver_iter = client_list.begin();
@@ -191,6 +180,25 @@ void Server::handleClose() {
         _executor.deleteClient(*iter);
     }
     _garbage.clear();
+}
+
+// TODO : naming
+int Server::parse(int fd, Client *client) {
+    char buf[BUF_SIZE];
+    ssize_t n = 0;
+
+    n = recv(fd, &buf, BUF_SIZE, 0);
+    if (n == -1) {
+        _garbage.insert(client);
+        return -1;
+    }
+    buf[n] = 0;
+
+    client->recv_buf.append(buf);
+
+    // parse commandlines in connect_sockets
+    client->commands = _parser.parse(client);
+    return (client->commands.size());
 }
 
 int Server::response(int fd, std::string &send_buf) {

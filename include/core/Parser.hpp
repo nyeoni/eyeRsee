@@ -1,6 +1,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include <queue>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -44,11 +45,12 @@ class Parser {
     void parsePing(e_cmd &cmd, params *&params);
 
     Command *parse(const std::string &command_line, Command *&command);
-    std::vector<Command *> parse(ConnectSocket *src);
+    std::queue<Command *> parse(ConnectSocket *src);
 
     class SyntaxException : public std::exception {
        protected:
         std::string _cause;
+
        public:
         SyntaxException(const std::string &cause);
         ~SyntaxException() throw();
@@ -57,24 +59,27 @@ class Parser {
     };
     class UnknownCommandException : public SyntaxException {
        public:
-        UnknownCommandException(const std::string &cause) : SyntaxException(cause) {};
-
+        UnknownCommandException(const std::string &cause)
+            : SyntaxException(cause){};
     };
     class NotEnoughParamsException : public SyntaxException {
        public:
-        NotEnoughParamsException(const std::string &cause) : SyntaxException(cause) {};
+        NotEnoughParamsException(const std::string &cause)
+            : SyntaxException(cause){};
     };
     class InvalidChannelNameException : public SyntaxException {
        public:
-        InvalidChannelNameException(const std::string &cause) : SyntaxException(cause) {};
+        InvalidChannelNameException(const std::string &cause)
+            : SyntaxException(cause){};
     };
     class InvalidNickNameException : public SyntaxException {
        public:
-        InvalidNickNameException(const std::string &cause) : SyntaxException(cause) {};
+        InvalidNickNameException(const std::string &cause)
+            : SyntaxException(cause){};
     };
     class ModeUserException : public SyntaxException {
        public:
-        ModeUserException(const std::string &cause) : SyntaxException(cause) {};
+        ModeUserException(const std::string &cause) : SyntaxException(cause){};
     };
 };
 

@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "Parser.hpp"
-#include "core/Socket.hpp"
 #include "controller/Executor.hpp"
+#include "core/Socket.hpp"
 #include "handler/EventHandler.hpp"
 
 namespace ft {
@@ -47,6 +47,7 @@ class Server : public EventHandler {
     void handleTimeout();
     void handleClose();
 
+    int parse(int fd, Client *client);
     int response(int fd, std::string &send_buf);
 };
 

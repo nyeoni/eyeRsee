@@ -309,9 +309,9 @@ Command *Parser::parse(const std::string &command_line, Command *&command) {
     }
     return command;
 }
-std::vector<Command *> Parser::parse(ConnectSocket *src) {
+std::queue<Command *> Parser::parse(ConnectSocket *src) {
     std::string line;
-    std::vector<Command *> commands;
+    std::queue<Command *> commands;
     std::vector<std::string> command_lines;
 
     line = src->readRecvBuf();
@@ -326,7 +326,7 @@ std::vector<Command *> Parser::parse(ConnectSocket *src) {
         Command *command = new Command;
         try {
             parse(*it, command);
-            if (command != NULL) commands.push_back(command);
+            if (command != NULL) commands.push(command);
         } catch (SyntaxException &e) {
             delete command;
             ErrorHandler::handleError(e, src);

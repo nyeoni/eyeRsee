@@ -3,6 +3,7 @@
 
 #include <netinet/in.h>
 
+#include <queue>
 #include <string>
 
 #include "core/Command.hpp"
@@ -50,7 +51,7 @@ class ConnectSocket : public SocketBase {
     std::string _server;
     std::string _realname;
 
-    std::vector<Command *> commands;
+    std::queue<Command *> commands;
 
    protected:
    public:

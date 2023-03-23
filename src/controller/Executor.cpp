@@ -379,7 +379,7 @@ void Executor::kick(Client *kicker, params *params) {
     kick_params *param = dynamic_cast<kick_params *>(params);
     std::string channel_name = param->channel;
     std::string nickname = param->user;  // TODO param->user nickname?
-    std::string comment = param->comment;
+    std::string comment = param->comment.empty() ? " " : param->comment;
     Client *client = client_controller.find(nickname);
     Channel *channel = channel_controller.find(channel_name);
 
@@ -405,11 +405,12 @@ void Executor::kick(Client *kicker, params *params) {
     }
 
     // response
+    std::string response_msg = ResponseHandler::createResponse(
+        kicker, "KICK", channel_name + " " + nickname, comment);
+    broadcast(channel, response_msg);
+
     channel_controller.eraseClient(channel, client);
     client_controller.eraseChannel(client, channel);
-    std::string response_msg = ResponseHandler::createResponse(
-        client, "KICK", channel_name + " " + nickname);
-    broadcast(channel, response_msg);
 }
 
 void Executor::privmsg(Client *client, params *params) {
@@ -504,9 +505,6 @@ void Executor::notice(Client *client, params *params) {
 }
 
 void Executor::pong(Client *client, params *params) {
-    //: NAYEON.local PONG NAYEON.local :NAYEON.local
-    ping_params *p = dynamic_cast<ping_params *>(params);
-
     ResponseHandler::handlePongResponse(client);
 }
 

@@ -227,7 +227,7 @@ void Parser::parsePrivmsg(e_cmd &cmd, params *&params) {
         std::vector<std::string> receivers = split(token, ',');
         p->receivers = receivers;
         if (!isEOF() && getToken(MSG) && token[0] == ':') {
-            p->msg = "\"" + token.substr(1) + "\"";
+            p->msg = token.substr(1);
         } else {
             delete p;
             throw NotEnoughParamsException("PRIVMSG");

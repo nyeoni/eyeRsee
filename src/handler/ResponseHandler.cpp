@@ -40,26 +40,9 @@ void ResponseHandler::handleResponse(ConnectSocket *src,
     std::string res;
 
     res_stream << ":" << src->getNickname() << "!" << src->getUsername() << "@"
-               << src->getHostname() << " " << command;
+               << src->getServername() << " " << command;
     if (msg.empty())
-        res_stream << " :" << src->getNickname();
-    else
-        res_stream << " " << param << ":" << msg << std::endl;
-    res = res_stream.str();
-    src->send_buf.append(res);
-}
-
-void ResponseHandler::handleResponse(ConnectSocket *src, ConnectSocket *dst,
-                                     const std::string &command,
-                                     const std::string &param,
-                                     const std::string &msg) {
-    std::stringstream res_stream;
-    std::string res;
-
-    res_stream << ":" << param << "!" << src->getUsername() << "@"
-               << src->getHostname() << " " << command;
-    if (msg.empty())
-        res_stream << " :" << src->getNickname();
+        res_stream << " :" << param << std::endl;
     else
         res_stream << " " << param << ":" << msg << std::endl;
     res = res_stream.str();
@@ -73,13 +56,12 @@ std::string ResponseHandler::createResponse(ConnectSocket *src,
     std::stringstream res_stream;
 
     res_stream << ":" << src->getNickname() << "!" << src->getUsername() << "@"
-               << src->getHostname() << " " << command;
+               << src->getServername() << " " << command;
     if (msg.empty())
         res_stream << " :" << param << std::endl;
     else
         res_stream << " " << param << " :" << msg << std::endl;
     return res_stream.str();
-    // src->send_buf.append(res);
 }
 
 std::string ResponseHandler::createResponse(ConnectSocket *src,
@@ -87,16 +69,15 @@ std::string ResponseHandler::createResponse(ConnectSocket *src,
                                             e_res_code res_code,
                                             const std::string &comment) {
     std::stringstream res_stream;
+    std::string cmd = command;
     std::string msg = getMessage(res_code);
-    char sp = 0;
 
-    if (command != "") sp = ' ';
+    if (command != "") cmd += " ";
     res_stream.fill('0');
     res_stream << ":" << servername << " " << std::setw(3) << res_code << " "
-               << src->getNickname() << " " << command << sp << ":" << msg
+               << src->getNickname() << " " << command << ":" << msg
                << " " << comment << std::endl;
     return res_stream.str();
-    // src->send_buf.append(res);
 }
 std::string ResponseHandler::getMessage(e_res_code res_code) {
     switch (res_code) {
@@ -137,6 +118,12 @@ void ResponseHandler::handleConnectResponse(ConnectSocket *src) {
         src->send_buf.append(res);
     }
     src->send_buf.append(WELCOME_PROMPT);
+}
+
+void ResponseHandler::handlePongResponse(ConnectSocket *src) {
+    const std::string res =
+        ":" + servername + " PONG " + servername + " :" + servername + "\n";
+    src->send_buf.append(res);
 }
 
 }  // namespace ft

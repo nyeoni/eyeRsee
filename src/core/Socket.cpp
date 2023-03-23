@@ -87,7 +87,7 @@ void ConnectSocket::createSocket(const int &listen_fd) {
     struct sockaddr_in in = {};
     socklen_t in_len = sizeof(in);
 
-    _fd = accept(listen_fd, (struct sockaddr *)&in, &in_len);
+    _fd = accept(listen_fd, (struct sockaddr *) &in, &in_len);
     status = UNREGISTER;
     auth[PASS] = false;
     auth[USER] = false;
@@ -103,6 +103,7 @@ void ConnectSocket::createSocket(const int &listen_fd) {
 const std::string &ConnectSocket::getNickname() const { return _nickname; }
 const std::string &ConnectSocket::getUsername() const { return _username; }
 const std::string &ConnectSocket::getHostname() const { return _hostname; }
+const std::string &ConnectSocket::getServername() const { return _servername; }
 const std::string &ConnectSocket::getRealname() const { return _realname; }
 
 // setter
@@ -115,7 +116,7 @@ void ConnectSocket::setUsername(const std::string &username) {
 void ConnectSocket::setHostname(const std::string &hostname) {
     _hostname = hostname;
 }
-void ConnectSocket::setServer(const std::string &server) { _server = server; }
+void ConnectSocket::setServername(const std::string &servername) { _servername = servername; }
 void ConnectSocket::setRealname(const std::string &realname) {
     _realname = realname;
 }

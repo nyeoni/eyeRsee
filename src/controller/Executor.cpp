@@ -286,15 +286,13 @@ void Executor::pass(Client *new_client, params *params,
     std::string password = dynamic_cast<pass_params *>(params)->password;
 
     if (new_client->auth[PASS]) {
-        // already auth
-        ErrorHandler::handleError(new_client, new_client->getNickname(),
-                                  ERR_ALREADYREGISTERED);
-        return;
+        return ErrorHandler::handleError(new_client, new_client->getNickname(),
+                                         ERR_ALREADYREGISTERED);
     }
-    if (password == server_password)
-        new_client->auth[PASS] = true;
-    else
-        new_client->auth[PASS] = false;
+    if (password != server_password) {
+        return ErrorHandler::handleError(new_client, "*", ERR_PASSWDMISMATCH);
+    }
+    new_client->auth[PASS] = true;
 }
 
 void Executor::user(Client *new_client, params *params) {

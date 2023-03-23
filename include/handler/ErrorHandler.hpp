@@ -19,6 +19,7 @@ enum e_err_code {
     ERR_USERONCHANNEL = 443,
     ERR_NEEDMOREPARAMS = 461,
     ERR_ALREADYREGISTERED = 462,
+    ERR_PASSWDMISMATCH = 464,
     ERR_UNKNOWNMODE = 472,
     ERR_INVITEONLYCHAN = 473,
     ERR_BADCHANMASK = 476,
@@ -30,6 +31,7 @@ class ErrorHandler {
 
     static const std::string ERR_UNKNOWNCOMMAND_MSG;
     static const std::string ERR_NEEDMOREPARAMS_MSG;
+    static const std::string ERR_PASSWDMISMATCH_MSG;
 
     static const std::string ERR_ALREADYREGISTERED_MSG;
     static const std::string ERR_NONICKNAMEGIVEN_MSG;

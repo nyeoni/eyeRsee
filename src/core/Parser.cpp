@@ -57,8 +57,8 @@ std::string &Parser::validNickName(std::string &nickname) {
 void Parser::parseQuit(e_cmd &cmd, params *&params) {
     cmd = QUIT;
     quit_params *p;
+    p = new quit_params;
     if (getToken(MSG) && token[0] == ':') {
-        p = new quit_params;
         p->msg = "\"" + token.substr(1) + "\"";;
     }
     params = p;
@@ -80,7 +80,7 @@ void Parser::parseUser(e_cmd &cmd, params *&params) {
     user_params *p;
     std::vector<std::string> tokens = split(tokenStream, ' ');
 
-    if (tokens.size() != 4) throw NotEnoughParamsException("USER");
+    if (tokens.size() != 4 && tokens.size() != 5) throw NotEnoughParamsException("USER");
     p = new user_params;
     p->username = tokens[0];
     p->hostname = tokens[1];
@@ -191,7 +191,7 @@ void Parser::parseKick(e_cmd &cmd, params *&params) {
         if (!isEOF() && getToken()) {
             p->user = token;
             if (getToken(MSG) != EOF && token[0] == ':') {
-                p->comment = "\"" + token.substr(1) + "\"";;
+                p->comment = token.substr(1);
             }
         } else {
             delete p;

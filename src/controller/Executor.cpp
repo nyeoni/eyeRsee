@@ -299,7 +299,7 @@ void Executor::user(Client *new_client, params *params) {
     user_params *param = dynamic_cast<user_params *>(params);
     std::string username = param->username;
     std::string hostname = param->hostname;
-    std::string server = param->servername;
+    std::string servername = param->servername;
     std::string realname = param->realname;
 
     if (new_client->auth[USER]) {
@@ -310,7 +310,7 @@ void Executor::user(Client *new_client, params *params) {
     }
     new_client->setUsername(username);
     new_client->setHostname(hostname);
-    new_client->setServer(server);
+    new_client->setServername(servername);
     new_client->setRealname(realname);
     new_client->auth[USER] = true;
     // response
@@ -342,16 +342,17 @@ void Executor::nick(int fd, params *params) {
     Client *client = client_controller.find(fd);
 
     if (client_controller.find(nickname)) {
-        // 433 user2 user1 :Nickname is already in use.
         std::string cause = client->getNickname() + " " + nickname;
         ErrorHandler::handleError(client, cause, ERR_NICKNAMEINUSE);
         return;
     }
+    if (client->getChannelList().empty()) {
+        ResponseHandler::handleResponse(client, "NICK", nickname);
+    } else {
+        std::string response_msg = ResponseHandler::createResponse(client, "NICK", nickname);
+        broadcast(client->getChannelList(), response_msg);
+    }
     client_controller.updateNickname(client, nickname);
-
-    std::string response_msg =
-        ResponseHandler::createResponse(client, "NICK", nickname);
-    broadcast(client->getChannelList(), response_msg);
 }
 
 void Executor::quit(Client *client, params *params) {

@@ -47,16 +47,7 @@ class ResponseHandler {
     static void handleResponse(ConnectSocket *src, const std::string &command,
                                const std::string &param,
                                const std::string &msg = "");
-    static void handleResponse(ConnectSocket *src, ConnectSocket *dst,
-                               const std::string &command,
-                               const std::string &param,
-                               const std::string &msg = "");
-
-    static void handlePongResponse(ConnectSocket *src) {
-        const std::string res =
-            ":" + servername + " PONG " + servername + " :" + servername;
-        src->send_buf.append(res);
-    }
+    static void handlePongResponse(ConnectSocket *src);
 
     // SECTION
     static std::string createResponse(ConnectSocket *src,

@@ -48,7 +48,7 @@ class ConnectSocket : public SocketBase {
     std::string _nickname;
     std::string _username;
     std::string _hostname;
-    std::string _server;
+    std::string _servername;
     std::string _realname;
 
     std::queue<Command *> commands;
@@ -67,13 +67,14 @@ class ConnectSocket : public SocketBase {
     const std::string &getNickname() const;
     const std::string &getUsername() const;
     const std::string &getHostname() const;
+    const std::string &getServername() const;
     const std::string &getRealname() const;
 
     // setter
     void setNickname(const std::string &nickname);
     void setUsername(const std::string &username);
     void setHostname(const std::string &hostname);
-    void setServer(const std::string &server);
+    void setServername(const std::string &servername);
     void setRealname(const std::string &realname);
 
     bool isAuthenticate();

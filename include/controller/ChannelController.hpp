@@ -48,24 +48,25 @@ class ChannelController {
     void updateTopic(Channel *channel, Client *client,
                      const std::string &topic);
 
-    void insertClient(Channel *channel, Client *client, e_role role);
+    void insertOperator(Channel *channel, Client *client);
+    void insertRegular(Channel *channel, Client *client);
 
     void eraseClient(Channel *channel, Client *client);
     void eraseClient(ChannelList &channel_list, Client *client);
+
+    const std::set<Client *> &getOperators(const Channel *channel) const;
+    const std::set<Client *> &getRegulars(const Channel *channel) const;
 
     bool isOnChannel(Channel *channel, Client *client);
     bool isOperator(Channel *channel, Client *client);
     bool isRegular(Channel *channel, Client *client);
 
-    bool isInviteMode(Channel *channel);
-    bool isTopicMode(Channel *channel);
-    bool isBanMode(Channel *channel);
+    bool isInviteMode(const Channel *channel);
+    bool isTopicMode(const Channel *channel);
+    bool isBanMode(const Channel *channel);
 
    private:
     bool updateRole(Channel *channel, Client *client, e_role role);
-
-    void insertOperator(Channel *channel, Client *client);
-    void insertRegular(Channel *channel, Client *client);
 
     void eraseOperator(Channel *channel, Client *client);
     void eraseRegular(Channel *channel, Client *client);

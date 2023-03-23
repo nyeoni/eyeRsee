@@ -127,8 +127,6 @@ void Server::handleExecute(int event_idx) {
         _executor.execute(commands.front(), client);
         commands.pop();
     }
-    if (connect_socket->send_buf.length())
-        response(connect_socket->getFd(), connect_socket->send_buf);
 
     const std::set<Client *> &client_list = _executor.getClientList();
     std::set<Client *>::iterator receiver_iter = client_list.begin();

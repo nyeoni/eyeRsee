@@ -142,6 +142,7 @@ void Executor::join(Client *client, params *params) {
         if (channel == NULL) {  // new channel & operator Client
             channel = channel_controller.insert(*iter);
             channel_controller.insertOperator(channel, client);
+            channel_controller.updateMode(TOPIC_PRIV_T, channel);
         } else {  // regular Client
             channel_controller.insertRegular(channel, client);
         }
@@ -246,7 +247,8 @@ void Executor::topic(Client *client, params *params) {
         return;
     }
 
-    // :nick2!hannah@127.0.0.1 TOPIC #channel :topic message
+    std::string prev_topic = channel->getTopic();
+    if (prev_topic == topic) return;
     channel_controller.updateTopic(channel, client, topic);
     std::string response_msg =
         ResponseHandler::createResponse(client, "TOPIC", channel_name, topic);
@@ -432,12 +434,14 @@ void Executor::privmsg(Client *client, params *params) {
             Channel *channel = channel_controller.find(name);
             if (channel) {
                 if (channel_controller.isOnChannel(channel, client)) {
-                    // user3!hannah@127.0.0.1 PRIVMSG #testchannel :hi
+                    // user3!hannah@127.0.0.1 PRIVMSG #testchannel
+                    // :hi
                     std::string response_msg = ResponseHandler::createResponse(
                         client, "PRIVMSG", name, param->msg);
                     broadcast(channel, response_msg, client);
                 } else {
-                    //  404 You cannot send external  messages to this
+                    //  404 You cannot send external  messages to
+                    //  this
                     ErrorHandler::handleError(client, name,
                                               ERR_CANNOTSENDTOCHAN);
                     return;

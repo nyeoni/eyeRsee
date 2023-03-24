@@ -34,9 +34,11 @@ class Executor {
     void clearClientList();
 
     Client *accept(int fd);
-    void connect(Command *command, Client *client, std::string password);
+    int connect(Client *client, std::string password);
     void execute(Command *command, Client *client);
     Channel *createChannel(std::string channel_name);
+
+    int updateClientStatus(int fd, Client *client, e_status status);
     void deleteClient(Client *client);
 
    private:

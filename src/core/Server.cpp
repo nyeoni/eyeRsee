@@ -26,7 +26,7 @@ void Env::parse(int argc, char **argv) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     d_port = std::strtod(port_str.c_str(), &back);
-    if (*back || d_port < 1025 | d_port > 65535) {
+    if (*back || d_port<1025 | d_port> 65535) {
         throw std::logic_error(
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
@@ -89,29 +89,22 @@ void Server::handleRead(int event_idx) {
     Event event = _ev_list[event_idx];
     Client *client = static_cast<Client *>(event.udata);
     ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
+    e_status status = connect_socket->getStatus();
 
     parse(event.ident, client);
 
-    std::queue<Command *> &commands = client->commands;
-    if (connect_socket->status == REGISTER) {
-        registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
-        return;
+    switch (status) {
+        case REGISTER:
+            registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
+            break;
+        case UNREGISTER:
+            connect(event.ident, client);
+            break;
+        default:
+            std::queue<Command *> empty;
+            std::swap(client->commands, empty);
+            break;
     }
-    while (commands.size() && connect_socket->status == UNREGISTER) {
-        _executor.connect(commands.front(), client, _env.password);
-        commands.pop();
-        if (connect_socket->isAuthenticate()) {
-            std::cout << "Register Success!" << std::endl;
-            _tmp_garbage.erase(client);
-            connect_socket->status = REGISTER;
-            ResponseHandler::handleConnectResponse(client);
-            response(connect_socket->getFd(), connect_socket->send_buf);
-        }
-    }
-    if (connect_socket->send_buf.length())
-        response(connect_socket->getFd(), connect_socket->send_buf);
-    if (!commands.empty())
-        registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
 }
 
 void Server::handleExecute(int event_idx) {
@@ -131,8 +124,12 @@ void Server::handleExecute(int event_idx) {
     const std::set<Client *> &client_list = _executor.getClientList();
     std::set<Client *>::iterator receiver_iter = client_list.begin();
     for (; receiver_iter != client_list.end(); ++receiver_iter) {
-        registerEvent((*receiver_iter)->getFd(), EVFILT_WRITE, EXECUTE,
-                      *receiver_iter);
+        if ((*receiver_iter)->getStatus() == TERMINATE) {
+            _tmp_garbage.erase(*receiver_iter);
+            _garbage.insert(*receiver_iter);
+        } else
+            registerEvent((*receiver_iter)->getFd(), EVFILT_WRITE, EXECUTE,
+                          *receiver_iter);
     }
     _executor.clearClientList();
 
@@ -142,16 +139,12 @@ void Server::handleExecute(int event_idx) {
 
 void Server::handleTimer(int event_idx) {
     Event &event = _ev_list[event_idx];
-    // find(event.ident) // TODO : timer access freed memory
     Client *client =
         static_cast<Client *>(event.udata);  // TODO : connect socket
-    ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
 
     registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
-    if (connect_socket->isAuthenticate()) {
-        return;
-    }
-    _tmp_garbage.insert(client);
+    if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0)
+        _tmp_garbage.insert(client);
 }
 void Server::handleTimeout() {
     std::set<Client *>::iterator iter = _tmp_garbage.begin();
@@ -194,6 +187,22 @@ int Server::parse(int fd, Client *client) {
     // parse commandlines in connect_sockets
     client->commands = _parser.parse(client);
     return (client->commands.size());
+}
+
+int Server::connect(int fd, Client *client) {
+    std::queue<Command *> &commands = client->commands;
+
+    if (_executor.connect(client, _env.password) == 0) {
+        std::cout << "Register Success!" << std::endl;
+        ResponseHandler::handleConnectResponse(client);
+        response(fd, client->send_buf);
+    } else if (!commands.empty()) {
+        registerEvent(fd, EVFILT_WRITE, EXECUTE, client);
+    }
+    if (client->send_buf.length()) {
+        response(client->getFd(), client->send_buf);
+    }
+    return 0;
 }
 
 int Server::response(int fd, std::string &send_buf) {

@@ -26,6 +26,16 @@ const std::set<Client *> &Executor::getClientList() const {
 }
 void Executor::clearClientList() { _client_list.clear(); }
 
+int Executor::updateClientStatus(int fd, Client *client, e_status status) {
+    Client *target = client_controller.find(fd);
+
+    if (!target || target != client) return -1;
+    if (status == TIMEOUT && client->getStatus() != UNREGISTER) return -1;
+    if (status == REGISTER && client->isAuthenticate() == false) return -1;
+    client_controller.updateClientStatus(fd, client, status);
+    return 0;
+}
+
 void Executor::deleteClient(Client *client) {
     ChannelController::ChannelList channel_list;
 
@@ -43,24 +53,34 @@ Client *Executor::accept(int fd) {
     return new_client;
 }
 
-void Executor::connect(Command *command, Client *client, std::string password) {
-    switch (command->type) {
-        case PASS:
-            pass(client, command->params, password);
-            break;
-        case USER:
-            user(client, command->params);
-            break;
-        case NICK:
-            nick(client, command->params);
-            break;
-        default:
-            // TODO : msg
-            send(client->getFd(),
-                 ":eyeRsee.local 451 * JOIN :You have not registered.\n", 53,
-                 0);
-            break;
+int Executor::connect(Client *client, std::string password) {
+    std::queue<Command *> commands = client->commands;
+    while (commands.size()) {
+        Command *command = commands.front();
+        commands.pop();
+        switch (command->type) {
+            case PASS:
+                pass(client, command->params, password);
+                break;
+            case USER:
+                user(client, command->params);
+                break;
+            case NICK:
+                nick(client, command->params);
+                break;
+            default:
+                // TODO : msg
+                send(client->getFd(),
+                     ":eyeRsee.local 451 * JOIN :You have not registered.\n",
+                     53, 0);
+                break;
+        }
+        if (client->isAuthenticate()) {
+            updateClientStatus(client->getFd(), client, REGISTER);
+            return 0;
+        }
     }
+    return 1;
 }
 
 void Executor::execute(Command *command, Client *client) {
@@ -379,9 +399,8 @@ void Executor::quit(Client *client, params *params) {
 
     // 모든 채널에서 quit && send message
     broadcast(client->getChannelList(), response_msg);
-    client_controller.erase(client);
-    client_controller.findInSet(channel_list, client);
-    channel_controller.eraseClient(channel_list, client);
+    client_controller.updateClientStatus(client->getFd(), client, TERMINATE);
+    _client_list.insert(client);
 }
 
 void Executor::kick(Client *kicker, params *params) {

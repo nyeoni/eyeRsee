@@ -103,25 +103,30 @@ void ClientController::erase(int fd) {
     }
 }
 
+void ClientController::updateClientStatus(int fd, Client *client,
+                                         e_status status) {
+    client->setStatus(status);
+}
+
 /**
  * @brief update nickname
  *
  * @param fd
  * @param nickname
  */
-void ClientController::updateNickname(int fd, const std::string &nickname) {
-    Client *client = find(fd);
+//void ClientController::updateNickname(int fd, const std::string &nickname) {
+//    Client *client = find(fd);
 
-    if (client) {  // valid
-        if (find(nickname)) {
-            // no change (already exist)
-        } else {
-            // change nickname
-            client->setNickname(nickname);
-        }
-    }
-    // TODO error handling (잘못된 fd일 경우)
-}
+//    if (client) {  // valid
+//        if (find(nickname)) {
+//            // no change (already exist)
+//        } else {
+//            // change nickname
+//            client->setNickname(nickname);
+//        }
+//    }
+//    // TODO error handling (잘못된 fd일 경우)
+//}
 
 void ClientController::updateNickname(Client *client,
                                       const std::string &nickname) {

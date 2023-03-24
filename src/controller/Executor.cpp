@@ -329,10 +329,6 @@ void Executor::pass(Client *new_client, params *params,
 
 void Executor::user(Client *new_client, params *params) {
     user_params *param = dynamic_cast<user_params *>(params);
-    std::string username = param->username;
-    std::string hostname = param->hostname;
-    std::string servername = param->servername;
-    std::string realname = param->realname;
 
     if (new_client->auth[USER]) {
         // 462 abc :You may not reregister.
@@ -340,10 +336,10 @@ void Executor::user(Client *new_client, params *params) {
                                   ERR_ALREADYREGISTERED);
         return;
     }
-    new_client->setUsername(username);
-    new_client->setHostname(hostname);
-    new_client->setServername(servername);
-    new_client->setRealname(realname);
+    new_client->setUsername(param->username);
+    new_client->setHostname(param->hostname);
+    new_client->setServername(param->servername);
+    new_client->setRealname(param->realname);
     new_client->auth[USER] = true;
     // response
     // USER guest tolmoon tolsun :Ronnie Reagan

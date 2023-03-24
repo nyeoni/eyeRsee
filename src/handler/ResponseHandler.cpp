@@ -111,6 +111,26 @@ std::string ResponseHandler::createJoinReponse(
     return res_stream.str();
 }
 
+void ResponseHandler::handleInviteResponse(ConnectSocket *invitor,
+                                           ConnectSocket *target,
+                                           const std::string &channel_name) {
+    std::stringstream invitor_res;
+    std::stringstream target_res;
+
+    invitor_res.fill('0');
+    target_res.fill('0');
+    // 341
+    invitor_res << invitor->getServername() << " " << RPL_INVITING << " "
+                << invitor->getNickname() << " " << target->getNickname()
+                << " :" << channel_name << std::endl;
+    invitor->send_buf.append(invitor_res.str());
+
+    target_res << ":" << invitor->getNickname() << "!" << invitor->getUsername()
+               << "@" << invitor->getServername() << " INVITE "
+               << target->getNickname() << " :" << channel_name << std::endl;
+    target->send_buf.append(target_res.str());
+}
+
 void ResponseHandler::handleConnectResponse(ConnectSocket *src) {
     const std::string prefix = src->getNickname() + "!" + src->getUsername() +
         "@" + src->getHostname();

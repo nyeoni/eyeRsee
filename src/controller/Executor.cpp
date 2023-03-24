@@ -165,7 +165,8 @@ void Executor::join(Client *client, params *params) {
         if (channel == NULL) {  // new channel & operator Client
             channel = channel_controller.insert(*iter);
             channel_controller.insertOperator(channel, client);
-            channel_controller.updateMode(TOPIC_PRIV_T, channel);
+        } else if (channel_controller.isOnChannel(channel, client)) {
+            return;
         } else {  // regular Client
             channel_controller.insertRegular(channel, client);
         }

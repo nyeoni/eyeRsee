@@ -213,15 +213,15 @@ void Parser::parseTopic(e_cmd &cmd, params *&params) {
     cmd = TOPIC;
     topic_params *p;
 
-    std::vector<std::string> tokens = split(tokenStream, ' ');
-    if (!(tokens.size() == 1 || tokens.size() == 2)) {
-        throw NotEnoughParamsException("TOPIC");
-    }
-    p = new topic_params;
-
-    p->channel = validChannelName(tokens[0]);
-    if (tokens.size() == 2) {
-        p->topic = tokens[1];
+    if (!isEOF() && getToken()) {
+        p = new topic_params;
+        p->channel = validChannelName(token);
+        if (!isEOF() && getToken(MSG) && token[0] == ':') {
+            p->topic = token.substr(1);
+        } else {
+            delete p;
+            throw NotEnoughParamsException("TOPIC");
+        }
     }
     params = p;
 }

@@ -116,7 +116,7 @@ void Server::handleExecute(int event_idx) {
     ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
     std::queue<Command *> &commands = connect_socket->commands;
 
-    while (commands.size()) {
+    if (commands.size()) {
         _executor.execute(commands.front(), client);
         commands.pop();
     }
@@ -132,7 +132,8 @@ void Server::handleExecute(int event_idx) {
     }
     _executor.clearClientList();
 
-    if (response(event.ident, connect_socket->send_buf) == 0)
+    if (response(event.ident, connect_socket->send_buf) == 0 &&
+        commands.size() == 0)
         registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
 }
 

@@ -46,8 +46,10 @@ class Server : public EventHandler {
     // garbageCollector methods
     void handleClose();
 
+   private:
     int parse(int fd, Client *client);
     int connect(int fd, Client *client);
+    void reserve();
     int response(int fd, std::string &send_buf);
 };
 

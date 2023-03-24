@@ -121,16 +121,7 @@ void Server::handleExecute(int event_idx) {
         commands.pop();
     }
 
-    const std::set<Client *> &client_list = _executor.getClientList();
-    std::set<Client *>::iterator receiver_iter = client_list.begin();
-    for (; receiver_iter != client_list.end(); ++receiver_iter) {
-        if ((*receiver_iter)->getStatus() == TERMINATE)
-            _garbage.insert(*receiver_iter);
-        else
-            registerEvent((*receiver_iter)->getFd(), EVFILT_WRITE, EXECUTE,
-                          *receiver_iter);
-    }
-    _executor.clearClientList();
+    reserve();
 
     if (response(event.ident, connect_socket->send_buf) == 0 &&
         commands.size() == 0)
@@ -143,7 +134,7 @@ void Server::handleTimer(int event_idx) {
         static_cast<Client *>(event.udata);  // TODO : connect socket
 
     registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
-    if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0){
+    if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0) {
         _garbage.insert(client);
         send(client->getFd(), "Timeout\n", 9, 0);
     }
@@ -193,6 +184,19 @@ int Server::connect(int fd, Client *client) {
         response(client->getFd(), client->send_buf);
     }
     return 0;
+}
+
+void Server::reserve() {
+    const std::set<Client *> &client_list = _executor.getClientList();
+    std::set<Client *>::iterator receiver_iter = client_list.begin();
+    for (; receiver_iter != client_list.end(); ++receiver_iter) {
+        if ((*receiver_iter)->getStatus() == TERMINATE)
+            _garbage.insert(*receiver_iter);
+        else
+            registerEvent((*receiver_iter)->getFd(), EVFILT_WRITE, EXECUTE,
+                          *receiver_iter);
+    }
+    _executor.clearClientList();
 }
 
 int Server::response(int fd, std::string &send_buf) {

@@ -44,9 +44,9 @@ class ClientController {
     void erase(const std::string& nickname);
     void erase(int fd);
 
-    int updateClientStatus(int fd, Client* client, e_status status);
+    void updateClientStatus(int fd, Client* client, e_status status);
 
-    void updateNickname(int fd, const std::string& nickname);
+    //void updateNickname(int fd, const std::string& nickname);
     void updateNickname(Client* client, const std::string& nickname);
 
     void insertChannel(Client* client, Channel* channel);

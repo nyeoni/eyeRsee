@@ -48,6 +48,7 @@ class Server : public EventHandler {
     void handleClose();
 
     int parse(int fd, Client *client);
+    int connect(int fd, Client *client);
     int response(int fd, std::string &send_buf);
 };
 

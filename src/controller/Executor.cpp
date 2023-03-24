@@ -27,7 +27,13 @@ const std::set<Client *> &Executor::getClientList() const {
 void Executor::clearClientList() { _client_list.clear(); }
 
 int Executor::updateClientStatus(int fd, Client *client, e_status status) {
-    return (client_controller.updateClientStatus(fd, client, status));
+    Client *target = client_controller.find(fd);
+
+    if (!target || target != client) return -1;
+    if (status == TIMEOUT && client->getStatus() != UNREGISTER) return -1;
+    if (status == REGISTER && client->isAuthenticate() == false) return -1;
+    client_controller.updateClientStatus(fd, client, status);
+    return 0;
 }
 
 void Executor::deleteClient(Client *client) {
@@ -47,24 +53,34 @@ Client *Executor::accept(int fd) {
     return new_client;
 }
 
-void Executor::connect(Command *command, Client *client, std::string password) {
-    switch (command->type) {
-        case PASS:
-            pass(client, command->params, password);
-            break;
-        case USER:
-            user(client, command->params);
-            break;
-        case NICK:
-            nick(client, command->params);
-            break;
-        default:
-            // TODO : msg
-            send(client->getFd(),
-                 ":eyeRsee.local 451 * JOIN :You have not registered.\n", 53,
-                 0);
-            break;
+int Executor::connect(Client *client, std::string password) {
+    std::queue<Command *> commands = client->commands;
+    while (commands.size()) {
+        Command *command = commands.front();
+        commands.pop();
+        switch (command->type) {
+            case PASS:
+                pass(client, command->params, password);
+                break;
+            case USER:
+                user(client, command->params);
+                break;
+            case NICK:
+                nick(client, command->params);
+                break;
+            default:
+                // TODO : msg
+                send(client->getFd(),
+                     ":eyeRsee.local 451 * JOIN :You have not registered.\n",
+                     53, 0);
+                break;
+        }
+        if (client->isAuthenticate()) {
+            updateClientStatus(client->getFd(), client, REGISTER);
+            return 0;
+        }
     }
+    return 1;
 }
 
 void Executor::execute(Command *command, Client *client) {

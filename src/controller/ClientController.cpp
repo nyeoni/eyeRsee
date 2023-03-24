@@ -103,15 +103,9 @@ void ClientController::erase(int fd) {
     }
 }
 
-int ClientController::updateClientStatus(int fd, Client *client,
+void ClientController::updateClientStatus(int fd, Client *client,
                                          e_status status) {
-    Client *target = find(fd);
-
-    if (!target || target != client) return -1;
-    if (status == TIMEOUT && client->getStatus() != UNREGISTER) return -1;
-    if (status == REGISTER && client->isAuthenticate() == false) return -1;
     client->setStatus(status);
-    return 0;
 }
 
 /**
@@ -120,19 +114,19 @@ int ClientController::updateClientStatus(int fd, Client *client,
  * @param fd
  * @param nickname
  */
-void ClientController::updateNickname(int fd, const std::string &nickname) {
-    Client *client = find(fd);
+//void ClientController::updateNickname(int fd, const std::string &nickname) {
+//    Client *client = find(fd);
 
-    if (client) {  // valid
-        if (find(nickname)) {
-            // no change (already exist)
-        } else {
-            // change nickname
-            client->setNickname(nickname);
-        }
-    }
-    // TODO error handling (잘못된 fd일 경우)
-}
+//    if (client) {  // valid
+//        if (find(nickname)) {
+//            // no change (already exist)
+//        } else {
+//            // change nickname
+//            client->setNickname(nickname);
+//        }
+//    }
+//    // TODO error handling (잘못된 fd일 경우)
+//}
 
 void ClientController::updateNickname(Client *client,
                                       const std::string &nickname) {

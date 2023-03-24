@@ -101,11 +101,6 @@ const std::set<Client *> &ChannelController::getRegulars(
     return channel->getRegulars();
 }
 
-// bool ChannelController::isOnChannel(Channel *channel, std::string &nickname)
-// {
-//         return (isOperator(channel, client) || isRegular(channel, client));
-// }
-
 bool ChannelController::isOnChannel(Channel *channel, Client *client) {
     return (isOperator(channel, client) || isRegular(channel, client));
 }

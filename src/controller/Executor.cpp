@@ -398,9 +398,9 @@ void Executor::quit(Client *client, params *params) {
     response_msg = ResponseHandler::createResponse(client, "QUIT", msg);
 
     // 모든 채널에서 quit && send message
+    _client_list.insert(client);
     broadcast(client->getChannelList(), response_msg);
     client_controller.updateClientStatus(client->getFd(), client, TERMINATE);
-    _client_list.insert(client);
 }
 
 void Executor::kick(Client *kicker, params *params) {
@@ -499,8 +499,8 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
     iter = receivers.begin();
     for (; iter != receivers.end(); ++iter) {
         (*iter)->send_buf.append(msg);
-        _client_list.insert(*iter);
     }
+    _client_list.insert(receivers.begin(), receivers.end());
 }
 
 /**
@@ -518,8 +518,8 @@ void Executor::broadcast(const ChannelList &channel_list,
     client_iter = client_list.begin();
     for (; client_iter != client_list.end(); ++client_iter) {
         (*client_iter)->send_buf.append(msg);
-        _client_list.insert(*client_iter);
     }
+    _client_list.insert(channel_list.begin(), channel_list.end());
 }
 
 void Executor::notice(Client *client, params *params) {

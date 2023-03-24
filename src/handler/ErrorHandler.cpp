@@ -28,16 +28,16 @@ void ErrorHandler::handleError(ConnectSocket *src, std::string cause,
 }
 void ErrorHandler::handleError(std::exception &e, ConnectSocket *src) {
     if (Parser::UnknownCommandException *uce =
-        dynamic_cast<Parser::UnknownCommandException *>(&e))
+            dynamic_cast<Parser::UnknownCommandException *>(&e))
         handleError(src, uce->getCause(), ERR_UNKNOWNCOMMAND);
     else if (Parser::NotEnoughParamsException *nepe =
-        dynamic_cast<Parser::NotEnoughParamsException *>(&e))
+                 dynamic_cast<Parser::NotEnoughParamsException *>(&e))
         handleError(src, nepe->getCause(), ERR_NEEDMOREPARAMS);
     else if (Parser::InvalidChannelNameException *icne =
-        dynamic_cast<Parser::InvalidChannelNameException *>(&e))
+                 dynamic_cast<Parser::InvalidChannelNameException *>(&e))
         handleError(src, icne->getCause(), ERR_BADCHANMASK);
     else if (Parser::InvalidNickNameException *inne =
-        dynamic_cast<Parser::InvalidNickNameException *>(&e))
+                 dynamic_cast<Parser::InvalidNickNameException *>(&e))
         handleError(src, inne->getCause(), ERR_ERRONEUSNICKNAME);
     else
         std::cout << "ErrorHandler: Unknown error occurred" << std::endl;
@@ -99,7 +99,7 @@ const std::string ErrorHandler::ERR_USERONCHANNEL_MSG = "is already on channel";
 const std::string ErrorHandler::ERR_UNKNOWNMODE_MSG =
     "is unknown mode char to me";
 const std::string ErrorHandler::ERR_INVITEONLYCHAN_MSG =
-    "Cannot join channel (+i)";
+    "Cannot join channel (invite only)";
 const std::string ErrorHandler::ERR_CHANOPRIVSNEEDED_MSG =
     "You're not channel operator";
 const std::string ErrorHandler::ERR_NOSUCHNICK_MSG = "No such nick";

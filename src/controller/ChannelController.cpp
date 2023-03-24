@@ -25,7 +25,6 @@ Channel *ChannelController::insert(const std::string &channel_name) {
     pair p = _channels.insert(std::make_pair(channel_name, Channel()));
     new_channel = &(p.first->second);
     new_channel->setName(channel_name);
-    new_channel->clearMode();
     return new_channel;
 }
 
@@ -144,15 +143,18 @@ void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
 }
 
 bool ChannelController::isInviteMode(const Channel *channel) {
-    return (channel->getMode() & (INVITE_ONLY_T - 1));
+    // return (channel->getMode() & (INVITE_ONLY_T - 1));
+    return (channel->getMode() & (1 << (INVITE_ONLY_T / 2)));
 }
 
 bool ChannelController::isTopicMode(const Channel *channel) {
-    return (channel->getMode() & (TOPIC_PRIV_T - 1));
+    // return (channel->getMode() & (TOPIC_PRIV_T - 1));
+    return (channel->getMode() & (1 << (TOPIC_PRIV_T / 2)));
 }
 
 bool ChannelController::isBanMode(const Channel *channel) {
-    return (channel->getMode() & (BAN_T - 1));
+    // return (channel->getMode() & (BAN_T - 1));
+    return (channel->getMode() & (1 << (BAN_T / 2)));
 }
 
 // private functions

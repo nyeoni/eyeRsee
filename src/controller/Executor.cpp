@@ -540,4 +540,8 @@ void Executor::pong(Client *client, params *params) {
     ResponseHandler::handlePongResponse(client);
 }
 
+void Executor::bot(Client *client, params *params) {
+
+}
+
 }  // namespace ft

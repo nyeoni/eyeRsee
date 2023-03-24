@@ -5,6 +5,9 @@
 #include "core/utility.hpp"
 #include "handler/ErrorHandler.hpp"
 
+// delete
+#include <iostream>
+
 namespace ft {
 
 int Parser::getToken(int flag = TOKEN) {
@@ -225,15 +228,42 @@ void Parser::parseTopic(e_cmd &cmd, params *&params) {
     }
     params = p;
 }
+bool Parser::parseBot(e_cmd &cmd, params *&params) {
+    bot_params *p;
+    std::string command;
+
+    std::cout << "Bot Parsing!!" << std::endl;
+    if (token.find(' ') != std::string::npos) {
+        p = new bot_params;
+
+        command = toUpperCase(token);
+        if (command == "HELP") {
+            p->cmd = BOT_HELP;
+        } else if (command == "NOW") {
+            p->cmd = BOT_NOW;
+        } else if (command == "HI") {
+            p->cmd = BOT_HI;
+        } else {
+            delete p;
+            return false;
+        }
+    }
+    std::cout << "Bot Parsing Success" << std::endl;
+    params = p;
+    return true;
+}
 void Parser::parsePrivmsg(e_cmd &cmd, params *&params) {
     cmd = PRIVMSG;
     privmsg_params *p;
 
     if (!isEOF() && getToken()) {
-        p = new privmsg_params;
         std::vector<std::string> receivers = split(token, ',');
-        p->receivers = receivers;
         if (!isEOF() && getToken(MSG) && token[0] == ':') {
+            if (receivers.size() == 1 && token[1] == '!') {
+                if (parseBot(cmd, params)) return;
+            }
+            p = new privmsg_params;
+            p->receivers = receivers;
             p->msg = token.substr(1);
         } else {
             delete p;
@@ -282,6 +312,7 @@ Command *Parser::parse(const std::string &command_line, Command *&command) {
     tokenStream.str(command_line);
     getToken();
 
+    token = toUpperCase(token);
     if (token == "QUIT") {
         parseQuit(command->type, command->params);
     } else if (token == "PASS") {

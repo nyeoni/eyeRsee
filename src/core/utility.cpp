@@ -1,9 +1,17 @@
-#include <sys/time.h>
 
 #include <core/utility.hpp>
+#include <cctype>
 #include <istream>
 
 namespace ft {
+
+std::string toUpperCase(const std::string &str) {
+    std::string result;
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        result += toupper(*it);
+    }
+    return result;
+}
 
 std::vector<std::string> split(std::string str, const std::string &delimiter) {
     std::vector<std::string> tokens;

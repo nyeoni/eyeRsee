@@ -58,6 +58,8 @@ class Executor {
     void privmsg(Client *client, params *params);
     void notice(Client *client, params *params);
     void pong(Client *client, params *params);
+    
+    void bot(Client *client, params *params);
 
     void broadcast(Channel *channel, const std::string &msg,
                    Client *excluded = NULL);

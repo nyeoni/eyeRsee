@@ -85,9 +85,6 @@ bool ChannelController::updateMode(int mode, Channel *channel, Client *client) {
 
 void ChannelController::updateTopic(Channel *channel, Client *client,
                                     const std::string &topic) {
-    // there are no difference from previous topic
-    if (channel->getTopic() == topic) return;
-
     channel->setTopic(topic);
 }
 

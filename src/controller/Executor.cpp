@@ -162,7 +162,10 @@ void Executor::join(Client *client, params *params) {
         if (channel == NULL) {  // new channel & operator Client
             channel = channel_controller.insert(*iter);
             channel_controller.insertOperator(channel, client);
-            channel_controller.updateMode(TOPIC_PRIV_T, channel);
+        } else if (channel_controller.isInviteMode(channel)) {
+            // invite check
+            ErrorHandler::handleError(client, *iter, ERR_INVITEONLYCHAN);
+            return;
         } else {  // regular Client
             channel_controller.insertRegular(channel, client);
         }
@@ -186,7 +189,6 @@ void Executor::join(Client *client, params *params) {
 
             client->send_buf.append(response_msg);
         }
-        // response_msg.clear();
     }
 }
 
@@ -279,7 +281,7 @@ void Executor::invite(Client *invitor, params *params) {
     invite_params *param = dynamic_cast<invite_params *>(params);
     std::string nickname = param->nickname;
     std::string channel_name = param->channel;
-    Client *client = client_controller.find(nickname);
+    Client *target = client_controller.find(nickname);
     Channel *channel = channel_controller.find(channel_name);
     std::string response_msg;
 
@@ -289,7 +291,7 @@ void Executor::invite(Client *invitor, params *params) {
         return;
     }
     // 401 nick2 hi :No such nick
-    if (client == NULL) {
+    if (target == NULL) {
         ErrorHandler::handleError(invitor, nickname, ERR_NOSUCHNICK);
         return;
     }
@@ -299,18 +301,14 @@ void Executor::invite(Client *invitor, params *params) {
         return;
     }
     // 482 nick2 #channel :You must be a channel op or higher to send an invite.
-    if (channel_controller.isOperator(channel, invitor)) {
+    if (!channel_controller.isOperator(channel, invitor)) {
         ErrorHandler::handleError(invitor, channel_name, ERR_CHANOPRIVSNEEDED);
         return;
     }
 
-    client_controller.insertInviteChannel(client, channel);
-    response_msg =
-        ResponseHandler::createResponse(invitor, "INVITE", RPL_INVITING);
-    broadcast(channel, response_msg, invitor);
-    response_msg =
-        ResponseHandler::createResponse(invitor, "INVITE", RPL_INVITING);
-    invitor->send_buf.append(response_msg);
+    client_controller.insertInviteChannel(target, channel);
+    ResponseHandler::handleInviteResponse(invitor, target, channel_name);
+    _client_list.insert(target);
 }
 
 void Executor::pass(Client *new_client, params *params,

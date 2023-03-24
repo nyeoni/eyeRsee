@@ -1,14 +1,20 @@
 #include "entity/Channel.hpp"
 
+#include "core/Type.hpp"
+
 namespace ft {
 
-Channel::Channel() : _mode(0) {}
-Channel::Channel(const std::string &name) : _name(name), _mode(0) {}
-Channel::Channel(const Channel &copy) {
-    if (*this != copy) {
-        *this = copy;
-    }
+Channel::Channel() {
+    _mode = 0;
+    setMode(TOPIC_PRIV_T);
+    setMode(INVITE_ONLY_F);
 }
+Channel::Channel(const std::string &name) : _name(name) {
+    _mode = 0;
+    setMode(TOPIC_PRIV_T);
+    setMode(INVITE_ONLY_F);
+}
+Channel::Channel(const Channel &copy) { *this = copy; }
 Channel::~Channel() {}
 Channel &Channel::operator=(const Channel &ref) {
     _name = ref._name;
@@ -34,8 +40,6 @@ void Channel::setMode(int mode) {
     else
         _mode &= ~(1 << (mode / 2));  // -flag
 }
-
-void Channel::clearMode() { _mode = 0; }
 
 // update
 // void Channel::insertClient(Client *client, bool is_operator) {

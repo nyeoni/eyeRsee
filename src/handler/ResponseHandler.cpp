@@ -18,8 +18,6 @@ const std::string ResponseHandler::RPL_MYINFO_MSG = "";
 const std::string ResponseHandler::RPL_NOTOPIC_MSG = "No topic is set";
 const std::string ResponseHandler::RPL_TOPIC_MSG = "";
 
-// const std::string ResponseHandler::RPL_INVITING = "";
-// const std::string ResponseHandler::RPL_NAMREPLY = "";
 const std::string ResponseHandler::RPL_ENDOFNAMES_MSG = "End of /NAMES list";
 
 void ResponseHandler::handleResponse(ConnectSocket *src,
@@ -84,48 +82,33 @@ std::string ResponseHandler::createResponse(ConnectSocket *src,
     return res_stream.str();
 }
 
-/**
- * 353 RPL_NAMREPLY
- * "<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"
- *
- * 366 RPL_ENDOFNAMES
- * "<channel> :End of /NAMES list"
- *
- * :gimhannaui-MacBookPro.local 353 inspircd3 = #zzzz :inspircd2 inspircd3
- * @inspircd
- * :gimhannaui-MacBookPro.local 366 inspircd3 #zzzz :End of /NAMES
- list.
-
- */
 std::string ResponseHandler::createJoinReponse(
     const std::string &channel_name, const std::string &nickname,
     std::vector<std::string> &operators, std::vector<std::string> &regulars) {
     std::stringstream res_stream;
     std::vector<std::string>::iterator iter;
-    char sp = 0;
 
     res_stream.fill('0');
     // 353
-    res_stream << ":" << servername << " 353 " << nickname << " = "
-               << channel_name << " :";
+    res_stream << ":" << servername << " " << RPL_NAMREPLY << " " << nickname
+               << " = " << channel_name << " :";
 
     // regulars
     for (iter = regulars.begin(); iter != regulars.end(); ++iter) {
         res_stream << *iter << " ";
     }
-
     // operators
     for (iter = operators.begin(); iter != operators.end(); ++iter) {
         res_stream << "@" << *iter << " ";
     }
-    res_stream << "\n";
+    res_stream << std::endl;
 
     // 366
-    res_stream << ":" << servername << " 366 " << nickname << " "
-               << channel_name << " :End of /NAMES\n";
+    res_stream << ":" << servername << " " << RPL_ENDOFNAMES << " " << nickname
+               << " " << channel_name << " " << getMessage(RPL_ENDOFNAMES)
+               << std::endl;
 
     return res_stream.str();
-    // src->send_buf.append(res);
 }
 
 void ResponseHandler::handleConnectResponse(ConnectSocket *src) {
@@ -167,8 +150,6 @@ std::string ResponseHandler::getMessage(e_res_code res_code) {
             return RPL_NOTOPIC_MSG;
         case RPL_TOPIC:
             return RPL_TOPIC_MSG;
-        // case RPL_NAMREPLY:
-        //     return RPL_NAMREPLY_MSG;
         case RPL_ENDOFNAMES:
             return RPL_ENDOFNAMES_MSG;
         default:

@@ -97,12 +97,14 @@ void Server::handleRead(int event_idx) {
         registerEvent(event.ident, EVFILT_WRITE, EXECUTE, client);
         return;
     }
+    if (connect_socket->getStatus() != UNREGISTER) {
+        while (commands.size()) commands.pop();
+    }
     while (commands.size()) {
         _executor.connect(commands.front(), client, _env.password);
         commands.pop();
-        if (_executor.udatateClientStatus(event.ident, client, REGISTER) == 0) {
+        if (_executor.updateClientStatus(event.ident, client, REGISTER) == 0) {
             std::cout << "Register Success!" << std::endl;
-            _tmp_garbage.erase(client);
             ResponseHandler::handleConnectResponse(client);
             response(connect_socket->getFd(), connect_socket->send_buf);
             break;
@@ -146,12 +148,11 @@ void Server::handleExecute(int event_idx) {
 
 void Server::handleTimer(int event_idx) {
     Event &event = _ev_list[event_idx];
-    // find(event.ident) // TODO : timer access freed memory
     Client *client =
         static_cast<Client *>(event.udata);  // TODO : connect socket
 
     registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
-    if (_executor.udatateClientStatus(event.ident, client, TIMEOUT) == 0)
+    if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0)
         _tmp_garbage.insert(client);
 }
 void Server::handleTimeout() {

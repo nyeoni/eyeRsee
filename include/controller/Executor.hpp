@@ -38,7 +38,7 @@ class Executor {
     void execute(Command *command, Client *client);
     Channel *createChannel(std::string channel_name);
 
-    int udatateClientStatus(int fd, Client *client, e_status status);
+    int updateClientStatus(int fd, Client *client, e_status status);
     void deleteClient(Client *client);
 
    private:

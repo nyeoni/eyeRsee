@@ -35,6 +35,7 @@ class Executor {
 
     Client *accept(int fd);
     int connect(Client *client, std::string password);
+    void execute(Command *command, Client *client, std::string password);
     void execute(Command *command, Client *client);
     Channel *createChannel(std::string channel_name);
 

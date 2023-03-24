@@ -56,31 +56,34 @@ Client *Executor::accept(int fd) {
 int Executor::connect(Client *client, std::string password) {
     std::queue<Command *> commands = client->commands;
     while (commands.size()) {
-        Command *command = commands.front();
+        execute(commands.front(), client, password);
         commands.pop();
-        switch (command->type) {
-            case PASS:
-                pass(client, command->params, password);
-                break;
-            case USER:
-                user(client, command->params);
-                break;
-            case NICK:
-                nick(client, command->params);
-                break;
-            default:
-                // TODO : msg
-                send(client->getFd(),
-                     ":eyeRsee.local 451 * JOIN :You have not registered.\n",
-                     53, 0);
-                break;
-        }
         if (client->isAuthenticate()) {
             updateClientStatus(client->getFd(), client, REGISTER);
             return 0;
         }
     }
     return 1;
+}
+
+void Executor::execute(Command *command, Client *client, std::string password) {
+    switch (command->type) {
+        case PASS:
+            pass(client, command->params, password);
+            break;
+        case USER:
+            user(client, command->params);
+            break;
+        case NICK:
+            nick(client, command->params);
+            break;
+        default:
+            // TODO : msg
+            send(client->getFd(),
+                 ":eyeRsee.local 451 * JOIN :You have not registered.\n", 53,
+                 0);
+            break;
+    }
 }
 
 void Executor::execute(Command *command, Client *client) {

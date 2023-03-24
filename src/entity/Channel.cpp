@@ -30,9 +30,9 @@ void Channel::setName(const std::string &name) { _name = name; }
 void Channel::setTopic(const std::string &topic) { _topic = topic; }
 void Channel::setMode(int mode) {
     if (mode % 2)
-        _mode |= (1 << (mode - 1));  // +flag
+        _mode |= (1 << (mode / 2));  // +flag
     else
-        _mode &= ~(1 << (mode));  // -flag
+        _mode &= ~(1 << (mode / 2));  // -flag
 }
 
 void Channel::clearMode() { _mode = 0; }

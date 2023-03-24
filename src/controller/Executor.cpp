@@ -183,27 +183,35 @@ void Executor::mode(Client *client, params *params) {
         return;
     }
     // 442 Not on channel
-    if (channel_controller.isOnChannel(channel, client)) {
+    if (!channel_controller.isOnChannel(channel, client)) {
         ErrorHandler::handleError(client, channel_name, ERR_NOTONCHANNEL);
         return;
     }
     // 482 permission
-    if (channel_controller.isOperator(channel, client)) {
+    if (!channel_controller.isOperator(channel, client)) {
         ErrorHandler::handleError(client, channel_name, ERR_CHANOPRIVSNEEDED);
         return;
     }
 
     if (mode == OPER_F || mode == OPER_T) {  // +o, -o
-        Client *client = client_controller.find(param->nickname);
-        if (client == NULL) {
-            // 401 no such nickname
+        Client *target = client_controller.find(param->nickname);
+        if (target == NULL) {
+            // target no such nickname
             ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
             return;
         }
-        if (channel_controller.updateMode(mode, channel, client) == false)
+        if (!channel_controller.isOnChannel(channel, target)) {
+            ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
             return;
+        }
+        if (channel_controller.updateMode(mode, channel, target) == false) {
+            return;
+        }
+
     } else {  // +i, -i, +t, -t
-        if (channel_controller.updateMode(mode, channel) == false) return;
+        if (channel_controller.updateMode(mode, channel) == false) {
+            return;
+        }
     }
 
     // response
@@ -225,15 +233,15 @@ void Executor::topic(Client *client, params *params) {
     }
 
     // 442 nick2 #channel :You're not on that channel!
-    if (channel_controller.isOnChannel(channel, client)) {
+    if (!channel_controller.isOnChannel(channel, client)) {
         ErrorHandler::handleError(client, channel_name, ERR_NOTONCHANNEL);
         return;
     }
 
     // 482 nick2 #channel :You must be a channel op or higher to change the
     // topic.
-    if (!channel_controller.isTopicMode(channel) &&
-        channel_controller.isOperator(channel, client)) {
+    if (channel_controller.isTopicMode(channel) &&
+        !channel_controller.isOperator(channel, client)) {
         ErrorHandler::handleError(client, channel_name, ERR_CHANOPRIVSNEEDED);
         return;
     }
@@ -264,13 +272,12 @@ void Executor::invite(Client *invitor, params *params) {
         return;
     }
     // 442 nick2 #channel :You're not on that channel!
-    if (channel_controller.isOnChannel(channel, invitor)) {
+    if (!channel_controller.isOnChannel(channel, invitor)) {
         ErrorHandler::handleError(invitor, channel_name, ERR_NOTONCHANNEL);
         return;
     }
     // 482 nick2 #channel :You must be a channel op or higher to send an invite.
-    if (!channel_controller.isInviteMode(channel) &&
-        channel_controller.isOperator(channel, invitor)) {
+    if (channel_controller.isOperator(channel, invitor)) {
         ErrorHandler::handleError(invitor, channel_name, ERR_CHANOPRIVSNEEDED);
         return;
     }
@@ -394,12 +401,12 @@ void Executor::kick(Client *kicker, params *params) {
         return;
     }
     // 442 not on channel
-    if (channel_controller.isOnChannel(channel, kicker) == false) {
+    if (!channel_controller.isOnChannel(channel, kicker)) {
         ErrorHandler::handleError(kicker, channel_name, ERR_NOTONCHANNEL);
         return;
     }
     // 482 not channel operator
-    if (channel_controller.isOperator(channel, kicker) == false) {
+    if (!channel_controller.isOperator(channel, kicker)) {
         ErrorHandler::handleError(kicker, channel_name, ERR_CHANOPRIVSNEEDED);
         return;
     }

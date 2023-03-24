@@ -69,12 +69,14 @@ bool ChannelController::updateMode(int mode, Channel *channel, Client *client) {
     else if (mode == OPER_T)
         return updateRole(channel, client, OPERATOR);
 
-    if (mode == INVITE_ONLY_F || mode == INVITE_ONLY_T) {
-        if (isInviteMode(channel) == false) return false;
+    if ((mode == INVITE_ONLY_F && !isInviteMode(channel)) ||
+        (mode == INVITE_ONLY_T && isInviteMode(channel))) {
+        return false;
     }
 
-    if (mode == TOPIC_PRIV_F || mode == TOPIC_PRIV_T) {
-        if (isTopicMode(channel) == false) return false;
+    if (mode == TOPIC_PRIV_F && !isTopicMode(channel) ||
+        mode == TOPIC_PRIV_T && isTopicMode(channel)) {
+        return false;
     }
 
     channel->setMode(mode);
@@ -98,6 +100,11 @@ const std::set<Client *> &ChannelController::getRegulars(
     const Channel *channel) const {
     return channel->getRegulars();
 }
+
+// bool ChannelController::isOnChannel(Channel *channel, std::string &nickname)
+// {
+//         return (isOperator(channel, client) || isRegular(channel, client));
+// }
 
 bool ChannelController::isOnChannel(Channel *channel, Client *client) {
     return (isOperator(channel, client) || isRegular(channel, client));
@@ -168,14 +175,14 @@ bool ChannelController::isBanMode(const Channel *channel) {
 bool ChannelController::updateRole(Channel *channel, Client *client,
                                    e_role role) {
     // update to regular (operator -> regular)
-    if (role == REGULAR && isOperator(channel, client) == true) {
+    if (role == REGULAR && isOperator(channel, client)) {
         insertRegular(channel, client);
         eraseOperator(channel, client);
         return true;
     }
 
-    // update to operator (regular -> operator)
-    if (role == OPERATOR && isOperator(channel, client) == false) {
+    // update to operaor (regular -> operator)
+    if (role == OPERATOR && isRegular(channel, client)) {
         insertOperator(channel, client);
         eraseRegular(channel, client);
         return true;

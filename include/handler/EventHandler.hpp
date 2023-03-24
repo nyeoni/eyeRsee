@@ -24,7 +24,6 @@ class EventHandler {
     Event _ev_list[_max_event];
     EventList _change_list;
 
-    std::set<Client *> _tmp_garbage;  // timeout
     std::set<Client *> _garbage;      // client gone
 
    public:
@@ -37,7 +36,6 @@ class EventHandler {
     int monitorEvent();
 
     void garbageCollector();           // TODO : naming;
-    virtual void handleTimeout() = 0;  // TODO : naming;
     virtual void handleClose() = 0;    // TODO : naming;
 
     // handle functions

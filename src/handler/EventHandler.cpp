@@ -30,7 +30,6 @@ int EventHandler::monitorEvent() {
 }
 
 void EventHandler::garbageCollector() {
-    handleTimeout();
     handleClose();
 }
 
@@ -51,7 +50,6 @@ void EventHandler::handleEvent(int event_idx) {
         action = TIMER;
 
     if (event.flags & EV_EOF) {
-        _tmp_garbage.erase(client);
         _garbage.insert(client);
         std::cout << "# " << event.ident << " EOF" << std::endl;
         return;

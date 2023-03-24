@@ -44,7 +44,6 @@ class Server : public EventHandler {
     void handleTimer(int event_idx);
 
     // garbageCollector methods
-    void handleTimeout();
     void handleClose();
 
     int parse(int fd, Client *client);

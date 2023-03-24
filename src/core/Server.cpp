@@ -124,10 +124,9 @@ void Server::handleExecute(int event_idx) {
     const std::set<Client *> &client_list = _executor.getClientList();
     std::set<Client *>::iterator receiver_iter = client_list.begin();
     for (; receiver_iter != client_list.end(); ++receiver_iter) {
-        if ((*receiver_iter)->getStatus() == TERMINATE) {
-            _tmp_garbage.erase(*receiver_iter);
+        if ((*receiver_iter)->getStatus() == TERMINATE)
             _garbage.insert(*receiver_iter);
-        } else
+        else
             registerEvent((*receiver_iter)->getFd(), EVFILT_WRITE, EXECUTE,
                           *receiver_iter);
     }
@@ -143,19 +142,9 @@ void Server::handleTimer(int event_idx) {
         static_cast<Client *>(event.udata);  // TODO : connect socket
 
     registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
-    if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0)
-        _tmp_garbage.insert(client);
-}
-void Server::handleTimeout() {
-    std::set<Client *>::iterator iter = _tmp_garbage.begin();
-
-    for (; iter != _tmp_garbage.end(); ++iter) {
-        _garbage.insert(*iter);
-        send((*iter)->getFd(), "Timeout\n", 9, 0);
-    }
-    iter = _garbage.begin();
-    for (; iter != _garbage.end(); ++iter) {
-        _tmp_garbage.erase(*iter);
+    if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0){
+        _garbage.insert(client);
+        send(client->getFd(), "Timeout\n", 9, 0);
     }
 }
 

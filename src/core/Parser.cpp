@@ -59,7 +59,7 @@ void Parser::parseQuit(e_cmd &cmd, params *&params) {
     quit_params *p;
     p = new quit_params;
     if (getToken(MSG) && token[0] == ':') {
-        p->msg = "\"" + token.substr(1) + "\"";;
+        p->msg = "\"" + token.substr(1) + "\"";
     }
     params = p;
 }
@@ -80,7 +80,8 @@ void Parser::parseUser(e_cmd &cmd, params *&params) {
     user_params *p;
     std::vector<std::string> tokens = split(tokenStream, ' ');
 
-    if (tokens.size() != 4 && tokens.size() != 5) throw NotEnoughParamsException("USER");
+    if (tokens.size() != 4 && tokens.size() != 5)
+        throw NotEnoughParamsException("USER");
     p = new user_params;
     p->username = tokens[0];
     p->hostname = tokens[1];
@@ -136,8 +137,7 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
     if (!isEOF() && getToken()) {
         p = new mode_params;
         p->channel = token;
-        if (token[0] != '#')
-            throw UnHandledModeException("MODE");
+        if (token[0] != '#') throw UnHandledModeException("MODE");
         if (!isEOF() && getToken()) {
             if (token == "+o" || token == "o") {
                 p->mode = OPER_T;
@@ -147,9 +147,15 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
                     delete p;
                     throw NotEnoughParamsException("MODE");
                 }
-            } else if (token == "-o")
+            } else if (token == "-o") {
                 p->mode = OPER_F;
-            else if (token == "+i" || token == "i")
+                if (!isEOF() && getToken()) {
+                    p->nickname = validNickName(token);
+                } else {
+                    delete p;
+                    throw NotEnoughParamsException("MODE");
+                }
+            } else if (token == "+i" || token == "i")
                 p->mode = INVITE_ONLY_T;
             else if (token == "-i")
                 p->mode = INVITE_ONLY_F;

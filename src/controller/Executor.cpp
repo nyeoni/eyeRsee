@@ -519,7 +519,7 @@ void Executor::broadcast(const ChannelList &channel_list,
     for (; client_iter != client_list.end(); ++client_iter) {
         (*client_iter)->send_buf.append(msg);
     }
-    _client_list.insert(channel_list.begin(), channel_list.end());
+    _client_list.insert(client_list.begin(), client_list.end());
 }
 
 void Executor::notice(Client *client, params *params) {

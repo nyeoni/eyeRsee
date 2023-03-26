@@ -6,7 +6,6 @@
 
 int main(int argc, char **argv) {
     // <exec> <port> <password>
-    // TODO change env naming
     ft::Server server;
 
     try {
@@ -14,6 +13,7 @@ int main(int argc, char **argv) {
         server.run();
     } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
-        return (1);
+        return (EXIT_FAILURE);
     }
+    return (EXIT_SUCCESS);
 }

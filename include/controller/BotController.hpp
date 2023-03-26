@@ -10,10 +10,7 @@ namespace ft {
 class BotController {
    public:
     BotController();
-    BotController(const BotController &copy);
     ~BotController();
-
-    BotController &operator=(const BotController &ref);
 
     std::string help();
     std::string hi();

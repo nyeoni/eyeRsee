@@ -25,14 +25,14 @@ enum e_cmd {
 };
 
 enum e_mode {
-    OPER_F = 0,     // 11111101
-    OPER_T,         // 00000010 -> 1 << 1
-    INVITE_ONLY_F,  // 11110111
-    INVITE_ONLY_T,  // 00001000 -> 1 << 3
-    TOPIC_PRIV_F,   // 11011111
-    TOPIC_PRIV_T,   // 00100000 -> 1 << 5
-    BAN_F,          // 01111111
-    BAN_T           // 10000000 -> 1 << 7
+    OPER_F = 0,
+    OPER_T,
+    INVITE_ONLY_F,
+    INVITE_ONLY_T,
+    TOPIC_PRIV_F,
+    TOPIC_PRIV_T,
+    BAN_F,
+    BAN_T
 };
 
 enum e_role { OPERATOR = 0, REGULAR };

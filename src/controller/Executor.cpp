@@ -15,7 +15,14 @@ Executor::Executor(const Executor &copy) { *this = copy; }
 
 Executor::~Executor() {}
 
-Executor &Executor::operator=(const Executor &ref) { return (*this); }
+Executor &Executor::operator=(const Executor &ref) {
+    this->_client_list = ref._client_list;
+    this->channel_controller = ref.channel_controller;
+    this->client_controller = ref.client_controller;
+    this->bot_controller = ref.bot_controller;
+
+    return (*this);
+}
 
 Channel *Executor::createChannel(std::string channel_name) {
     return channel_controller.insert(channel_name);
@@ -32,7 +39,7 @@ int Executor::updateClientStatus(int fd, Client *client, e_status status) {
     if (!target || target != client) return -1;
     if (status == TIMEOUT && client->getStatus() != UNREGISTER) return -1;
     if (status == REGISTER && client->isAuthenticate() == false) return -1;
-    client_controller.updateClientStatus(fd, client, status);
+    client_controller.updateClientStatus(client, status);
     return 0;
 }
 
@@ -78,10 +85,8 @@ void Executor::execute(Command *command, Client *client, std::string password) {
             nick(client, command->params);
             break;
         default:
-            // TODO : msg
-            send(client->getFd(),
-                 ":eyeRsee.local 451 * JOIN :You have not registered.\n", 53,
-                 0);
+            ErrorHandler::handleError(client, command->getCommand(),
+                                      ERR_NOTREGISTERED);
             break;
     }
     delete command;
@@ -120,7 +125,7 @@ void Executor::execute(Command *command, Client *client) {
             notice(client, command->params);
             break;
         case PING:
-            pong(client, command->params);
+            pong(client);
             break;
         case BOT:
             bot(client, command->params);
@@ -271,8 +276,7 @@ void Executor::topic(Client *client, params *params) {
         return;
     }
 
-    // 482 nick2 #channel :You must be a channel op or higher to change the
-    // topic.
+    // 482 nick2 #channel :You must be a channel op or higher to change
     if (channel_controller.isTopicMode(channel) &&
         !channel_controller.isOperator(channel, client)) {
         ErrorHandler::handleError(client, channel_name, ERR_CHANOPRIVSNEEDED);
@@ -281,7 +285,7 @@ void Executor::topic(Client *client, params *params) {
 
     std::string prev_topic = channel->getTopic();
     if (prev_topic == topic) return;
-    channel_controller.updateTopic(channel, client, topic);
+    channel_controller.updateTopic(channel, topic);
     std::string response_msg =
         ResponseHandler::createResponse(client, "TOPIC", channel_name, topic);
     broadcast(channel, response_msg);
@@ -349,9 +353,6 @@ void Executor::user(Client *new_client, params *params) {
     new_client->setServername(param->servername);
     new_client->setRealname(param->realname);
     new_client->auth[USER] = true;
-    // response
-    // USER guest tolmoon tolsun :Ronnie Reagan
-    // :testnick USER guest tolmoon tolsun :Ronnie Reagan
 }
 
 /**
@@ -404,13 +405,13 @@ void Executor::quit(Client *client, params *params) {
     // 모든 채널에서 quit && send message
     _client_list.insert(client);
     broadcast(client->getChannelList(), response_msg);
-    client_controller.updateClientStatus(client->getFd(), client, TERMINATE);
+    client_controller.updateClientStatus(client, TERMINATE);
 }
 
 void Executor::kick(Client *kicker, params *params) {
     kick_params *param = dynamic_cast<kick_params *>(params);
     std::string channel_name = param->channel;
-    std::string nickname = param->user;  // TODO param->user nickname?
+    std::string nickname = param->user;
     std::string comment = param->comment.empty() ? " " : param->comment;
     Client *client = client_controller.find(nickname);
     Channel *channel = channel_controller.find(channel_name);
@@ -457,14 +458,11 @@ void Executor::privmsg(Client *client, params *params) {
             Channel *channel = channel_controller.find(name);
             if (channel) {
                 if (channel_controller.isOnChannel(channel, client)) {
-                    // user3!hannah@127.0.0.1 PRIVMSG #testchannel
-                    // :hi
                     std::string response_msg = ResponseHandler::createResponse(
                         client, "PRIVMSG", name, param->msg);
                     broadcast(channel, response_msg, client);
                 } else {
-                    //  404 You cannot send external  messages to
-                    //  this
+                    //  404 You cannot send external  messages
                     ErrorHandler::handleError(client, name,
                                               ERR_CANNOTSENDTOCHAN);
                     return;
@@ -495,7 +493,7 @@ void Executor::privmsg(Client *client, params *params) {
  */
 void Executor::broadcast(Channel *channel, const std::string &msg,
                          Client *excluded) {
-    std::set<Client *> receivers;  // TODO
+    std::set<Client *> receivers;
     std::set<Client *>::iterator iter;
 
     channel_controller.findInSet(receivers, channel);
@@ -512,7 +510,7 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
  */
 void Executor::broadcast(const ChannelList &channel_list,
                          const std::string &msg) {
-    ClientList client_list;  // TODO
+    ClientList client_list;
     client_list_iterator client_iter;
     channel_list_iterator channel_iter = channel_list.begin();
 
@@ -538,7 +536,7 @@ void Executor::notice(Client *client, params *params) {
         ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
 }
 
-void Executor::pong(Client *client, params *params) {
+void Executor::pong(Client *client) {
     ResponseHandler::handlePongResponse(client);
 }
 
@@ -547,8 +545,6 @@ void Executor::bot(Client *client, params *params) {
     std::string receiver = dynamic_cast<bot_params *>(params)->receiver;
     std::string msg;
     std::string delimiter = client->delimiter == CRLF ? "\r\n" : "\n";
-    // :hannkim!chloek@127.0.0.1 PRIVMSG #room :hi
-    // :bot!chloek@127.0.0.1 PRIVMSG #room :<bot>
     switch (cmd) {
         case BOT_HELP:
             msg = bot_controller.help();

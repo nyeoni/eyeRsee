@@ -27,7 +27,7 @@ class Channel {
     std::string _topic;
     ClientList _regulars;
     ClientList _operators;
-    ClientList _invited_clients;  // invite list
+    ClientList _invited_clients;
 
    public:
     Channel();
@@ -49,7 +49,6 @@ class Channel {
 
     void clearMode();
 
-    // update
     void insertOperator(Client *client);
     void insertRegular(Client *client);
     void insertInvitedClient(Client *client);

@@ -15,8 +15,7 @@ ChannelController::ChannelController(const ChannelController &copy) {
 ChannelController::~ChannelController() {}
 
 ChannelController &ChannelController::operator=(const ChannelController &ref) {
-    // if (*this != ref) {
-    // }
+    this->_channels = ref._channels;
     return (*this);
 }
 
@@ -48,7 +47,7 @@ void ChannelController::findInSet(ClientList &client_list, Channel *channel) {
     client_list.insert(regs.begin(), regs.end());
 }
 
-void ChannelController::erase(const Channel *channel) {  // const
+void ChannelController::erase(const Channel *channel) {
     _channels.erase(channel->getName());
 }
 
@@ -60,7 +59,6 @@ void ChannelController::erase(const std::string &channel_name) {
  * @return true - attemping to to update to the different mode
  * @return false - attemping to update to the same mode
  * @note mode == OPER_F || mode == OPER_T => client is not NULL
- * TODO int mode -> e_mode mode
  */
 bool ChannelController::updateMode(int mode, Channel *channel, Client *client) {
     if (mode == OPER_F)
@@ -73,8 +71,8 @@ bool ChannelController::updateMode(int mode, Channel *channel, Client *client) {
         return false;
     }
 
-    if (mode == TOPIC_PRIV_F && !isTopicMode(channel) ||
-        mode == TOPIC_PRIV_T && isTopicMode(channel)) {
+    if ((mode == TOPIC_PRIV_F && !isTopicMode(channel)) ||
+        (mode == TOPIC_PRIV_T && isTopicMode(channel))) {
         return false;
     }
 
@@ -82,7 +80,7 @@ bool ChannelController::updateMode(int mode, Channel *channel, Client *client) {
     return true;
 }
 
-void ChannelController::updateTopic(Channel *channel, Client *client,
+void ChannelController::updateTopic(Channel *channel,
                                     const std::string &topic) {
     channel->setTopic(topic);
 }
@@ -157,17 +155,14 @@ void ChannelController::eraseInvitedClient(Channel *channel, Client *client) {
 }
 
 bool ChannelController::isInviteMode(const Channel *channel) {
-    // return (channel->getMode() & (INVITE_ONLY_T - 1));
     return (channel->getMode() & (1 << (INVITE_ONLY_T / 2)));
 }
 
 bool ChannelController::isTopicMode(const Channel *channel) {
-    // return (channel->getMode() & (TOPIC_PRIV_T - 1));
     return (channel->getMode() & (1 << (TOPIC_PRIV_T / 2)));
 }
 
 bool ChannelController::isBanMode(const Channel *channel) {
-    // return (channel->getMode() & (BAN_T - 1));
     return (channel->getMode() & (1 << (BAN_T / 2)));
 }
 

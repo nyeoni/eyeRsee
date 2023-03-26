@@ -74,7 +74,6 @@ class ConnectSocket : public SocketBase {
 
     // setter
     void setStatus(e_status status);
-    // TODO : setAuth
     void setNickname(const std::string &nickname);
     void setUsername(const std::string &username);
     void setHostname(const std::string &hostname);

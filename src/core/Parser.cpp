@@ -1,12 +1,8 @@
 #include "core/Parser.hpp"
 
 #include "core/Command.hpp"
-#include "core/Socket.hpp"
 #include "core/utility.hpp"
 #include "handler/ErrorHandler.hpp"
-
-// delete
-#include <iostream>
 
 namespace ft {
 
@@ -28,31 +24,37 @@ bool Parser::isSpecial(char c) {
         return true;
     return false;
 }
+
+bool Parser::validPassword(std::string &password) {
+    if (password.size() < 3 || password.size() > 10) return false;
+    for (size_t i = 1; i < password.length(); i++) {
+        if (!isascii(password[i]) || isspace(password[i])) return false;
+    }
+    return true;
+}
+
 bool Parser::validChannelName(std::string &channel) {
-    // chstring any string except for SPACE, BELL, NUL, CR, LF and comma(',')
     if (channel.size() > 200) return false;
     if (channel[0] != '#') return false;
-    for (int i = 1; i < channel.length(); i++) {
+    for (size_t i = 1; i < channel.length(); i++) {
         if (!isascii(channel[i]) || isspace(channel[i]) || channel[i] == ',')
             return false;
     }
     return true;
 }
-std::string Parser::validChannelName(
-    std::vector<std::string> &channels) {
+std::string Parser::validChannelName(std::vector<std::string> &channels) {
     std::vector<std::string>::iterator it;
     for (it = channels.begin(); it != channels.end(); it++) {
         if (!validChannelName(*it)) return (*it);
     }
     return "";
 }
+
 bool Parser::validNickName(std::string &nickname) {
-    // <letter> { <letter> | <number> | <special> }
     if (nickname.length() > 9) return false;
     if (!isalpha(nickname[0])) return false;
-    for (int i = 1; i < nickname.length(); i++) {
-        if (!isalnum(nickname[i]) && !isSpecial(nickname[i]))
-            return false;
+    for (size_t i = 1; i < nickname.length(); i++) {
+        if (!isalnum(nickname[i]) && !isSpecial(nickname[i])) return false;
     }
     return true;
 }
@@ -198,7 +200,6 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
             throw UnHandledModeException("MODE");
         }
     } else {
-        delete p;
         throw NotEnoughParamsException("MODE");
     }
     params = p;
@@ -210,7 +211,6 @@ void Parser::parseInvite(e_cmd &cmd, params *&params) {
 
     if (tokens.size() != 2) throw NotEnoughParamsException("INVITE");
     p = new invite_params;
-    // TODO fail 시 메모리 해제
     if (!validNickName(tokens[0])) {
         delete p;
         throw InvalidNickNameException(tokens[0]);
@@ -251,7 +251,7 @@ void Parser::parseKick(e_cmd &cmd, params *&params) {
 }
 void Parser::parseTopic(e_cmd &cmd, params *&params) {
     cmd = TOPIC;
-    topic_params *p;
+    topic_params *p = NULL;
 
     if (!isEOF() && getToken()) {
         p = new topic_params;
@@ -273,7 +273,6 @@ bool Parser::parseBot(e_cmd &cmd, params *&params, std::string &receiver) {
     bot_params *p;
     std::string command;
 
-    std::cout << "Bot Parsing: " << token << std::endl;
     p = new bot_params;
 
     command = toUpperCase(token.substr(2));
@@ -300,7 +299,6 @@ bool Parser::parseBot(e_cmd &cmd, params *&params, std::string &receiver) {
         return false;
     }
 
-    std::cout << "Bot Parsing Success" << std::endl;
     p->receiver = receiver;
     cmd = BOT;
     params = p;
@@ -308,7 +306,7 @@ bool Parser::parseBot(e_cmd &cmd, params *&params, std::string &receiver) {
 }
 void Parser::parsePrivmsg(e_cmd &cmd, params *&params) {
     cmd = PRIVMSG;
-    privmsg_params *p;
+    privmsg_params *p = NULL;
 
     if (!isEOF() && getToken()) {
         std::vector<std::string> receivers = split(token, ',');
@@ -320,7 +318,6 @@ void Parser::parsePrivmsg(e_cmd &cmd, params *&params) {
             p->receivers = receivers;
             p->msg = token.substr(1);
         } else {
-            delete p;
             throw NotEnoughParamsException("PRIVMSG");
         }
     } else {
@@ -342,7 +339,6 @@ void Parser::parseNotice(e_cmd &cmd, params *&params) {
             throw NotEnoughParamsException("NOTICE");
         }
     } else {
-        delete p;
         throw NotEnoughParamsException("NOTICE");
     }
     params = p;
@@ -355,7 +351,6 @@ void Parser::parsePing(e_cmd &cmd, params *&params) {
         p = new ping_params;
         p->servername = token;
     } else {
-        delete p;
         throw NotEnoughParamsException("PING");
     }
     params = p;

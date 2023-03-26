@@ -17,6 +17,7 @@ enum e_err_code {
     ERR_NICKNAMEINUSE = 433,
     ERR_NOTONCHANNEL = 442,
     ERR_USERONCHANNEL = 443,
+    ERR_NOTREGISTERED = 451,
     ERR_NEEDMOREPARAMS = 461,
     ERR_ALREADYREGISTERED = 462,
     ERR_PASSWDMISMATCH = 464,
@@ -46,9 +47,11 @@ class ErrorHandler {
     static const std::string ERR_NOSUCHCHANNEL_MSG;
     static const std::string ERR_BADCHANMASK_MSG;
     static const std::string ERR_CANNOTSENDTOCHAN_MSG;
+    static const std::string ERR_NOTREGISTERED_MSG;
 
    public:
-    static void handleError(ConnectSocket *src, std::string cause, e_err_code code);
+    static void handleError(ConnectSocket *src, std::string cause,
+                            e_err_code code);
     static void handleError(std::exception &e, ConnectSocket *src);
 
    private:

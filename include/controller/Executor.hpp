@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
+#include "controller/BotController.hpp"
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
-#include "controller/BotController.hpp"
 #include "core/Command.hpp"
 
 namespace ft {
@@ -20,14 +20,13 @@ class Executor {
     ClientController client_controller;
     BotController bot_controller;
 
-    // TODO : 정리 필요
     typedef std::set<Channel *> ChannelList;
     typedef std::set<Client *> ClientList;
     typedef std::set<Channel *>::iterator channel_list_iterator;
     typedef std::set<Client *>::iterator client_list_iterator;
 
    public:
-    Executor(/* args*/);
+    Executor();
     Executor(const Executor &copy);
     ~Executor();
     Executor &operator=(const Executor &ref);
@@ -59,7 +58,7 @@ class Executor {
     void quit(Client *client, params *params);
     void privmsg(Client *client, params *params);
     void notice(Client *client, params *params);
-    void pong(Client *client, params *params);
+    void pong(Client *client);
 
     void bot(Client *client, params *params);
 

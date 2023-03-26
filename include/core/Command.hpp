@@ -8,7 +8,7 @@
 
 namespace ft {
 
-class Client;  // TODO 이걸로 모든 컴파일 에러가 해결되는 이유 다같이 생각해보기
+class Client;
 
 enum e_bot_cmd {
     BOT_HELP,
@@ -56,10 +56,13 @@ struct invite_params : public params {
     std::string nickname;
     std::string channel;
 };
+/**
+ * @brief comment is optional
+ */
 struct kick_params : public params {
     std::string channel;
     std::string user;
-    std::string comment;  // optional
+    std::string comment;
 };
 struct topic_params : public params {
     std::string channel;
@@ -87,6 +90,8 @@ struct Command {
 
     Command();
     ~Command();
+
+    std::string getCommand();
 };
 
 }  // namespace ft

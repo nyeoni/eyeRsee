@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "Parser.hpp"
 #include "controller/Executor.hpp"
+#include "core/Parser.hpp"
 #include "core/Socket.hpp"
 #include "handler/EventHandler.hpp"
 
@@ -17,7 +17,6 @@ struct Env {
     static const int max_client = 500;
     static const int max_channel = 30;
 
-    // method
     void parse(int argc, char **argv);
 };
 

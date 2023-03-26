@@ -41,8 +41,6 @@ class ResponseHandler {
 
     static const std::string RPL_NOTOPIC_MSG;
     static const std::string RPL_TOPIC_MSG;
-    // static const std::string RPL_INVITING_MSG;
-    // static const std::string RPL_NAMREPLY_MSG;
     static const std::string RPL_ENDOFNAMES_MSG;
 
    public:
@@ -52,9 +50,9 @@ class ResponseHandler {
                                const std::string &param,
                                const std::string &msg = "");
     static void handlePongResponse(ConnectSocket *src);
-    static void handleBotResponse(ConnectSocket *src, std::string &param, std::string &msg);
+    static void handleBotResponse(ConnectSocket *src, std::string &param,
+                                  std::string &msg);
 
-    // SECTION
     static std::string createResponse(ConnectSocket *src,
                                       const std::string &command,
                                       const std::string &param,
@@ -78,7 +76,7 @@ class ResponseHandler {
 
    private:
     static std::string getMessage(e_res_code res_code);
-};  // namespace ft
+};
 
 }  // namespace ft
 

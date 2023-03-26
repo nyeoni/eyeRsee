@@ -27,7 +27,7 @@ class ClientController {
     Clients _clients;
 
    public:
-    ClientController(/* args*/);
+    ClientController();
     ClientController(const ClientController& copy);
     ~ClientController();
     ClientController& operator=(const ClientController& ref);
@@ -44,9 +44,8 @@ class ClientController {
     void erase(const std::string& nickname);
     void erase(int fd);
 
-    void updateClientStatus(int fd, Client* client, e_status status);
+    void updateClientStatus(Client* client, e_status status);
 
-    //void updateNickname(int fd, const std::string& nickname);
     void updateNickname(Client* client, const std::string& nickname);
 
     void insertChannel(Client* client, Channel* channel);
@@ -54,7 +53,6 @@ class ClientController {
 
     void eraseChannel(Client* client, Channel* channel);
 
-    // make client list to vector<string>
     std::vector<std::string> clientToString(ClientList client_list);
 };
 

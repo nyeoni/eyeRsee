@@ -15,7 +15,7 @@ int Parser::getToken(int flag = TOKEN) {
         std::getline(tokenStream, token);
     else
         std::getline(tokenStream, token, ' ');
-    return (1);
+    return token.length();
 }
 bool Parser::isEOF() {
     if (tokenStream.eof()) return true;
@@ -24,37 +24,37 @@ bool Parser::isEOF() {
 
 bool Parser::isSpecial(char c) {
     if (c == '-' || c == '[' || c == ']' || c == '\\' || c == '`' || c == '^' ||
-        c == '{' || c == '}' || c == '_')
+        c == '{' || c == '}')
         return true;
     return false;
 }
-std::string &Parser::validChannelName(std::string &channel) {
+bool Parser::validChannelName(std::string &channel) {
     // chstring any string except for SPACE, BELL, NUL, CR, LF and comma(',')
-    if (channel.size() > 200) throw InvalidChannelNameException(channel);
-    if (channel[0] != '#') throw InvalidChannelNameException(channel);
+    if (channel.size() > 200) return false;
+    if (channel[0] != '#') return false;
     for (int i = 1; i < channel.length(); i++) {
         if (!isascii(channel[i]) || isspace(channel[i]) || channel[i] == ',')
-            throw InvalidChannelNameException(channel);
+            return false;
     }
-    return channel;
+    return true;
 }
-std::vector<std::string> &Parser::validChannelName(
+std::string Parser::validChannelName(
     std::vector<std::string> &channels) {
     std::vector<std::string>::iterator it;
     for (it = channels.begin(); it != channels.end(); it++) {
-        validChannelName(*it);
+        if (!validChannelName(*it)) return (*it);
     }
-    return channels;
+    return "";
 }
-std::string &Parser::validNickName(std::string &nickname) {
+bool Parser::validNickName(std::string &nickname) {
     // <letter> { <letter> | <number> | <special> }
-    if (nickname.length() > 9) throw InvalidNickNameException(nickname);
-    if (!isalpha(nickname[0])) throw InvalidNickNameException(nickname);
+    if (nickname.length() > 9) return false;
+    if (!isalpha(nickname[0])) return false;
     for (int i = 1; i < nickname.length(); i++) {
         if (!isalnum(nickname[i]) && !isSpecial(nickname[i]))
-            throw InvalidNickNameException(nickname);
+            return false;
     }
-    return nickname;
+    return true;
 }
 
 void Parser::parseQuit(e_cmd &cmd, params *&params) {
@@ -99,8 +99,12 @@ void Parser::parseNick(e_cmd &cmd, params *&params) {
     std::vector<std::string> tokens = split(tokenStream, ' ');
     if (tokens.size() != 1) throw NotEnoughParamsException("NICK");
     p = new nick_params;
-    p->nickname = validNickName(tokens[0]);
     params = p;
+    if (!validNickName(tokens[0])) {
+        delete p;
+        throw InvalidNickNameException(tokens[0]);
+    }
+    p->nickname = tokens[0];
 }
 void Parser::parseJoin(e_cmd &cmd, params *&params) {
     cmd = JOIN;
@@ -109,8 +113,12 @@ void Parser::parseJoin(e_cmd &cmd, params *&params) {
     if (!isEOF() && getToken()) {
         p = new join_params;
         std::vector<std::string> channels = split(token, ',');
-
-        p->channels = validChannelName(channels);
+        std::string channel;
+        if (!(channel = validChannelName(channels)).empty()) {
+            delete p;
+            throw InvalidChannelNameException(channel);
+        }
+        p->channels = channels;
         if (!isEOF() && getToken()) {
             std::vector<std::string> keys = split(token, ',');
             p->keys = keys;
@@ -126,8 +134,12 @@ void Parser::parsePart(e_cmd &cmd, params *&params) {
     if (!isEOF() && getToken()) {
         p = new part_params;
         std::vector<std::string> channels = split(token, ',');
-
-        p->channels = validChannelName(channels);
+        std::string channel;
+        if (!(channel = validChannelName(channels)).empty()) {
+            delete p;
+            throw InvalidChannelNameException(channel);
+        }
+        p->channels = channels;
     } else {
         throw NotEnoughParamsException("PART");
     }
@@ -148,7 +160,11 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
             if (token == "+o" || token == "o") {
                 p->mode = OPER_T;
                 if (!isEOF() && getToken()) {
-                    p->nickname = validNickName(token);
+                    if (!validNickName(token)) {
+                        delete p;
+                        throw InvalidNickNameException(token);
+                    }
+                    p->nickname = token;
                 } else {
                     delete p;
                     throw NotEnoughParamsException("MODE");
@@ -156,7 +172,11 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
             } else if (token == "-o") {
                 p->mode = OPER_F;
                 if (!isEOF() && getToken()) {
-                    p->nickname = validNickName(token);
+                    if (!validNickName(token)) {
+                        delete p;
+                        throw InvalidNickNameException(token);
+                    }
+                    p->nickname = token;
                 } else {
                     delete p;
                     throw NotEnoughParamsException("MODE");
@@ -169,8 +189,10 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
                 p->mode = TOPIC_PRIV_T;
             else if (token == "-t")
                 p->mode = TOPIC_PRIV_F;
-            else
+            else {
+                delete p;
                 throw UnHandledModeException("MODE");
+            }
         } else {
             delete p;
             throw UnHandledModeException("MODE");
@@ -189,8 +211,16 @@ void Parser::parseInvite(e_cmd &cmd, params *&params) {
     if (tokens.size() != 2) throw NotEnoughParamsException("INVITE");
     p = new invite_params;
     // TODO fail 시 메모리 해제
-    p->nickname = validNickName(tokens[0]);
-    p->channel = validChannelName(tokens[1]);
+    if (!validNickName(tokens[0])) {
+        delete p;
+        throw InvalidNickNameException(tokens[0]);
+    }
+    p->nickname = tokens[0];
+    if (!validChannelName(tokens[1])) {
+        delete p;
+        throw InvalidChannelNameException(tokens[1]);
+    }
+    p->channel = tokens[1];
     params = p;
 }
 void Parser::parseKick(e_cmd &cmd, params *&params) {
@@ -200,7 +230,11 @@ void Parser::parseKick(e_cmd &cmd, params *&params) {
     if (!isEOF() && getToken()) {
         p = new kick_params;
 
-        p->channel = validChannelName(token);
+        if (!validChannelName(token)) {
+            delete p;
+            throw InvalidChannelNameException(token);
+        }
+        p->channel = token;
         if (!isEOF() && getToken()) {
             p->user = token;
             if (getToken(MSG) != EOF && token[0] == ':') {
@@ -221,7 +255,11 @@ void Parser::parseTopic(e_cmd &cmd, params *&params) {
 
     if (!isEOF() && getToken()) {
         p = new topic_params;
-        p->channel = validChannelName(token);
+        if (!validChannelName(token)) {
+            delete p;
+            throw InvalidChannelNameException(token);
+        }
+        p->channel = token;
         if (!isEOF() && getToken(MSG) && token[0] == ':') {
             p->topic = token.substr(1);
         } else {

@@ -24,10 +24,9 @@ class Parser {
     bool isEOF();
 
     static bool isSpecial(char c);
-    static std::string &validChannelName(std::string &channel);
-    static std::vector<std::string> &validChannelName(
-        std::vector<std::string> &channels);
-    static std::string &validNickName(std::string &nickname);
+    static bool validChannelName(std::string &channel);
+    static std::string validChannelName(std::vector<std::string> &channels);
+    static bool validNickName(std::string &nickname);
 
    public:
     void parseQuit(e_cmd &cmd, params *&params);
@@ -60,27 +59,27 @@ class Parser {
     class UnknownCommandException : public SyntaxException {
        public:
         UnknownCommandException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
     class NotEnoughParamsException : public SyntaxException {
        public:
         NotEnoughParamsException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
     class InvalidChannelNameException : public SyntaxException {
        public:
         InvalidChannelNameException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
     class InvalidNickNameException : public SyntaxException {
        public:
         InvalidNickNameException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
     class UnHandledModeException : public SyntaxException {
        public:
         UnHandledModeException(const std::string &cause)
-            : SyntaxException(cause){};
+            : SyntaxException(cause) {};
     };
 };
 

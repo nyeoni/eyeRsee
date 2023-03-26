@@ -166,7 +166,7 @@ int Server::parse(int fd, Client *client) {
     client->recv_buf.append(buf);
 
     // parse commandlines in connect_sockets
-    client->commands = _parser.parse(client);
+    _parser.parse(client);
     return (client->commands.size());
 }
 

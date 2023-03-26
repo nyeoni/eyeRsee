@@ -316,9 +316,9 @@ Command *Parser::parse(const std::string &command_line, Command *&command) {
     }
     return command;
 }
-std::queue<Command *> Parser::parse(ConnectSocket *src) {
+void Parser::parse(ConnectSocket *src) {
     std::string line;
-    std::queue<Command *> commands;
+    std::queue<Command *> &commands = src->commands;
     std::vector<std::string> command_lines;
 
     line = src->readRecvBuf();
@@ -339,7 +339,6 @@ std::queue<Command *> Parser::parse(ConnectSocket *src) {
             ErrorHandler::handleError(e, src);
         }
     }
-    return commands;
 }
 
 Parser::SyntaxException::SyntaxException(const std::string &cause)

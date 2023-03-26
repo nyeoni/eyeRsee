@@ -151,22 +151,43 @@ void Server::handleClose() {
 }
 
 // TODO : naming
-int Server::parse(int fd, Client *client) {
+int Server::parse(int fd, Client *src) {
     char buf[BUF_SIZE];
     ssize_t n = 0;
 
+    std::string line;
+    std::queue<Command *> &commands = src->commands;
+    std::vector<std::string> command_lines;
+
     n = recv(fd, &buf, BUF_SIZE, 0);
     if (n == -1) {
-        _garbage.insert(client);
+        _garbage.insert(src);
         return -1;
     }
     buf[n] = 0;
 
-    client->recv_buf.append(buf);
+    src->recv_buf.append(buf);
 
     // parse commandlines in connect_sockets
-    _parser.parse(client);
-    return (client->commands.size());
+    line = src->readRecvBuf();
+
+    if (src->delimiter == CRLF)
+        command_lines = split(line, "\r\n");
+    else
+        command_lines = split(line, '\n');
+
+    std::vector<std::string>::iterator it;
+    for (it = command_lines.begin(); it != command_lines.end(); it++) {
+        Command *command = new Command;
+        try {
+            _parser.parse(*it, command);
+            if (command != NULL) commands.push(command);
+        } catch (Parser::SyntaxException &e) {
+            delete command;
+            ErrorHandler::handleError(e, src);
+        }
+    }
+    return (src->commands.size());
 }
 
 void Server::connect(int fd, Client *client) {
@@ -211,9 +232,8 @@ int Server::response(int fd, std::string &send_buf) {
     return -1;
 }
 
-void Server::destroyCommands(std::queue<Command *> &commands){
-    while (commands.size())
-    {
+void Server::destroyCommands(std::queue<Command *> &commands) {
+    while (commands.size()) {
         delete commands.front();
         commands.pop();
     }

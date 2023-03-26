@@ -352,30 +352,6 @@ Command *Parser::parse(const std::string &command_line, Command *&command) {
     }
     return command;
 }
-void Parser::parse(ConnectSocket *src) {
-    std::string line;
-    std::queue<Command *> &commands = src->commands;
-    std::vector<std::string> command_lines;
-
-    line = src->readRecvBuf();
-
-    if (src->delimiter == CRLF)
-        command_lines = split(line, "\r\n");
-    else
-        command_lines = split(line, '\n');
-
-    std::vector<std::string>::iterator it;
-    for (it = command_lines.begin(); it != command_lines.end(); it++) {
-        Command *command = new Command;
-        try {
-            parse(*it, command);
-            if (command != NULL) commands.push(command);
-        } catch (SyntaxException &e) {
-            delete command;
-            ErrorHandler::handleError(e, src);
-        }
-    }
-}
 
 Parser::SyntaxException::SyntaxException(const std::string &cause)
     : _cause(cause) {}

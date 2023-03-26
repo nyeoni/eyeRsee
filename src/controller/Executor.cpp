@@ -54,7 +54,7 @@ Client *Executor::accept(int fd) {
 }
 
 int Executor::connect(Client *client, std::string password) {
-    std::queue<Command *> commands = client->commands;
+    std::queue<Command *> &commands = client->commands;
     while (commands.size()) {
         execute(commands.front(), client, password);
         commands.pop();

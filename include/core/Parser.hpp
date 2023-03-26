@@ -43,6 +43,7 @@ class Parser {
     void parsePrivmsg(e_cmd &cmd, params *&params);
     void parseNotice(e_cmd &cmd, params *&params);
     void parsePing(e_cmd &cmd, params *&params);
+    bool parseBot(e_cmd &cmd, params *&params, std::string &receiver);
 
     Command *parse(const std::string &command_line, Command *&command);
     void parse(ConnectSocket *src);

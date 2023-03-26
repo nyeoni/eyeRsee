@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include <iostream>     // std::cout
 #include <fstream>      // std::ifstream
+#include <time.h>
 
 #define SHOW(...) \
     std::cout << std::setw(29) << #__VA_ARGS__ << " == " << __VA_ARGS__ << '\n'
@@ -128,4 +129,9 @@ TEST(string_test, stringstream_test) {
     res = res_stream.str();
 
     std::cout << res << std::endl;
+}
+
+TEST(time_test, chrono_test) {
+    long time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::cout << ctime(&time) << std::endl;
 }

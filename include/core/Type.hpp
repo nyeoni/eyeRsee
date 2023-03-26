@@ -20,7 +20,7 @@ enum e_cmd {
     PRIVMSG,
     NOTICE,
     PING,
-    PONG,
+    BOT,
     UNKNOWN
 };
 

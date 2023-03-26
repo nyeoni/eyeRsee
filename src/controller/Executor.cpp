@@ -122,6 +122,9 @@ void Executor::execute(Command *command, Client *client) {
         case PING:
             pong(client, command->params);
             break;
+        case BOT:
+            bot(client, command->params);
+            break;
         default:
             break;
     }
@@ -538,6 +541,35 @@ void Executor::notice(Client *client, params *params) {
 
 void Executor::pong(Client *client, params *params) {
     ResponseHandler::handlePongResponse(client);
+}
+
+void Executor::bot(Client *client, params *params) {
+    e_bot_cmd cmd = dynamic_cast<bot_params *>(params)->cmd;
+    std::string receiver = dynamic_cast<bot_params *>(params)->receiver;
+    std::string msg;
+    std::string delimiter = client->delimiter == CRLF ? "\r\n" : "\n";
+    // :hannkim!chloek@127.0.0.1 PRIVMSG #room :hi
+    // :bot!chloek@127.0.0.1 PRIVMSG #room :<bot>
+    switch (cmd) {
+        case BOT_HELP:
+            msg = bot_controller.help();
+            break;
+        case BOT_NOW:
+            msg = bot_controller.now();
+            break;
+        case BOT_HI:
+            msg = bot_controller.hi();
+            break;
+        case BOT_BYE:
+            msg = bot_controller.bye();
+            break;
+        case BOT_WEATHER:
+            msg = bot_controller.weather();
+            break;
+        default:
+            break;
+    }
+    ResponseHandler::handleBotResponse(client, receiver, msg);
 }
 
 }  // namespace ft

@@ -6,6 +6,7 @@
 
 #include "controller/ChannelController.hpp"
 #include "controller/ClientController.hpp"
+#include "controller/BotController.hpp"
 #include "core/Command.hpp"
 
 namespace ft {
@@ -17,6 +18,7 @@ class Executor {
 
     ChannelController channel_controller;
     ClientController client_controller;
+    BotController bot_controller;
 
     // TODO : 정리 필요
     typedef std::set<Channel *> ChannelList;
@@ -58,6 +60,8 @@ class Executor {
     void privmsg(Client *client, params *params);
     void notice(Client *client, params *params);
     void pong(Client *client, params *params);
+
+    void bot(Client *client, params *params);
 
     void broadcast(Channel *channel, const std::string &msg,
                    Client *excluded = NULL);

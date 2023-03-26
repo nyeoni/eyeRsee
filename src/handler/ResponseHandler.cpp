@@ -133,8 +133,7 @@ void ResponseHandler::handleInviteResponse(ConnectSocket *invitor,
 
 void ResponseHandler::handleConnectResponse(ConnectSocket *src) {
     const std::string prefix = src->getNickname() + "!" + src->getUsername() +
-                               "@" + src->getHostname();
-    // TODO date
+        "@" + src->getHostname();
     std::string res_comment[4] = {prefix, "", "", "eyeRsee.local 1.0 o oit"};
     for (int i = 0; i < 4; i++) {
         std::string res;

@@ -45,7 +45,7 @@ class Parser {
     void parsePing(e_cmd &cmd, params *&params);
 
     Command *parse(const std::string &command_line, Command *&command);
-    std::queue<Command *> parse(ConnectSocket *src);
+    void parse(ConnectSocket *src);
 
     class SyntaxException : public std::exception {
        protected:
@@ -60,26 +60,27 @@ class Parser {
     class UnknownCommandException : public SyntaxException {
        public:
         UnknownCommandException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
     class NotEnoughParamsException : public SyntaxException {
        public:
         NotEnoughParamsException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
     class InvalidChannelNameException : public SyntaxException {
        public:
         InvalidChannelNameException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
     class InvalidNickNameException : public SyntaxException {
        public:
         InvalidNickNameException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
     class UnHandledModeException : public SyntaxException {
        public:
-        UnHandledModeException(const std::string &cause) : SyntaxException(cause) {};
+        UnHandledModeException(const std::string &cause)
+            : SyntaxException(cause){};
     };
 };
 

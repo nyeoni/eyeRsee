@@ -53,34 +53,38 @@ Client *Executor::accept(int fd) {
     return new_client;
 }
 
-int Executor::connect(Client *client, std::string password) {
-    std::queue<Command *> commands = client->commands;
+bool Executor::connect(Client *client, std::string password) {
+    std::queue<Command *> &commands = client->commands;
     while (commands.size()) {
-        Command *command = commands.front();
+        execute(commands.front(), client, password);
         commands.pop();
-        switch (command->type) {
-            case PASS:
-                pass(client, command->params, password);
-                break;
-            case USER:
-                user(client, command->params);
-                break;
-            case NICK:
-                nick(client, command->params);
-                break;
-            default:
-                // TODO : msg
-                send(client->getFd(),
-                     ":eyeRsee.local 451 * JOIN :You have not registered.\n",
-                     53, 0);
-                break;
-        }
         if (client->isAuthenticate()) {
             updateClientStatus(client->getFd(), client, REGISTER);
-            return 0;
+            return true;
         }
     }
-    return 1;
+    return false;
+}
+
+void Executor::execute(Command *command, Client *client, std::string password) {
+    switch (command->type) {
+        case PASS:
+            pass(client, command->params, password);
+            break;
+        case USER:
+            user(client, command->params);
+            break;
+        case NICK:
+            nick(client, command->params);
+            break;
+        default:
+            // TODO : msg
+            send(client->getFd(),
+                 ":eyeRsee.local 451 * JOIN :You have not registered.\n", 53,
+                 0);
+            break;
+    }
+    delete command;
 }
 
 void Executor::execute(Command *command, Client *client) {
@@ -121,6 +125,7 @@ void Executor::execute(Command *command, Client *client) {
         default:
             break;
     }
+    delete command;
 }
 
 /**
@@ -162,7 +167,8 @@ void Executor::join(Client *client, params *params) {
         if (channel == NULL) {  // new channel & operator Client
             channel = channel_controller.insert(*iter);
             channel_controller.insertOperator(channel, client);
-            channel_controller.updateMode(TOPIC_PRIV_T, channel);
+        } else if (channel_controller.isOnChannel(channel, client)) {
+            return;
         } else {  // regular Client
             channel_controller.insertRegular(channel, client);
         }
@@ -329,10 +335,6 @@ void Executor::pass(Client *new_client, params *params,
 
 void Executor::user(Client *new_client, params *params) {
     user_params *param = dynamic_cast<user_params *>(params);
-    std::string username = param->username;
-    std::string hostname = param->hostname;
-    std::string servername = param->servername;
-    std::string realname = param->realname;
 
     if (new_client->auth[USER]) {
         // 462 abc :You may not reregister.
@@ -340,10 +342,10 @@ void Executor::user(Client *new_client, params *params) {
                                   ERR_ALREADYREGISTERED);
         return;
     }
-    new_client->setUsername(username);
-    new_client->setHostname(hostname);
-    new_client->setServername(servername);
-    new_client->setRealname(realname);
+    new_client->setUsername(param->username);
+    new_client->setHostname(param->hostname);
+    new_client->setServername(param->servername);
+    new_client->setRealname(param->realname);
     new_client->auth[USER] = true;
     // response
     // USER guest tolmoon tolsun :Ronnie Reagan
@@ -398,9 +400,9 @@ void Executor::quit(Client *client, params *params) {
     response_msg = ResponseHandler::createResponse(client, "QUIT", msg);
 
     // 모든 채널에서 quit && send message
+    _client_list.insert(client);
     broadcast(client->getChannelList(), response_msg);
     client_controller.updateClientStatus(client->getFd(), client, TERMINATE);
-    _client_list.insert(client);
 }
 
 void Executor::kick(Client *kicker, params *params) {
@@ -499,8 +501,8 @@ void Executor::broadcast(Channel *channel, const std::string &msg,
     iter = receivers.begin();
     for (; iter != receivers.end(); ++iter) {
         (*iter)->send_buf.append(msg);
-        _client_list.insert(*iter);
     }
+    _client_list.insert(receivers.begin(), receivers.end());
 }
 
 /**
@@ -518,8 +520,8 @@ void Executor::broadcast(const ChannelList &channel_list,
     client_iter = client_list.begin();
     for (; client_iter != client_list.end(); ++client_iter) {
         (*client_iter)->send_buf.append(msg);
-        _client_list.insert(*client_iter);
     }
+    _client_list.insert(client_list.begin(), client_list.end());
 }
 
 void Executor::notice(Client *client, params *params) {

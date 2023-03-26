@@ -101,8 +101,7 @@ void Server::handleRead(int event_idx) {
             connect(event.ident, client);
             break;
         default:
-            std::queue<Command *> empty;
-            std::swap(client->commands, empty);
+            destroyCommands(client->commands);
             break;
     }
 }
@@ -116,24 +115,15 @@ void Server::handleExecute(int event_idx) {
     ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
     std::queue<Command *> &commands = connect_socket->commands;
 
-    while (commands.size()) {
+    if (commands.size()) {
         _executor.execute(commands.front(), client);
         commands.pop();
     }
 
-    const std::set<Client *> &client_list = _executor.getClientList();
-    std::set<Client *>::iterator receiver_iter = client_list.begin();
-    for (; receiver_iter != client_list.end(); ++receiver_iter) {
-        if ((*receiver_iter)->getStatus() == TERMINATE) {
-            _tmp_garbage.erase(*receiver_iter);
-            _garbage.insert(*receiver_iter);
-        } else
-            registerEvent((*receiver_iter)->getFd(), EVFILT_WRITE, EXECUTE,
-                          *receiver_iter);
-    }
-    _executor.clearClientList();
+    reserve();
 
-    if (response(event.ident, connect_socket->send_buf) == 0)
+    if (response(event.ident, connect_socket->send_buf) == 0 &&
+        commands.size() == 0)
         registerEvent(event.ident, EVFILT_WRITE, D_WRITE, 0);
 }
 
@@ -143,19 +133,9 @@ void Server::handleTimer(int event_idx) {
         static_cast<Client *>(event.udata);  // TODO : connect socket
 
     registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
-    if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0)
-        _tmp_garbage.insert(client);
-}
-void Server::handleTimeout() {
-    std::set<Client *>::iterator iter = _tmp_garbage.begin();
-
-    for (; iter != _tmp_garbage.end(); ++iter) {
-        _garbage.insert(*iter);
-        send((*iter)->getFd(), "Timeout\n", 9, 0);
-    }
-    iter = _garbage.begin();
-    for (; iter != _garbage.end(); ++iter) {
-        _tmp_garbage.erase(*iter);
+    if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0) {
+        _garbage.insert(client);
+        send(client->getFd(), "Timeout\n", 9, 0);
     }
 }
 
@@ -185,14 +165,14 @@ int Server::parse(int fd, Client *client) {
     client->recv_buf.append(buf);
 
     // parse commandlines in connect_sockets
-    client->commands = _parser.parse(client);
+    _parser.parse(client);
     return (client->commands.size());
 }
 
-int Server::connect(int fd, Client *client) {
+void Server::connect(int fd, Client *client) {
     std::queue<Command *> &commands = client->commands;
 
-    if (_executor.connect(client, _env.password) == 0) {
+    if (_executor.connect(client, _env.password) == true) {
         std::cout << "Register Success!" << std::endl;
         ResponseHandler::handleConnectResponse(client);
         response(fd, client->send_buf);
@@ -202,7 +182,19 @@ int Server::connect(int fd, Client *client) {
     if (client->send_buf.length()) {
         response(client->getFd(), client->send_buf);
     }
-    return 0;
+}
+
+void Server::reserve() {
+    const std::set<Client *> &client_list = _executor.getClientList();
+    std::set<Client *>::iterator receiver_iter = client_list.begin();
+    for (; receiver_iter != client_list.end(); ++receiver_iter) {
+        if ((*receiver_iter)->getStatus() == TERMINATE)
+            _garbage.insert(*receiver_iter);
+        else
+            registerEvent((*receiver_iter)->getFd(), EVFILT_WRITE, EXECUTE,
+                          *receiver_iter);
+    }
+    _executor.clearClientList();
 }
 
 int Server::response(int fd, std::string &send_buf) {
@@ -217,6 +209,14 @@ int Server::response(int fd, std::string &send_buf) {
     else
         std::cerr << "[UB] send return -1" << std::endl;
     return -1;
+}
+
+void Server::destroyCommands(std::queue<Command *> &commands){
+    while (commands.size())
+    {
+        delete commands.front();
+        commands.pop();
+    }
 }
 
 }  // namespace ft

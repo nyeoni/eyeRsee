@@ -44,12 +44,15 @@ class Server : public EventHandler {
     void handleTimer(int event_idx);
 
     // garbageCollector methods
-    void handleTimeout();
     void handleClose();
 
+   private:
     int parse(int fd, Client *client);
-    int connect(int fd, Client *client);
+    void connect(int fd, Client *client);
+    void reserve();
     int response(int fd, std::string &send_buf);
+
+    void destroyCommands(std::queue<Command *> &commands);
 };
 
 }  // namespace ft

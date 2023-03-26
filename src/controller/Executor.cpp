@@ -84,6 +84,7 @@ void Executor::execute(Command *command, Client *client, std::string password) {
                  0);
             break;
     }
+    delete command;
 }
 
 void Executor::execute(Command *command, Client *client) {
@@ -124,6 +125,7 @@ void Executor::execute(Command *command, Client *client) {
         default:
             break;
     }
+    delete command;
 }
 
 /**

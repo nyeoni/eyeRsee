@@ -51,6 +51,8 @@ class Server : public EventHandler {
     int connect(int fd, Client *client);
     void reserve();
     int response(int fd, std::string &send_buf);
+
+    void destroyCommands(std::queue<Command *> &commands);
 };
 
 }  // namespace ft

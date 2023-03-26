@@ -101,8 +101,7 @@ void Server::handleRead(int event_idx) {
             connect(event.ident, client);
             break;
         default:
-            std::queue<Command *> empty;
-            std::swap(client->commands, empty);
+            destroyCommands(client->commands);
             break;
     }
 }
@@ -211,6 +210,14 @@ int Server::response(int fd, std::string &send_buf) {
     else
         std::cerr << "[UB] send return -1" << std::endl;
     return -1;
+}
+
+void Server::destroyCommands(std::queue<Command *> &commands){
+    while (commands.size())
+    {
+        delete commands.front();
+        commands.pop();
+    }
 }
 
 }  // namespace ft

@@ -174,14 +174,12 @@ void Executor::join(Client *client, params *params) {
             return;
         } else if (channel_controller.isInviteMode(channel) &&
                    !channel_controller.isInvitedClient(channel, client)) {
-            // invite check
             ErrorHandler::handleError(client, *iter, ERR_INVITEONLYCHAN);
             return;
         } else {  // regular Client
             channel_controller.insertRegular(channel, client);
-            if (channel_controller.isInvitedClient(channel, client)) {
+            if (channel_controller.isInvitedClient(channel, client))
                 channel_controller.eraseInvitedClient(channel, client);
-            }
         }
         client_controller.insertChannel(client, channel);
 
@@ -237,23 +235,21 @@ void Executor::mode(Client *client, params *params) {
             ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
             return;
         }
-        if (!channel_controller.isOnChannel(channel, target)) {
-            ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
-            return;
-        }
         if (channel_controller.updateMode(mode, channel, target) == false) {
             return;
         }
-
+        response_msg = ResponseHandler::createResponse(
+            client, "MODE", channel_name + " " + mode_str[mode],
+            param->nickname);
     } else {  // +i, -i, +t, -t
         if (channel_controller.updateMode(mode, channel) == false) {
             return;
         }
+        response_msg = ResponseHandler::createResponse(
+            client, "MODE", channel_name, mode_str[mode]);
     }
 
     // response
-    response_msg = ResponseHandler::createResponse(client, "MODE", channel_name,
-                                                   mode_str[mode]);
     broadcast(channel, response_msg);
 }
 

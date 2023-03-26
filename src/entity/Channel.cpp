@@ -7,12 +7,10 @@ namespace ft {
 Channel::Channel() {
     _mode = 0;
     setMode(TOPIC_PRIV_T);
-    setMode(INVITE_ONLY_F);
 }
 Channel::Channel(const std::string &name) : _name(name) {
     _mode = 0;
     setMode(TOPIC_PRIV_T);
-    setMode(INVITE_ONLY_F);
 }
 Channel::Channel(const Channel &copy) { *this = copy; }
 Channel::~Channel() {}

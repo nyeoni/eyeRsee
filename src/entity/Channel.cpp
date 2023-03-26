@@ -1,14 +1,18 @@
 #include "entity/Channel.hpp"
 
+#include "core/Type.hpp"
+
 namespace ft {
 
-Channel::Channel() : _mode(0) {}
-Channel::Channel(const std::string &name) : _name(name), _mode(0) {}
-Channel::Channel(const Channel &copy) {
-    if (*this != copy) {
-        *this = copy;
-    }
+Channel::Channel() {
+    _mode = 0;
+    setMode(TOPIC_PRIV_T);
 }
+Channel::Channel(const std::string &name) : _name(name) {
+    _mode = 0;
+    setMode(TOPIC_PRIV_T);
+}
+Channel::Channel(const Channel &copy) { *this = copy; }
 Channel::~Channel() {}
 Channel &Channel::operator=(const Channel &ref) {
     _name = ref._name;
@@ -24,6 +28,9 @@ const std::string &Channel::getName() const { return _name; }
 const std::string &Channel::getTopic() const { return _topic; }
 const Channel::ClientList &Channel::getRegulars() const { return _regulars; }
 const Channel::ClientList &Channel::getOperators() const { return _operators; }
+const Channel::ClientList &Channel::getInvitedClients() const {
+    return _invited_clients;
+}
 int Channel::getMode() const { return _mode; }
 
 void Channel::setName(const std::string &name) { _name = name; }
@@ -35,8 +42,6 @@ void Channel::setMode(int mode) {
         _mode &= ~(1 << (mode / 2));  // -flag
 }
 
-void Channel::clearMode() { _mode = 0; }
-
 // update
 // void Channel::insertClient(Client *client, bool is_operator) {
 //     is_operator ? _operators.insert(client) : _regulars.insert(client);
@@ -46,6 +51,10 @@ void Channel::insertOperator(Client *client) { _operators.insert(client); }
 
 void Channel::insertRegular(Client *client) { _regulars.insert(client); }
 
+void Channel::insertInvitedClient(Client *client) {
+    _invited_clients.insert(client);
+}
+
 // void Channel::eraseClient(Client *client, bool is_operator) {
 //     is_operator ? _operators.erase(client) : _regulars.erase(client);
 // }
@@ -53,6 +62,10 @@ void Channel::insertRegular(Client *client) { _regulars.insert(client); }
 void Channel::eraseOperator(Client *client) { _operators.erase(client); }
 
 void Channel::eraseRegular(Client *client) { _regulars.erase(client); }
+
+void Channel::eraseInvitedClient(Client *client) {
+    _invited_clients.erase(client);
+}
 
 bool Channel::operator==(const Channel &other) const {
     return (_name == other._name);

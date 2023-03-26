@@ -50,9 +50,11 @@ class ChannelController {
 
     void insertOperator(Channel *channel, Client *client);
     void insertRegular(Channel *channel, Client *client);
+    void insertInvitedClient(Channel *channel, Client *client);
 
     void eraseClient(Channel *channel, Client *client);
     void eraseClient(ChannelList &channel_list, Client *client);
+    void eraseInvitedClient(Channel *channel, Client *client);
 
     const std::set<Client *> &getOperators(const Channel *channel) const;
     const std::set<Client *> &getRegulars(const Channel *channel) const;
@@ -60,6 +62,7 @@ class ChannelController {
     bool isOnChannel(Channel *channel, Client *client);
     bool isOperator(Channel *channel, Client *client);
     bool isRegular(Channel *channel, Client *client);
+    bool isInvitedClient(Channel *channel, Client *client);
 
     bool isInviteMode(const Channel *channel);
     bool isTopicMode(const Channel *channel);

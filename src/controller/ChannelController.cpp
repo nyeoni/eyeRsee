@@ -25,7 +25,6 @@ Channel *ChannelController::insert(const std::string &channel_name) {
     pair p = _channels.insert(std::make_pair(channel_name, Channel()));
     new_channel = &(p.first->second);
     new_channel->setName(channel_name);
-    new_channel->clearMode();
     return new_channel;
 }
 
@@ -114,12 +113,22 @@ bool ChannelController::isRegular(Channel *channel, Client *client) {
     return regulars.find(client) != regulars.end() ? true : false;
 }
 
+bool ChannelController::isInvitedClient(Channel *channel, Client *client) {
+    std::set<Client *> invited_clients = channel->getInvitedClients();
+
+    return invited_clients.find(client) != invited_clients.end() ? true : false;
+}
+
 void ChannelController::insertOperator(Channel *channel, Client *client) {
     channel->insertOperator(client);
 }
 
 void ChannelController::insertRegular(Channel *channel, Client *client) {
     channel->insertRegular(client);
+}
+
+void ChannelController::insertInvitedClient(Channel *channel, Client *client) {
+    channel->insertInvitedClient(client);
 }
 
 /**
@@ -143,16 +152,23 @@ void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
     }
 }
 
+void ChannelController::eraseInvitedClient(Channel *channel, Client *client) {
+    channel->eraseInvitedClient(client);
+}
+
 bool ChannelController::isInviteMode(const Channel *channel) {
-    return (channel->getMode() & (INVITE_ONLY_T - 1));
+    // return (channel->getMode() & (INVITE_ONLY_T - 1));
+    return (channel->getMode() & (1 << (INVITE_ONLY_T / 2)));
 }
 
 bool ChannelController::isTopicMode(const Channel *channel) {
-    return (channel->getMode() & (TOPIC_PRIV_T - 1));
+    // return (channel->getMode() & (TOPIC_PRIV_T - 1));
+    return (channel->getMode() & (1 << (TOPIC_PRIV_T / 2)));
 }
 
 bool ChannelController::isBanMode(const Channel *channel) {
-    return (channel->getMode() & (BAN_T - 1));
+    // return (channel->getMode() & (BAN_T - 1));
+    return (channel->getMode() & (1 << (BAN_T / 2)));
 }
 
 // private functions

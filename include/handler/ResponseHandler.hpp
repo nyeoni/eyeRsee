@@ -70,6 +70,10 @@ class ResponseHandler {
                                          std::vector<std::string> &operators,
                                          std::vector<std::string> &regulars);
 
+    static void handleInviteResponse(ConnectSocket *invitor,
+                                     ConnectSocket *target,
+                                     const std::string &channel_name);
+
     static void handleConnectResponse(ConnectSocket *src);
 
    private:

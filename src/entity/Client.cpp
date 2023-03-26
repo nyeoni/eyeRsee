@@ -18,9 +18,6 @@ const Client::ChannelList &Client::getChannelList() const {
 
 // update
 void Client::insertChannel(Channel *channel) { _channel_list.insert(channel); }
-void Client::insertInviteChannel(Channel *channel) {
-    _i_channel_list.insert(channel);
-}
 
 void Client::eraseChannel(Channel *channel) { _channel_list.erase(channel); }
 

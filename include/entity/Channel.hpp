@@ -22,11 +22,12 @@ class Channel {
     typedef std::set<Client *>::iterator client_list_iterator;
 
    private:
+    int _mode;
     std::string _name;
     std::string _topic;
     ClientList _regulars;
     ClientList _operators;
-    int _mode;
+    ClientList _invited_clients;  // invite list
 
    public:
     Channel();
@@ -39,6 +40,7 @@ class Channel {
     const std::string &getTopic() const;
     const ClientList &getRegulars() const;
     const ClientList &getOperators() const;
+    const ClientList &getInvitedClients() const;
     int getMode() const;
 
     void setName(const std::string &name);
@@ -50,9 +52,11 @@ class Channel {
     // update
     void insertOperator(Client *client);
     void insertRegular(Client *client);
+    void insertInvitedClient(Client *client);
 
     void eraseOperator(Client *client);
     void eraseRegular(Client *client);
+    void eraseInvitedClient(Client *client);
 
     bool operator==(const Channel &other) const;
     bool operator!=(const Channel &other) const;

@@ -172,8 +172,14 @@ void Executor::join(Client *client, params *params) {
             channel_controller.insertOperator(channel, client);
         } else if (channel_controller.isOnChannel(channel, client)) {
             return;
+        } else if (channel_controller.isInviteMode(channel) &&
+                   !channel_controller.isInvitedClient(channel, client)) {
+            ErrorHandler::handleError(client, *iter, ERR_INVITEONLYCHAN);
+            return;
         } else {  // regular Client
             channel_controller.insertRegular(channel, client);
+            if (channel_controller.isInvitedClient(channel, client))
+                channel_controller.eraseInvitedClient(channel, client);
         }
         client_controller.insertChannel(client, channel);
 
@@ -195,7 +201,6 @@ void Executor::join(Client *client, params *params) {
 
             client->send_buf.append(response_msg);
         }
-        // response_msg.clear();
     }
 }
 
@@ -230,23 +235,21 @@ void Executor::mode(Client *client, params *params) {
             ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
             return;
         }
-        if (!channel_controller.isOnChannel(channel, target)) {
-            ErrorHandler::handleError(client, param->nickname, ERR_NOSUCHNICK);
-            return;
-        }
         if (channel_controller.updateMode(mode, channel, target) == false) {
             return;
         }
-
+        response_msg = ResponseHandler::createResponse(
+            client, "MODE", channel_name + " " + mode_str[mode],
+            param->nickname);
     } else {  // +i, -i, +t, -t
         if (channel_controller.updateMode(mode, channel) == false) {
             return;
         }
+        response_msg = ResponseHandler::createResponse(
+            client, "MODE", channel_name, mode_str[mode]);
     }
 
     // response
-    response_msg = ResponseHandler::createResponse(client, "MODE", channel_name,
-                                                   mode_str[mode]);
     broadcast(channel, response_msg);
 }
 
@@ -288,7 +291,7 @@ void Executor::invite(Client *invitor, params *params) {
     invite_params *param = dynamic_cast<invite_params *>(params);
     std::string nickname = param->nickname;
     std::string channel_name = param->channel;
-    Client *client = client_controller.find(nickname);
+    Client *target = client_controller.find(nickname);
     Channel *channel = channel_controller.find(channel_name);
     std::string response_msg;
 
@@ -298,7 +301,7 @@ void Executor::invite(Client *invitor, params *params) {
         return;
     }
     // 401 nick2 hi :No such nick
-    if (client == NULL) {
+    if (target == NULL) {
         ErrorHandler::handleError(invitor, nickname, ERR_NOSUCHNICK);
         return;
     }
@@ -308,18 +311,14 @@ void Executor::invite(Client *invitor, params *params) {
         return;
     }
     // 482 nick2 #channel :You must be a channel op or higher to send an invite.
-    if (channel_controller.isOperator(channel, invitor)) {
+    if (!channel_controller.isOperator(channel, invitor)) {
         ErrorHandler::handleError(invitor, channel_name, ERR_CHANOPRIVSNEEDED);
         return;
     }
 
-    client_controller.insertInviteChannel(client, channel);
-    response_msg =
-        ResponseHandler::createResponse(invitor, "INVITE", RPL_INVITING);
-    broadcast(channel, response_msg, invitor);
-    response_msg =
-        ResponseHandler::createResponse(invitor, "INVITE", RPL_INVITING);
-    invitor->send_buf.append(response_msg);
+    channel_controller.insertInvitedClient(channel, target);
+    ResponseHandler::handleInviteResponse(invitor, target, channel_name);
+    _client_list.insert(target);
 }
 
 void Executor::pass(Client *new_client, params *params,

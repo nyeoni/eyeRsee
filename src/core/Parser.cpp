@@ -140,7 +140,10 @@ void Parser::parseMode(e_cmd &cmd, params *&params) {
     if (!isEOF() && getToken()) {
         p = new mode_params;
         p->channel = token;
-        if (token[0] != '#') throw UnHandledModeException("MODE");
+        if (token[0] != '#') {
+            delete p;
+            throw UnHandledModeException("MODE");
+        }
         if (!isEOF() && getToken()) {
             if (token == "+o" || token == "o") {
                 p->mode = OPER_T;
@@ -246,6 +249,14 @@ bool Parser::parseBot(e_cmd &cmd, params *&params, std::string &receiver) {
         p->cmd = BOT_BYE;
     } else if (command == "WEATHER") {
         p->cmd = BOT_WEATHER;
+    } else if (command == "NKIM") {
+        p->cmd = BOT_NKIM;
+    } else if (command == "HANNKIM") {
+        p->cmd = BOT_HANNKIM;
+    } else if (command == "CHAEJKIM") {
+        p->cmd = BOT_CHAEJKIM;
+    } else if (command == "EYERSEE") {
+        p->cmd = BOT_EYERSEE;
     } else {
         delete p;
         return false;

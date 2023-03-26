@@ -45,6 +45,34 @@ std::string BotController::weather() {
     return msg_stream.str();
 }
 
+std::string BotController::nkim() {
+    std::stringstream msg_stream;
+
+    msg_stream << "༼ ᓄºل͟º ༽ᓄ  nkim : 싸우자 IRC";
+    return msg_stream.str();
+}
+
+std::string BotController::chaejkim() {
+    std::stringstream msg_stream;
+
+    msg_stream << "ଘ(੭ˊᵕˋ)੭* ੈ✩‧₊˚ chaejkim : 내 마법을 받아라 ~";
+    return msg_stream.str();
+}
+
+std::string BotController::hannkim() {
+    std::stringstream msg_stream;
+
+    msg_stream << "⸜(*◉ ᴗ ◉)⸝ hannkim : 방가방가룽 뿡뿡";
+    return msg_stream.str();
+}
+
+std::string BotController::eyersee() {
+    std::stringstream msg_stream;
+
+    msg_stream << "ʕ•̫͡ʕ•̫͡ʕ•̫͡ʕ•̫͡•ʔ•̫͡•ʔ•̫͡•ʔ•̫͡•ʔ irc 누가 쉽다고 했냐 (웅성웅성) ʕ•̫͡•ʕ*̫͡*ʕ•͓͡•ʔ-̫͡-ʕ•̫͡•ʔ*̫͡*ʔ-̫͡-ʔ";
+    return msg_stream.str();
+}
+
 } // namespace ft
 
 

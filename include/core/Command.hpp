@@ -15,7 +15,11 @@ enum e_bot_cmd {
     BOT_NOW,
     BOT_HI,
     BOT_BYE,
-    BOT_WEATHER
+    BOT_WEATHER,
+    BOT_NKIM,
+    BOT_HANNKIM,
+    BOT_CHAEJKIM,
+    BOT_EYERSEE
 };
 
 struct params {

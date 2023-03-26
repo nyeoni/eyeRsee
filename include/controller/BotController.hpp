@@ -20,6 +20,11 @@ class BotController {
     std::string bye();
     std::string now();
     std::string weather();
+
+    std::string nkim();
+    std::string chaejkim();
+    std::string hannkim();
+    std::string eyersee();
 };
 
 }

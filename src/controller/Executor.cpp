@@ -566,6 +566,18 @@ void Executor::bot(Client *client, params *params) {
         case BOT_WEATHER:
             msg = bot_controller.weather();
             break;
+        case BOT_NKIM:
+            msg = bot_controller.nkim();
+            break;
+        case BOT_HANNKIM:
+            msg = bot_controller.hannkim();
+            break;
+        case BOT_CHAEJKIM:
+            msg = bot_controller.chaejkim();
+            break;
+        case BOT_EYERSEE:
+            msg = bot_controller.eyersee();
+            break;
         default:
             break;
     }

@@ -22,11 +22,12 @@ class Channel {
     typedef std::set<Client *>::iterator client_list_iterator;
 
    private:
+    int _mode;
     std::string _name;
     std::string _topic;
     ClientList _regulars;
     ClientList _operators;
-    int _mode;
+    ClientList _invited_clients;  // invite list
 
    public:
     Channel();
@@ -50,6 +51,7 @@ class Channel {
     // update
     void insertOperator(Client *client);
     void insertRegular(Client *client);
+    void insertInvitedClient(Client *client);
 
     void eraseOperator(Client *client);
     void eraseRegular(Client *client);

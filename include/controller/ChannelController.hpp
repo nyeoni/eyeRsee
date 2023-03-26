@@ -50,6 +50,7 @@ class ChannelController {
 
     void insertOperator(Channel *channel, Client *client);
     void insertRegular(Channel *channel, Client *client);
+    void insertInvitedClient(Channel *channel, Client *client);
 
     void eraseClient(Channel *channel, Client *client);
     void eraseClient(ChannelList &channel_list, Client *client);

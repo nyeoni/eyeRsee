@@ -121,6 +121,10 @@ void ChannelController::insertRegular(Channel *channel, Client *client) {
     channel->insertRegular(client);
 }
 
+void ChannelController::insertInvitedClient(Channel *channel, Client *client) {
+    channel->insertInvitedClient(client);
+}
+
 /**
  * @brief erase Client to Channel's _clientList
  */

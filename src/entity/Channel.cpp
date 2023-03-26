@@ -50,6 +50,10 @@ void Channel::insertOperator(Client *client) { _operators.insert(client); }
 
 void Channel::insertRegular(Client *client) { _regulars.insert(client); }
 
+void Channel::insertInvitedClient(Client *client) {
+    _invited_clients.insert(client);
+}
+
 // void Channel::eraseClient(Client *client, bool is_operator) {
 //     is_operator ? _operators.erase(client) : _regulars.erase(client);
 // }

@@ -315,7 +315,7 @@ void Executor::invite(Client *invitor, params *params) {
         return;
     }
 
-    client_controller.insertInviteChannel(target, channel);
+    channel_controller.insertInvitedClient(channel, target);
     ResponseHandler::handleInviteResponse(invitor, target, channel_name);
     _client_list.insert(target);
 }

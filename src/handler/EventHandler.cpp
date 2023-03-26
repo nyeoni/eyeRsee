@@ -22,7 +22,7 @@ EventHandler::~EventHandler() {}
 
 int EventHandler::monitorEvent() {
     int n = kevent(_kq_fd, &_change_list[0], _change_cnt, _ev_list, _max_event,
-                   NULL);  // TODO : TIMEOUT
+                   NULL);
 
     _change_list.clear();
     _change_cnt = 0;

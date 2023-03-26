@@ -53,15 +53,16 @@ void ListenSocket::createSocket(const int &port) {
     sin.sin_addr.s_addr = INADDR_ANY;
 
     sin.sin_port = htons(port);
+
     int i = 0;
-
-    std::cout << "listening port : " << port + i << std::endl;
-
-    if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
-        throw std::logic_error("bind error");
+    const char spinner[] = "||//--\\\\";
+    while (bind(_fd, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
+        std::cout << "Loading... " << spinner[i % 8] << "\r";
+        std::cout.flush();  // flush output buffer
+        i++;
+        usleep(100000);
+    }
     if (listen(_fd, 42) < 0) throw std::logic_error("listen error");
-
-    // setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
     setNonBlock();
 }
 
@@ -103,14 +104,12 @@ void ConnectSocket::createSocket(const int &listen_fd) {
     struct sockaddr_in in = {};
     socklen_t in_len = sizeof(in);
 
-    _fd = accept(listen_fd, (struct sockaddr *)&in, &in_len);
+    _fd = accept(listen_fd, (struct sockaddr *) &in, &in_len);
     _status = UNREGISTER;
     auth[PASS] = false;
     auth[USER] = false;
     auth[NICK] = false;
     setNonBlock();
-    // TODO : password
-    // recv(connect_fd, buf, 0, 0); // TODO : why warning in irssi (CR/LF)
     std::cout << "New client # " << _fd << " from " << inet_ntoa(in.sin_addr)
               << ':' << ntohs(in.sin_port) << std::endl;
 }

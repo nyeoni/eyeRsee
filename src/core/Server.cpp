@@ -32,7 +32,6 @@ void Env::parse(int argc, char **argv) {
     }
     port = static_cast<int>(d_port);
     password = argv[2];
-    // TODO password rule (max_len)
     if (!Parser::validPassword(password)) {
         throw std::logic_error(
             "Error: invalid password\n[hint] <length 3~9, ascii, and "
@@ -105,8 +104,7 @@ void Server::handleRead(int event_idx) {
 
 void Server::handleExecute(int event_idx) {
     Event &event = _ev_list[event_idx];
-    Client *client =
-        static_cast<Client *>(event.udata);  // TODO : connect socket
+    Client *client = static_cast<Client *>(event.udata);
     ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
     std::queue<Command *> &commands = connect_socket->commands;
 
@@ -124,8 +122,7 @@ void Server::handleExecute(int event_idx) {
 
 void Server::handleTimer(int event_idx) {
     Event &event = _ev_list[event_idx];
-    Client *client =
-        static_cast<Client *>(event.udata);  // TODO : connect socket
+    Client *client = static_cast<Client *>(event.udata);
 
     registerEvent(event.ident, EVFILT_TIMER, D_TIMER, 0);
     if (_executor.updateClientStatus(event.ident, client, TIMEOUT) == 0) {
@@ -145,7 +142,6 @@ void Server::handleClose() {
     _garbage.clear();
 }
 
-// TODO : naming
 int Server::parse(int fd, Client *src) {
     char buf[BUF_SIZE];
     ssize_t n = 0;

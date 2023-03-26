@@ -133,7 +133,7 @@ void ResponseHandler::handleInviteResponse(ConnectSocket *invitor,
 
 void ResponseHandler::handleConnectResponse(ConnectSocket *src) {
     const std::string prefix = src->getNickname() + "!" + src->getUsername() +
-        "@" + src->getHostname();
+                               "@" + src->getHostname();
     // TODO date
     std::string res_comment[4] = {prefix, "", "", "eyeRsee.local 1.0 o oit"};
     for (int i = 0; i < 4; i++) {
@@ -155,14 +155,14 @@ void ResponseHandler::handlePongResponse(ConnectSocket *src) {
     src->send_buf.append(res);
 }
 
-void ResponseHandler::handleBotResponse(ConnectSocket *src, std::string &param, std::string &msg) {
-    const std::string prefix = ":bot!" + src->getUsername() +
-        "@" + src->getHostname();
+void ResponseHandler::handleBotResponse(ConnectSocket *src, std::string &param,
+                                        std::string &msg) {
+    const std::string prefix =
+        ":bot!" + src->getUsername() + "@" + src->getHostname();
     const std::string res = prefix + " PRIVMSG " + param + " :" + msg + "\n";
     src->send_buf.append(res);
 }
 
-// SECTION private
 std::string ResponseHandler::getMessage(e_res_code res_code) {
     switch (res_code) {
         case RPL_WELCOME:

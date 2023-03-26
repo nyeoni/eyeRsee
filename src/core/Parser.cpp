@@ -99,12 +99,12 @@ void Parser::parseNick(e_cmd &cmd, params *&params) {
     std::vector<std::string> tokens = split(tokenStream, ' ');
     if (tokens.size() != 1) throw NotEnoughParamsException("NICK");
     p = new nick_params;
-    params = p;
     if (!validNickName(tokens[0])) {
         delete p;
         throw InvalidNickNameException(tokens[0]);
     }
     p->nickname = tokens[0];
+    params = p;
 }
 void Parser::parseJoin(e_cmd &cmd, params *&params) {
     cmd = JOIN;

@@ -169,10 +169,10 @@ int Server::parse(int fd, Client *client) {
     return (client->commands.size());
 }
 
-int Server::connect(int fd, Client *client) {
+void Server::connect(int fd, Client *client) {
     std::queue<Command *> &commands = client->commands;
 
-    if (_executor.connect(client, _env.password) == 0) {
+    if (_executor.connect(client, _env.password) == true) {
         std::cout << "Register Success!" << std::endl;
         ResponseHandler::handleConnectResponse(client);
         response(fd, client->send_buf);
@@ -182,7 +182,6 @@ int Server::connect(int fd, Client *client) {
     if (client->send_buf.length()) {
         response(client->getFd(), client->send_buf);
     }
-    return 0;
 }
 
 void Server::reserve() {

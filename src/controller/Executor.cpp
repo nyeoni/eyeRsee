@@ -53,17 +53,17 @@ Client *Executor::accept(int fd) {
     return new_client;
 }
 
-int Executor::connect(Client *client, std::string password) {
+bool Executor::connect(Client *client, std::string password) {
     std::queue<Command *> &commands = client->commands;
     while (commands.size()) {
         execute(commands.front(), client, password);
         commands.pop();
         if (client->isAuthenticate()) {
             updateClientStatus(client->getFd(), client, REGISTER);
-            return 0;
+            return true;
         }
     }
-    return 1;
+    return false;
 }
 
 void Executor::execute(Command *command, Client *client, std::string password) {

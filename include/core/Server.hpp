@@ -48,7 +48,7 @@ class Server : public EventHandler {
 
    private:
     int parse(int fd, Client *client);
-    int connect(int fd, Client *client);
+    void connect(int fd, Client *client);
     void reserve();
     int response(int fd, std::string &send_buf);
 

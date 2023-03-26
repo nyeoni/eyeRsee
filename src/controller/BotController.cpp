@@ -3,9 +3,7 @@
 namespace ft {
 
 BotController::BotController() {}
-BotController::BotController(const BotController &copy) { *this = copy; }
 BotController::~BotController() {}
-BotController &BotController::operator=(const BotController &ref) { return *this; }
 
 std::string BotController::help() {
     std::stringstream msg_stream;

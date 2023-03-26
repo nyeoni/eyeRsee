@@ -16,10 +16,10 @@ class Client : public ConnectSocket {
     typedef std::set<Channel *>::iterator channel_list_iterator;
 
    private:
-    ChannelList _channel_list;  // channel list
+    ChannelList _channel_list;
 
    public:
-    Client(/* args*/);
+    Client();
     Client(const Client &copy);
     ~Client();
     Client &operator=(const Client &ref);

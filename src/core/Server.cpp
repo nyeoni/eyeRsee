@@ -2,7 +2,7 @@
 #include "core/Server.hpp"
 
 #include <sys/socket.h>
-#include <unistd.h>  // close
+#include <unistd.h>
 
 #include <iostream>
 
@@ -31,22 +31,21 @@ void Env::parse(int argc, char **argv) {
             "Error: arguments\n[hint] ./ft_irc <port(1025 ~ 65535)>");
     }
     port = static_cast<int>(d_port);
-    // TODO password rule (max_len)
     password = argv[2];
+    // TODO password rule (max_len)
+    if (!Parser::validPassword(password)) {
+        throw std::logic_error(
+            "Error: invalid password\n[hint] <length 3~9, ascii, and "
+            "non-isspace>");
+    }
 }
 
 /****************************************************/
 /*                     Server                       */
 /****************************************************/
 
-Server::Server() {
-    //_connect_socket = new ConnectSocket[256];
-    // TODO max_client 할지 말지 여부
-    //    _socket_list.reserve(ft::Env::max_client);
-}
-Server::~Server() {
-    // if (_connect_socket) delete[] _connect_socket;
-}
+Server::Server() {}
+Server::~Server() {}
 
 void Server::init(int argc, char **argv) { _env.parse(argc, argv); }
 
@@ -72,7 +71,6 @@ void Server::run() {
 /****************************************************/
 
 void Server::handleAccept() {
-    std::cout << "Accept" << std::endl;
     Client *new_client;
     int connected_fd;
 
@@ -85,7 +83,6 @@ void Server::handleAccept() {
 }
 
 void Server::handleRead(int event_idx) {
-    std::cout << "==== Read ====" << std::endl;
     Event event = _ev_list[event_idx];
     Client *client = static_cast<Client *>(event.udata);
     ConnectSocket *connect_socket = static_cast<ConnectSocket *>(client);
@@ -107,8 +104,6 @@ void Server::handleRead(int event_idx) {
 }
 
 void Server::handleExecute(int event_idx) {
-    std::cout << "==== Execute ====" << std::endl;
-
     Event &event = _ev_list[event_idx];
     Client *client =
         static_cast<Client *>(event.udata);  // TODO : connect socket
@@ -221,11 +216,11 @@ void Server::reserve() {
 int Server::response(int fd, std::string &send_buf) {
     ssize_t n;
     n = send(fd, send_buf.c_str(), send_buf.length(), 0);
-    if (n == send_buf.length()) {
+    if (n == static_cast<ssize_t>(send_buf.length())) {
         send_buf.clear();
         return 0;
     }
-    if (n > 0)  // TODO
+    if (n > 0)
         send_buf = send_buf.substr(n, send_buf.length());
     else
         std::cerr << "[UB] send return -1" << std::endl;

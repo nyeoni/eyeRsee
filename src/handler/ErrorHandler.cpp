@@ -1,7 +1,5 @@
 #include "handler/ErrorHandler.hpp"
 
-#include <iostream>  // CHECK
-
 #include "core/Parser.hpp"
 #include "core/Socket.hpp"
 
@@ -28,19 +26,19 @@ void ErrorHandler::handleError(ConnectSocket *src, std::string cause,
 }
 void ErrorHandler::handleError(std::exception &e, ConnectSocket *src) {
     if (Parser::UnknownCommandException *uce =
-            dynamic_cast<Parser::UnknownCommandException *>(&e))
+        dynamic_cast<Parser::UnknownCommandException *>(&e))
         handleError(src, uce->getCause(), ERR_UNKNOWNCOMMAND);
     else if (Parser::NotEnoughParamsException *nepe =
-                 dynamic_cast<Parser::NotEnoughParamsException *>(&e))
+        dynamic_cast<Parser::NotEnoughParamsException *>(&e))
         handleError(src, nepe->getCause(), ERR_NEEDMOREPARAMS);
     else if (Parser::InvalidChannelNameException *icne =
-                 dynamic_cast<Parser::InvalidChannelNameException *>(&e))
+        dynamic_cast<Parser::InvalidChannelNameException *>(&e))
         handleError(src, icne->getCause(), ERR_BADCHANMASK);
     else if (Parser::InvalidNickNameException *inne =
-                 dynamic_cast<Parser::InvalidNickNameException *>(&e))
+        dynamic_cast<Parser::InvalidNickNameException *>(&e))
         handleError(src, inne->getCause(), ERR_ERRONEUSNICKNAME);
-    else
-        std::cout << "ErrorHandler: Unknown error occurred" << std::endl;
+//    else
+//        std::cout << "ErrorHandler: Unknown error occurred" << std::endl;
 }
 
 std::string ErrorHandler::getErrorMessage(e_err_code code) {
@@ -75,6 +73,8 @@ std::string ErrorHandler::getErrorMessage(e_err_code code) {
             return ERR_BADCHANMASK_MSG;
         case ERR_CANNOTSENDTOCHAN:
             return ERR_CANNOTSENDTOCHAN_MSG;
+        case ERR_NOTREGISTERED:
+            return ERR_NOTREGISTERED_MSG;
         default:
             return "Unknown error code";
     }
@@ -107,5 +107,7 @@ const std::string ErrorHandler::ERR_NOSUCHCHANNEL_MSG = "No such channel";
 const std::string ErrorHandler::ERR_BADCHANMASK_MSG = "Invalid channel name";
 const std::string ErrorHandler::ERR_CANNOTSENDTOCHAN_MSG =
     "Cannot send to channel";
+const std::string ErrorHandler::ERR_NOTREGISTERED_MSG =
+    "You have not registered";
 
 }  // namespace ft

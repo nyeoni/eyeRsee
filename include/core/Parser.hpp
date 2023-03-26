@@ -10,8 +10,8 @@
 namespace ft {
 
 class ConnectSocket;
-class Command;
-class params;
+struct Command;
+struct params;
 
 class Parser {
    private:
@@ -23,12 +23,13 @@ class Parser {
     int getToken(int flag);
     bool isEOF();
 
+   public:
     static bool isSpecial(char c);
+    static bool validPassword(std::string &password);
     static bool validChannelName(std::string &channel);
     static std::string validChannelName(std::vector<std::string> &channels);
     static bool validNickName(std::string &nickname);
 
-   public:
     void parseQuit(e_cmd &cmd, params *&params);
     void parsePass(e_cmd &cmd, params *&params);
     void parseUser(e_cmd &cmd, params *&params);
@@ -59,27 +60,27 @@ class Parser {
     class UnknownCommandException : public SyntaxException {
        public:
         UnknownCommandException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
     class NotEnoughParamsException : public SyntaxException {
        public:
         NotEnoughParamsException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
     class InvalidChannelNameException : public SyntaxException {
        public:
         InvalidChannelNameException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
     class InvalidNickNameException : public SyntaxException {
        public:
         InvalidNickNameException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
     class UnHandledModeException : public SyntaxException {
        public:
         UnHandledModeException(const std::string &cause)
-            : SyntaxException(cause) {};
+            : SyntaxException(cause){};
     };
 };
 

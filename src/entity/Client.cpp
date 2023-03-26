@@ -9,7 +9,11 @@ Client::~Client() {
     // deleteSocket();
 }
 
-Client &Client::operator=(const Client &ref) { return (*this); }
+Client &Client::operator=(const Client &ref) {
+    this->_channel_list = ref._channel_list;
+
+    return (*this);
+}
 
 // getter
 const Client::ChannelList &Client::getChannelList() const {

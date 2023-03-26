@@ -54,14 +54,11 @@ void ListenSocket::createSocket(const int &port) {
 
     sin.sin_port = htons(port);
     int i = 0;
-    // 임시
-    while (bind(_fd, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
-        sin.sin_port = htons(port + ++i);
-    }
+
     std::cout << "listening port : " << port + i << std::endl;
 
-    //if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
-    //    throw std::logic_error("bind error");
+    if (bind(_fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+        throw std::logic_error("bind error");
     if (listen(_fd, 42) < 0) throw std::logic_error("listen error");
 
     // setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
@@ -83,6 +80,22 @@ ConnectSocket::ConnectSocket(const ConnectSocket &copy)
     : SocketBase(copy.getFd()) {}
 ConnectSocket::~ConnectSocket() {}
 ConnectSocket &ConnectSocket::operator=(const ConnectSocket &ref) {
+    this->delimiter = ref.delimiter;
+    this->recv_buf = ref.recv_buf;
+    this->send_buf = ref.send_buf;
+
+    this->auth[0] = ref.auth[0];
+    this->auth[1] = ref.auth[1];
+    this->auth[2] = ref.auth[2];
+    this->commands = ref.commands;
+
+    this->_status = ref._status;
+
+    this->_nickname = ref._nickname;
+    this->_username = ref._username;
+    this->_hostname = ref._hostname;
+    this->_servername = ref._servername;
+    this->_realname = ref._realname;
     return (*this);
 }
 

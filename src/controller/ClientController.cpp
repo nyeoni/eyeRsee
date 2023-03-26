@@ -1,6 +1,6 @@
 #include "controller/ClientController.hpp"
 
-#include <utility>  // std::make_pair
+#include <utility>
 
 #include "entity/Channel.hpp"
 #include "entity/Client.hpp"
@@ -15,6 +15,8 @@ ClientController::ClientController(const ClientController &copy) {
 ClientController::~ClientController() {}
 
 ClientController &ClientController::operator=(const ClientController &ref) {
+    this->_clients = ref._clients;
+
     return (*this);
 }
 
@@ -88,8 +90,6 @@ void ClientController::erase(const std::string &nickname) {
 
     if (target) {
         _clients.erase(target->getFd());
-    } else {
-        // TODO there are no `nickname`
     }
 }
 
@@ -98,13 +98,10 @@ void ClientController::erase(int fd) {
 
     if (target) {
         _clients.erase(target->getFd());
-    } else {
-        // TODO there are no `nickname`
     }
 }
 
-void ClientController::updateClientStatus(int fd, Client *client,
-                                          e_status status) {
+void ClientController::updateClientStatus(Client *client, e_status status) {
     client->setStatus(status);
 }
 
@@ -133,7 +130,9 @@ void ClientController::eraseChannel(Client *client, Channel *channel) {
     client->eraseChannel(channel);
 }
 
-// make client list to vector<string>
+/**
+ * @brief make client list to vector<string>
+ */
 std::vector<std::string> ClientController::clientToString(
     ClientList client_list) {
     std::vector<std::string> res;

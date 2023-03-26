@@ -40,6 +40,7 @@ class Channel {
     const std::string &getTopic() const;
     const ClientList &getRegulars() const;
     const ClientList &getOperators() const;
+    const ClientList &getInvitedClients() const;
     int getMode() const;
 
     void setName(const std::string &name);
@@ -55,6 +56,7 @@ class Channel {
 
     void eraseOperator(Client *client);
     void eraseRegular(Client *client);
+    void eraseInvitedClient(Client *client);
 
     bool operator==(const Channel &other) const;
     bool operator!=(const Channel &other) const;

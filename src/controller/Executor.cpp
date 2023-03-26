@@ -172,11 +172,16 @@ void Executor::join(Client *client, params *params) {
             channel_controller.insertOperator(channel, client);
         } else if (channel_controller.isOnChannel(channel, client)) {
             return;
-        } else if (channel_controller.isInviteMode(channel)) {
+        } else if (channel_controller.isInviteMode(channel) &&
+                   !channel_controller.isInvitedClient(channel, client)) {
             // invite check
             ErrorHandler::handleError(client, *iter, ERR_INVITEONLYCHAN);
+            return;
         } else {  // regular Client
             channel_controller.insertRegular(channel, client);
+            if (channel_controller.isInvitedClient(channel, client)) {
+                channel_controller.eraseInvitedClient(channel, client);
+            }
         }
         client_controller.insertChannel(client, channel);
 

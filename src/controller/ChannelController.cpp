@@ -113,6 +113,12 @@ bool ChannelController::isRegular(Channel *channel, Client *client) {
     return regulars.find(client) != regulars.end() ? true : false;
 }
 
+bool ChannelController::isInvitedClient(Channel *channel, Client *client) {
+    std::set<Client *> invited_clients = channel->getInvitedClients();
+
+    return invited_clients.find(client) != invited_clients.end() ? true : false;
+}
+
 void ChannelController::insertOperator(Channel *channel, Client *client) {
     channel->insertOperator(client);
 }
@@ -144,6 +150,10 @@ void ChannelController::eraseClient(ChannelList &channel_list, Client *client) {
     for (; iter != channel_list.end(); ++iter) {
         eraseClient(*iter, client);
     }
+}
+
+void ChannelController::eraseInvitedClient(Channel *channel, Client *client) {
+    channel->eraseInvitedClient(client);
 }
 
 bool ChannelController::isInviteMode(const Channel *channel) {

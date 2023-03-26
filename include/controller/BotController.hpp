@@ -1,33 +1,25 @@
 #ifndef BOTCONTROLLER_HPP
 #define BOTCONTROLLER_HPP
 
-
-// delete
-#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include "core/utility.hpp"
 
 namespace ft {
 
 class BotController {
    public:
-    BotController() {}
-    BotController(const BotController &copy) {}
-    ~BotController() {}
+    BotController();
+    BotController(const BotController &copy);
+    ~BotController();
 
-    BotController &operator=(const BotController &ref) {}
+    BotController &operator=(const BotController &ref);
 
-    void help() {
-        std::cout << "Bot: help" << std::endl;
-
-    }
-    void hi() {
-
-    }
-    void now() {
-        std::cout << "Bot: time" << std::endl;
-        time_t now = time(NULL);
-
-    }
-
+    std::string help();
+    std::string hi();
+    std::string bye();
+    std::string now();
+    std::string weather();
 };
 
 }

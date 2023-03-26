@@ -52,6 +52,7 @@ class ResponseHandler {
                                const std::string &param,
                                const std::string &msg = "");
     static void handlePongResponse(ConnectSocket *src);
+    static void handleBotResponse(ConnectSocket *src, std::string &param, std::string &msg);
 
     // SECTION
     static std::string createResponse(ConnectSocket *src,

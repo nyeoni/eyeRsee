@@ -14,6 +14,8 @@ enum e_bot_cmd {
     BOT_HELP,
     BOT_NOW,
     BOT_HI,
+    BOT_BYE,
+    BOT_WEATHER
 };
 
 struct params {
@@ -61,6 +63,7 @@ struct topic_params : public params {
 };
 struct bot_params : public params {
     e_bot_cmd cmd;
+    std::string receiver;
 };
 struct privmsg_params : public params {
     std::vector<std::string> receivers;

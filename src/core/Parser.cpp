@@ -228,27 +228,32 @@ void Parser::parseTopic(e_cmd &cmd, params *&params) {
     }
     params = p;
 }
-bool Parser::parseBot(e_cmd &cmd, params *&params) {
+bool Parser::parseBot(e_cmd &cmd, params *&params, std::string &receiver) {
     bot_params *p;
     std::string command;
 
-    std::cout << "Bot Parsing!!" << std::endl;
-    if (token.find(' ') != std::string::npos) {
-        p = new bot_params;
+    std::cout << "Bot Parsing: " << token << std::endl;
+    p = new bot_params;
 
-        command = toUpperCase(token);
-        if (command == "HELP") {
-            p->cmd = BOT_HELP;
-        } else if (command == "NOW") {
-            p->cmd = BOT_NOW;
-        } else if (command == "HI") {
-            p->cmd = BOT_HI;
-        } else {
-            delete p;
-            return false;
-        }
+    command = toUpperCase(token.substr(2));
+    if (command == "HELP") {
+        p->cmd = BOT_HELP;
+    } else if (command == "NOW") {
+        p->cmd = BOT_NOW;
+    } else if (command == "HI") {
+        p->cmd = BOT_HI;
+    } else if (command == "BYE") {
+        p->cmd = BOT_BYE;
+    } else if (command == "WEATHER") {
+        p->cmd = BOT_WEATHER;
+    } else {
+        delete p;
+        return false;
     }
+
     std::cout << "Bot Parsing Success" << std::endl;
+    p->receiver = receiver;
+    cmd = BOT;
     params = p;
     return true;
 }
@@ -260,7 +265,7 @@ void Parser::parsePrivmsg(e_cmd &cmd, params *&params) {
         std::vector<std::string> receivers = split(token, ',');
         if (!isEOF() && getToken(MSG) && token[0] == ':') {
             if (receivers.size() == 1 && token[1] == '!') {
-                if (parseBot(cmd, params)) return;
+                if (parseBot(cmd, params, receivers[0])) return;
             }
             p = new privmsg_params;
             p->receivers = receivers;
